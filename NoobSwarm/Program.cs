@@ -60,27 +60,27 @@ namespace NoobSwarm
             AutoResetEvent are = new AutoResetEvent(true);
 
 
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay123"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay123"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, (vk) => { Console.WriteLine("Copy"); });
-            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, (vk) => { Console.WriteLine("KD"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, (vk) => { Console.WriteLine("Copy"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, (vk) => { Console.WriteLine("KD"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl2"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl123"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl2"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl123"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What?"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What? Early exit"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, (vk) => { Console.WriteLine("Later Early Exit"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What?"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What? Early exit"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, (vk) => { Console.WriteLine("Later Early Exit"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, (vk) => { Console.WriteLine("What??"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, (vk) => { Console.WriteLine("Exit Virtual Box Capture"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, (vk) => { Console.WriteLine("What??"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, (vk) => { Console.WriteLine("Exit Virtual Box Capture"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, (vk) => { Console.WriteLine("Bananas"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, (vk) => { Console.WriteLine("Bananas"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, (vk) => { Console.WriteLine("Backt eh niemand"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, (vk) => { Console.WriteLine("Backt eh niemand"); });
 
             tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, (vk) =>
             {
@@ -88,21 +88,22 @@ namespace NoobSwarm
                 SetRandomKeyColors(vk);
                 are.Set();
             });
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, (vk) => { Console.WriteLine("Throw Granade"); });
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, (vk) => { Console.WriteLine("Dont even know"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, (vk) => { Console.WriteLine("Throw Granade"); });
+            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, (vk) => { Console.WriteLine("Dont even know"); });
 
 
-            foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x=>x.PropertyType == typeof(Color)))
+            foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
             {
-                var hotkey = new List<LedKey> { LedKey.FN_Key};
+                var hotkey = new List<LedKey> { LedKey.FN_Key };
 
                 foreach (var key in color.Name.ToUpper())
                 {
                     hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
                 }
 
-                tree.CreateNode(hotkey, (vk) => {
-                    Console.WriteLine("Set Color to: "+color.Name);
+                tree.CreateNode(hotkey, (vk) =>
+                {
+                    Console.WriteLine("Set Color to: " + color.Name);
                     vk.SetColor((Color)color.GetValue(null));
                     are.Set();
                 });
@@ -121,7 +122,8 @@ namespace NoobSwarm
                 //Console.WriteLine("FX Knob change value to " + (e.Data)); 
                 if (s is VulcanKeyboard vk)
                 {
-                    vk.SetColor(Color.FromArgb((255 / 69) * e.Data, (255 / 69) * e.Data, (255 / 69) * e.Data));
+
+                    vk.Brightness = e.Data;
                     are.Set();
                 }
 
@@ -207,17 +209,22 @@ namespace NoobSwarm
                 //are.Set();
             };
 
-            var t = Task.Run(() =>
+            var t = Task.Run(async () =>
             {
                 while (true)
                 {
-                    keyboard.Update();
+                    await keyboard.Update();
                     are.WaitOne();
+
                     Thread.Sleep(16);
                 }
             });
 
-            Console.ReadLine();
+            while (true)
+            {
+
+                Console.ReadLine();
+            }
         }
 
         private static void SetRandomKeyColors(VulcanKeyboard keyboard)
