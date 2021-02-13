@@ -25,10 +25,10 @@ namespace NoobSwarm
             {
                 var key = hotkey[i];
                 var tmpKey = AddOrGetNode(curNode, key);
-                if (tmpKey.KeineAhnungAction != null)
-                {
-                    throw new Exception("node already has an action");
-                }
+                //if (tmpKey.KeineAhnungAction != null)
+                //{
+                //    throw new Exception("node already has an action");
+                //}
                 curNode = tmpKey;
                 if (i == hotkey.Count -1)
                 {

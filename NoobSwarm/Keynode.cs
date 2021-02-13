@@ -15,7 +15,7 @@ namespace NoobSwarm
         public Dictionary<LedKey, KeyNode> Children { get; set; } = new Dictionary<LedKey, KeyNode>();
 
         public bool HasSinglePath => Children.Count == 0 || (Children.Count == 1 && Children.First().Value.HasSinglePath);
-        public KeyNode? SinglePathChild => Children.Count == 0 ? this : Children.First().Value.SinglePathChild;
+        public KeyNode? SinglePathChild => HasSinglePath ? (Children.Count == 0 ? this : Children.First().Value.SinglePathChild) : null;
 
     }
 }

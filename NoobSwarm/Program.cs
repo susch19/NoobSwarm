@@ -60,7 +60,7 @@ namespace NoobSwarm
             tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("Jay2"); });
             tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("Jay123"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C}, () => { Console.WriteLine("Copy"); });
+            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, () => { Console.WriteLine("Copy"); });
             tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, () => { Console.WriteLine("KD"); });
 
             tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, () => { Console.WriteLine("JayCtrl"); });
@@ -68,13 +68,15 @@ namespace NoobSwarm
             tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("JayCtrl123"); });
 
             tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, () => { Console.WriteLine("What?"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, () => { Console.WriteLine("What? Early exit"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, () => { Console.WriteLine("Later Early Exit"); });
 
             tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, () => { Console.WriteLine("What??"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL}, () => { Console.WriteLine("Exit Virtual Box Capture"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, () => { Console.WriteLine("Exit Virtual Box Capture"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N }, () => { Console.WriteLine("Bananas"); });
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, () => { Console.WriteLine("Bananas"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, () => { Console.WriteLine("Backt eh niemand"); });
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, () => { Console.WriteLine("Backt eh niemand"); });
 
             tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, () => { Console.WriteLine("Q"); });
             tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, () => { Console.WriteLine("Throw Granade"); });
@@ -118,12 +120,19 @@ namespace NoobSwarm
 
                 if (e.IsPressed)
                 {
-                    if (!currentNode.Children.TryGetValue(e.Key, out var node) && currentNode != tree)
+                    if (e.Key == LedKey.ENTER && currentNode.KeineAhnungAction != null)
+                    {
+                        currentNode.KeineAhnungAction();
+                        currentNode = tree;
+                        vk.SetColor(Color.Yellow);
+                    }
+                    else if (!currentNode.Children.TryGetValue(e.Key, out var node) && currentNode != tree)
                     {
                         vk.SetKeyColor(e.Key, Color.Red);
                         are.Set();
                         return;
                     }
+
                     else if (node is not null)
                     {
                         if (node.KeineAhnungAction == null && !node.HasSinglePath)
@@ -135,6 +144,19 @@ namespace NoobSwarm
 
                             are.Set();
                             return;
+                        }
+                        else if (node.KeineAhnungAction != null && node.Children.Count > 0)
+                        {
+                            currentNode = node;
+                            vk.SetColor(Color.Black);
+                            foreach (var item in currentNode.Children)
+                                vk.SetKeyColor(item.Key, Color.Green);
+
+                            vk.SetKeyColor(LedKey.ENTER, Color.BlueViolet);
+                            are.Set();
+
+                            return;
+
                         }
                         node.SinglePathChild.KeineAhnungAction();
                         currentNode = tree;
