@@ -18,7 +18,7 @@ namespace NoobSwarm
             parent.Children.Add(key, node);
             return node;
         }
-        public void CreateNode(List<LedKey> hotkey, Action action)
+        public void CreateNode(List<LedKey> hotkey, Action<VulcanKeyboard> action)
         {
             KeyNode curNode = this;
             for(int i=0;i<hotkey.Count;i++)

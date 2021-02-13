@@ -41,6 +41,9 @@ namespace NoobSwarm
 
         private static Tree tree = new Tree();
         private static KeyNode currentNode;
+        private static byte[] lastColorCopy;
+        private static Random r = new Random();
+
 
         static void Main(string[] args)
         {
@@ -54,36 +57,61 @@ namespace NoobSwarm
             //dev.StartAsyncRead();
             //Console.ReadLine();
             //scanner.StopAsyncScan();
-
-
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, () => { Console.WriteLine("Jay"); });
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("Jay2"); });
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("Jay123"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, () => { Console.WriteLine("Copy"); });
-            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, () => { Console.WriteLine("KD"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, () => { Console.WriteLine("JayCtrl"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("JayCtrl2"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, () => { Console.WriteLine("JayCtrl123"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, () => { Console.WriteLine("What?"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, () => { Console.WriteLine("What? Early exit"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, () => { Console.WriteLine("Later Early Exit"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, () => { Console.WriteLine("What??"); });
-            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, () => { Console.WriteLine("Exit Virtual Box Capture"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, () => { Console.WriteLine("Bananas"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, () => { Console.WriteLine("Backt eh niemand"); });
-
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, () => { Console.WriteLine("Q"); });
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, () => { Console.WriteLine("Throw Granade"); });
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, () => { Console.WriteLine("Dont even know"); });
-
             AutoResetEvent are = new AutoResetEvent(true);
-            using VulcanKeyboard keyboard = VulcanKeyboard.Initialize();
+
+
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay123"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, (vk) => { Console.WriteLine("Copy"); });
+            tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, (vk) => { Console.WriteLine("KD"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl2"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl123"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What?"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What? Early exit"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, (vk) => { Console.WriteLine("Later Early Exit"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, (vk) => { Console.WriteLine("What??"); });
+            tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, (vk) => { Console.WriteLine("Exit Virtual Box Capture"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, (vk) => { Console.WriteLine("Bananas"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, (vk) => { Console.WriteLine("Backt eh niemand"); });
+
+            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, (vk) =>
+            {
+                Console.WriteLine("New Random Colors");
+                SetRandomKeyColors(vk);
+                are.Set();
+            });
+            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, (vk) => { Console.WriteLine("Throw Granade"); });
+            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, (vk) => { Console.WriteLine("Dont even know"); });
+
+
+            foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x=>x.PropertyType == typeof(Color)))
+            {
+                var hotkey = new List<LedKey> { LedKey.FN_Key};
+
+                foreach (var key in color.Name.ToUpper())
+                {
+                    hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
+                }
+
+                tree.CreateNode(hotkey, (vk) => {
+                    Console.WriteLine("Set Color to: "+color.Name);
+                    vk.SetColor((Color)color.GetValue(null));
+                    are.Set();
+                });
+            }
+
+
+            VulcanKeyboard keyboard = VulcanKeyboard.Initialize();
+            SetRandomKeyColors(keyboard);
+
             keyboard.VolumeKnobTurnedReceived += (s, e) =>
             {
                 //Console.WriteLine("Knob reached limit; Turned to direction " + (e.TurnedRight ? "Right" : "Left")); 
@@ -113,7 +141,7 @@ namespace NoobSwarm
                     if (e.Key == LedKey.ESC && currentNode != tree)
                     {
                         currentNode = tree;
-                        vk.SetColor(Color.Blue);
+                        vk.SetColors(lastColorCopy);
                         are.Set();
                     }
                 }
@@ -122,9 +150,9 @@ namespace NoobSwarm
                 {
                     if (e.Key == LedKey.ENTER && currentNode.KeineAhnungAction != null)
                     {
-                        currentNode.KeineAhnungAction();
+                        vk.SetColors(lastColorCopy);
+                        currentNode.KeineAhnungAction(vk);
                         currentNode = tree;
-                        vk.SetColor(Color.Yellow);
                     }
                     else if (!currentNode.Children.TryGetValue(e.Key, out var node) && currentNode != tree)
                     {
@@ -135,6 +163,12 @@ namespace NoobSwarm
 
                     else if (node is not null)
                     {
+                        if (currentNode == tree)
+                        {
+                            lastColorCopy = vk.GetLastSendColorsCopy();
+
+                        }
+
                         if (node.KeineAhnungAction == null && !node.HasSinglePath)
                         {
                             currentNode = node;
@@ -158,231 +192,41 @@ namespace NoobSwarm
                             return;
 
                         }
-                        node.SinglePathChild.KeineAhnungAction();
                         currentNode = tree;
-                        vk.SetColor(Color.Yellow);
+                        vk.SetColors(lastColorCopy);
+                        node.SinglePathChild.KeineAhnungAction(vk);
                     }
                 }
 
                 //Console.WriteLine($"Key Pressed {e.Key} {e.IsPressed}"  );
 
-                if (e.IsPressed)
-                    vk.SetKeyColor(e.Key, Color.Blue);
-                else
-                    vk.SetKeyColor(e.Key, Color.Black);
-                are.Set();
+                //if (e.IsPressed)
+                //    vk.SetKeyColor(e.Key, Color.Blue);
+                //else
+                //    vk.SetKeyColor(e.Key, Color.Black);
+                //are.Set();
             };
 
             var t = Task.Run(() =>
-             {
-                 while (true)
-                 {
-                     keyboard.Update();
-                     are.WaitOne();
-                     Thread.Sleep(16);
-                 }
-             });
+            {
+                while (true)
+                {
+                    keyboard.Update();
+                    are.WaitOne();
+                    Thread.Sleep(16);
+                }
+            });
 
-            BlockInput(true);
-
-            Thread.Sleep(10000);
-            BlockInput(false);
-
-            //            if (keyboard == null)
-            //            {
-            //                Console.WriteLine("Did not find vulcan!");
-            //                Console.ReadLine();
-            //                return;
-            //            }
-
-
-            //            bool initKeyboard = true;
-            //            bool fnPressed = false;
-            //            bool easyPressed = false;
-
-            //            Dictionary<int, byte[]> mapping = new Dictionary<int, byte[]>();
-            //            Dictionary<int, Color> alreadyClickedKeys = new Dictionary<int, Color>();
-            //            if (initKeyboard)
-            //            {
-            //                var are = new AutoResetEvent(false);
-            //                var are2 = new AutoResetEvent(false);
-            //                keyboard.SetColor(Color.Black);
-            //                keyboard.SetKeyColor(0, Color.Green);
-            //                //keyboard.Update();
-
-            //                int i = 0;
-            //                Dictionary<string, string> keys = new Dictionary<string, string>() {
-            //                    { "esc", "03 00 FB 11" },
-            //                    { "fn", "03 00 FB 77" },
-            //                    { "easyshift", "03 00 0A FF" },
-            //                    { "oemminus", "03 00 FB 5E" },
-            //                    { "c", "03 00 FB 2E" },
-            //                    { "h", "03 00 FB 3D" },
-            //                    { "e", "03 00 FB 24" },
-            //                    { "s", "03 00 FB 25" },
-            //                    { "m", "03 00 FB 46" },
-            //                    { "i", "03 00 FB 43" },
-            //                };
-            //                Dictionary<string, string> keysReversed =
-            //                    keys
-            //                    .GroupBy(x => x.Value)
-            //                    .ToDictionary(x => x.Key, x => x.First().Key);
-
-            //                var hotKey = new Dictionary<string, List<string>>()
-            //                {
-            //                    {"fn", new List<string>{"chess","chemie" } },
-            //                };
-
-            //                ByteEventArgs byteArgs = null;
-            //                string s = string.Empty;
-
-            //#pragma warning disable HAA0201 // Implicit string concatenation allocation
-            //                keyboard.KeyPressedReceived += (object sender, ByteEventArgs even) =>
-            //                {
-            //                    byteArgs = even;
-            //                    are2.Set();
-            //                    try
-            //                    {
-            //                        var keyBytes = string.Join(' ', byteArgs.Bytes.Take(4).Select(x => x.ToString("X2")));
-
-            //                        if (keyBytes == keys["fn"])
-            //                        {
-            //                            var htks = hotKey["fn"].ToList();
-            //                            if (htks.Count > 1)
-            //                            {
-            //                                keyboard.SetColor(Color.Black);
-            //                                foreach (var htk in htks)
-            //                                {
-            //                                    if (Enum.TryParse<Key>(htk[0].ToString().ToUpper(), out var key))
-            //                                        keyboard.SetKeyColor(key, Color.Green);
-            //                                }
-            //                            }
-            //                            //keyboard.Update();
-            //                            return;
-            //                        }
-            //                        if (keyBytes == keys["easyshift"])
-            //                            return;
-
-            //                        if (fnPressed && keyBytes == keys["oemminus"] && byteArgs.Bytes[4] > 0)
-            //                        {
-            //                            Console.WriteLine("You have made a custom fn hotkey :)");
-            //                        }
-            //                        if (fnPressed && keysReversed.TryGetValue(keyBytes, out var str))
-            //                        {
-            //                            var htks = hotKey["fn"].Where(x => x.Length > s.Length && x[s.Length].ToString() == str).ToList();
-            //                            if (htks.Count > 1)
-            //                            {
-            //                                s += str;
-            //                                keyboard.SetColor(Color.Black);
-            //                                foreach (var htk in htks)
-            //                                {
-            //                                    if (Enum.TryParse<Key>(htk[s.Length].ToString().ToUpper(), out var key))
-            //                                        keyboard.SetKeyColor(key, Color.Green);
-            //                                }
-            //                            }
-            //                            else if (htks.Count == 1)
-            //                            {
-            //                                Console.WriteLine("Found hotkey: " + htks[0]);
-            //                                keyboard.SetColor(Color.Green);
-            //                            }
-            //                            else
-            //                            {
-            //                                return;
-            //                            }
-            //                            //keyboard.Update();
-            //                            return;
-            //                            ;
-            //                        }
-
-            //                        if (easyPressed && keyBytes == keys["oemminus"] && byteArgs.Bytes[4] > 0)
-            //                        {
-            //                            Console.WriteLine("You have made a custom easy hotkey :)");
-            //                        }
-
-            //                        if (keyBytes == keys["esc"])
-            //                        {
-            //                            i++;
-            //                            keyboard.SetColor(Color.Black);
-            //                            //keyboard.SetKeyColor(i, Color.Green);
-            //                            keyboard.SetKeyColor(i / 2, Color.Green);
-            //                            //keyboard.Update();
-            //                            return;
-            //                        }
-
-            //                        //i++;
-
-            //                        //keyboard.SetColor(Color.Black);
-            //                        ////keyboard.SetKeyColor(i, Color.Green);
-            //                        //keyboard.SetKeyColor(i / 2, Color.Green);
-            //                        //keyboard.Update();
-
-            //                        //mapping.Add(i, even.Bytes.Take(20).ToArray());
-
-            //                        //if (i > 300)
-            //                        //    are.Set();
-
-            //                    }
-            //                    catch (Exception e)
-            //                    {
-
-            //                    }
-            //                };
-            //#pragma warning restore HAA0201 // Implicit string concatenation allocation
-
-            //                var task = Task.Run(() =>
-            //                {
-            //                    while (true)
-            //                    {
-            //                        are2.WaitOne();
-            //                        var keyBytes = string.Join(' ', byteArgs.Bytes.Take(4).Select(x => x.ToString("X2")));
-            //                        if (keyBytes == keys["fn"])
-            //                        {
-            //                            var block = byteArgs.Bytes[4] > 0;
-            //                            if (!block)
-            //                                s = string.Empty;
-            //                            //keyboard.SetColor(Color.Red);
-            //                            //else
-            //                            //{
-            //                            //    //keyboard.SetColor(Color.Green);
-            //                            //}
-            //                            //keyboard.Update();
-            //                            fnPressed = block;
-            //                            try
-            //                            {
-            //                                BlockInput(block);
-            //                            }
-            //                            catch (Exception e)
-            //                            {
-            //                                Console.WriteLine(e.Message);
-            //                                BlockInput(false);
-            //                            }
-            //                        }
-            //                        else if (keyBytes == keys["easyshift"])
-            //                        {
-            //                            var block = byteArgs.Bytes[4] < 1;
-            //                            if (block)
-            //                                keyboard.SetColor(Color.Yellow);
-            //                            else
-            //                                keyboard.SetColor(Color.Green);
-            //                            //keyboard.Update();
-            //                            easyPressed = block;
-            //                            try
-            //                            {
-            //                                BlockInput(block);
-            //                            }
-            //                            catch (Exception e)
-            //                            {
-            //                                Console.WriteLine(e.Message);
-            //                                BlockInput(false);
-            //                            }
-            //                        }
-            //                    }
-            //                });
-            //                are.WaitOne();
-
-
-            //            }
             Console.ReadLine();
+        }
+
+        private static void SetRandomKeyColors(VulcanKeyboard keyboard)
+        {
+            for (int i = 0; i < 131; i++)
+            {
+                keyboard.SetKeyColor(i, Color.FromArgb(255 << 24 | r.Next(0, 255 << 16)));
+            }
+
 
         }
     }
