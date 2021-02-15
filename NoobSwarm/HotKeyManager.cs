@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -102,14 +103,6 @@ namespace NoobSwarm
         private byte[] lastColors;
         private KeyNode currentNode;
 
-        private static void OpenUrl(string url)
-        {
-            Process.Start(new ProcessStartInfo(url)
-            {
-                UseShellExecute = true
-            });
-        }
-
         public HotKeyManager()
         {
             keyboard = VulcanKeyboard.Initialize();
@@ -119,11 +112,6 @@ namespace NoobSwarm
 
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
 
-            tree.CreateNode(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
-            tree.CreateNode(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
-            tree.CreateNode(new[] { LedKey.P, LedKey.P }, x => Console.WriteLine("Pause"));
-            tree.CreateNode(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
-            tree.CreateNode(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
@@ -132,6 +120,19 @@ namespace NoobSwarm
         {
             HotKey = singleHotKey;
             Mode = HotKeyMode.Active;
+        }
+
+        /// <summary>
+        /// Add a new hotkey to the tree
+        /// </summary>
+        /// <param name="hotkeys">A list of keys to be pressed for the hotkey execution. Needs atleast one key. First key is used as the hotkey entry, if <see cref="Mode"/> is <see cref="HotKeyMode.Passive"/></param>
+        /// <param name="action">Action to be called, when the hotkey is executed</param>
+        public void AddHotKey(IReadOnlyList<LedKey> hotkeys, Action<VulcanKeyboard> action)
+        {
+            if (hotkeys.Count < 1)
+                return;
+
+            tree.CreateNode(hotkeys, action);
         }
 
         private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
@@ -176,6 +177,8 @@ namespace NoobSwarm
                 TestSinglePath(currentNode);
             }
         }
+        
+    
 
         private bool TestSinglePath(KeyNode node)
         {

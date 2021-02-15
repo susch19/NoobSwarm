@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -45,12 +46,28 @@ namespace NoobSwarm
         private static byte[] lastColorCopy;
         private static Random r = new Random();
 
+        private static void OpenUrl(string url)
+        {
+            Process.Start(new ProcessStartInfo(url)
+            {
+                UseShellExecute = true
+            });
+        }
 
         static void Main(string[] args)
         {
-            using var manager = new HotKeyManager(LedKey.FN_Key);
 
             AutoResetEvent are = new AutoResetEvent(true);
+
+
+            using var manager = new HotKeyManager(LedKey.FN_Key);
+            manager.AddHotKey(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
+            manager.AddHotKey(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
+            manager.AddHotKey(new[] { LedKey.P, LedKey.P }, x => Console.WriteLine("Pause"));
+            manager.AddHotKey(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
+            manager.AddHotKey(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
+
+   
 
             //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
             //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
