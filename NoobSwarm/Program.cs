@@ -48,8 +48,7 @@ namespace NoobSwarm
 
         static void Main(string[] args)
         {
-            using var manager = new HotKeyManager();
-            manager.Mode = HotKeyMode.Passive;
+            using var manager = new HotKeyManager(LedKey.FN_Key);
 
             AutoResetEvent are = new AutoResetEvent(true);
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
+
 using Vulcan.NET;
 
 namespace NoobSwarm
@@ -30,6 +31,7 @@ namespace NoobSwarm
             set
             {
                 IsExecuting = false;
+                Mode = HotKeyMode.Active;
                 hotKey = value;
             }
         }
@@ -43,12 +45,21 @@ namespace NoobSwarm
         /// The key to execute a available hotkey when multiple hotkeys are available
         /// </summary>
         public LedKey EarlyExitKey { get; set; } = LedKey.ENTER;
+        /// <summary>
+        /// The key to stop hotkey execution. Will not execute any actions
+        /// </summary>
+        public LedKey ExitKey { get; set; } = LedKey.ESC;
 
         /// <summary>
         /// The color of the <see cref="EarlyExitKey"/>
         /// </summary>
         public Color EarlyExitColor { get; set; } = Color.Pink;
-        
+
+        /// <summary>
+        /// The color of the <see cref="ExitKey"/>
+        /// </summary>
+        public Color ExitColor { get; set; } = Color.Red;
+
         /// <summary>
         /// Are we curently in the hotkey mode and processing keys
         /// </summary>
@@ -69,8 +80,6 @@ namespace NoobSwarm
                 else if (isExecuting && !value)
                 {
                     // End of hotkey
-                    currentNode?.KeineAhnungAction?.Invoke(keyboard);
-
                     ResetColor();
                     currentNode = tree;
                 }
@@ -89,7 +98,7 @@ namespace NoobSwarm
         private readonly Tree tree = new();
 
         private bool isExecuting;
-        private LedKey hotKey = LedKey.FN_Key;
+        private LedKey hotKey;
         private byte[] lastColors;
         private KeyNode currentNode;
 
@@ -116,36 +125,52 @@ namespace NoobSwarm
             tree.CreateNode(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
             tree.CreateNode(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
             currentNode = tree;
+            Mode = HotKeyMode.Passive;
+        }
+
+        public HotKeyManager(LedKey singleHotKey) : this()
+        {
+            HotKey = singleHotKey;
+            Mode = HotKeyMode.Active;
         }
 
         private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
         {
-            if (e.Key == HotKey)
-            {
-                switch (Mode)
-                {
-                    case HotKeyMode.Passive:
-                        IsExecuting = true;
-                        break;
 
-                    case HotKeyMode.Active:
-                        IsExecuting = e.IsPressed;
-                        break;
-                }
+            if (e.Key == HotKey && Mode == HotKeyMode.Active)
+            {
+                if(!e.IsPressed)
+                    currentNode.KeineAhnungAction?.Invoke(keyboard);
+                IsExecuting = e.IsPressed;
 
                 // Always return so we dont try to get hotkey child which will not exist
                 return;
             }
 
-            if (Mode == HotKeyMode.Passive && e.Key == EarlyExitKey)
-                IsExecuting = false;
+            if (!e.IsPressed)
+                return;
+            else if (Mode == HotKeyMode.Passive && !isExecuting)
+            {
+                if (!tree.Children.ContainsKey(e.Key))
+                    return;
 
-            if (!IsExecuting || !e.IsPressed)
+                IsExecuting = true;
+                hotKey = e.Key;
+            }
+
+            if (Mode == HotKeyMode.Passive && (e.Key == EarlyExitKey || e.Key == ExitKey))
+            {
+                if (e.Key == EarlyExitKey)
+                    currentNode.KeineAhnungAction?.Invoke(keyboard);
+                IsExecuting = false;
+            }
+
+            if (!IsExecuting)
                 return;
 
-            if (!TestSinglePath(currentNode) && currentNode is not null)
+            if (currentNode.Children.TryGetValue(e.Key, out var nextNode))
             {
-                currentNode.Children.TryGetValue(e.Key, out currentNode);
+                currentNode = nextNode;
                 SetHotKeysColoring();
 
                 TestSinglePath(currentNode);
@@ -172,6 +197,9 @@ namespace NoobSwarm
             {
                 foreach (var item in currentNode.Children)
                     keyboard.SetKeyColor(item.Key, HotKeyColor);
+
+                if (Mode == HotKeyMode.Passive)
+                    keyboard.SetKeyColor(ExitKey, ExitColor);
 
                 if (currentNode.KeineAhnungAction is not null)
                 {
