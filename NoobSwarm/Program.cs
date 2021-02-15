@@ -60,83 +60,46 @@ namespace NoobSwarm
             AutoResetEvent are = new AutoResetEvent(true);
 
 
-            using var manager = new HotKeyManager(LedKey.FN_Key);
+            using var keyboard = VulcanKeyboard.Initialize();
+
+            var manager = new HotKeyManager(keyboard, LedKey.FN_Key);
+
+
+
             manager.AddHotKey(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
             manager.AddHotKey(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
             manager.AddHotKey(new[] { LedKey.P, LedKey.P }, x => Console.WriteLine("Pause"));
             manager.AddHotKey(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
             manager.AddHotKey(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
 
-   
+            foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
+            {
+                var hotkey = new List<LedKey> { LedKey.C, LedKey.O, LedKey.L };
 
-            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay123"); });
+                foreach (var key in color.Name.ToUpper())
+                {
+                    hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
+                }
 
-            //tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.C }, (vk) => { Console.WriteLine("Copy"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.LEFT_CONTROL, LedKey.K }, (vk) => { Console.WriteLine("KD"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl2"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.A, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("JayCtrl123"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What?"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key }, (vk) => { Console.WriteLine("What? Early exit"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.R }, (vk) => { Console.WriteLine("Later Early Exit"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.FN_Key, LedKey.RIGHT_CONTROL, LedKey.LEFT_ALT }, (vk) => { Console.WriteLine("What??"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.RIGHT_CONTROL, LedKey.RIGHT_CONTROL }, (vk) => { Console.WriteLine("Exit Virtual Box Capture"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.A, LedKey.S }, (vk) => { Console.WriteLine("Bananas"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, (vk) => { Console.WriteLine("Backt eh niemand"); });
-
-            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, (vk) =>
-            //{
-            //    Console.WriteLine("New Random Colors");
-            //    SetRandomKeyColors(vk);
-            //    are.Set();
-            //});
-            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, (vk) => { Console.WriteLine("Throw Granade"); });
-            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, (vk) => { Console.WriteLine("Dont even know"); });
+                manager.AddHotKey(hotkey, (vk) =>
+                {
+                    Console.WriteLine("Set Color to: " + color.Name);
+                    vk.SetColor((Color)color.GetValue(null));
+                    vk.Update();
+                });
+            }
 
 
-            //foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
-            //{
-            //    var hotkey = new List<LedKey> { LedKey.FN_Key };
 
-            //    foreach (var key in color.Name.ToUpper())
-            //    {
-            //        hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
-            //    }
-
-            //    tree.CreateNode(hotkey, (vk) =>
-            //    {
-            //        Console.WriteLine("Set Color to: " + color.Name);
-            //        vk.SetColor((Color)color.GetValue(null));
-            //        are.Set();
-            //    });
-            //}
-
-
-            //using VulcanKeyboard keyboard = VulcanKeyboard.Initialize();
-            //SetRandomKeyColors(keyboard);
-
-            //keyboard.VolumeKnobTurnedReceived += (s, e) =>
-            //{
-            //    //Console.WriteLine("Knob reached limit; Turned to direction " + (e.TurnedRight ? "Right" : "Left")); 
-            //};
-            //keyboard.VolumeKnobFxPressedReceived += (s, e) =>
-            //{
-            //    //Console.WriteLine("FX Knob change value to " + (e.Data)); 
-            //    if (s is VulcanKeyboard vk)
-            //    {
-
-            //        vk.Brightness = e.Data;
-            //        are.Set();
-            //    }
-
-            //};
+            keyboard.VolumeKnobFxPressedReceived += (s, e) =>
+            {
+                //Console.WriteLine("FX Knob change value to " + (e.Data)); 
+                if (s is VulcanKeyboard vk)
+                {
+                    vk.Brightness = (byte)(e.Data - 1);
+                    vk.Update();
+                }
+            };
             //keyboard.VolumeKnobPressedReceived += (s, e) =>
             //{
             //    //Console.WriteLine("Volume knob \"clicked\" " + e.IsPressed); 
@@ -228,15 +191,54 @@ namespace NoobSwarm
             //        Thread.Sleep(16);
             //    }
             //});
+            string url = string.Empty;
+            while (true)
+            {
 
-            //while (true)
-            //{
 
-            //    Console.ReadLine();
-            //}
+                var commands = Console.ReadLine().Split('|');
+                var command = commands[0];
 
-            Console.ReadLine();
+
+                switch (command)
+                {
+                    case "":
+                        break;
+
+                    case "newUrl":
+                        CreateNewUrlHotKey(keyboard, manager, commands.Skip(1).ToList());
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
         }
+
+        private static void CreateNewUrlHotKey(VulcanKeyboard keyboard, HotKeyManager manager, IReadOnlyList<string> parameters)
+        {
+            var keys = new List<LedKey>();
+
+            keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
+            keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
+            void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
+            {
+                if (e.IsPressed)
+                    keys.Add(e.Key);
+            }
+            void Keyboard_VolumeKnobTurnedReceived(object sender, VolumeKnDirectionArgs e)
+            {
+                if (e.TurnedRight)
+                {
+                    keyboard.KeyPressedReceived -= Keyboard_KeyPressedReceived;
+                    keyboard.VolumeKnobTurnedReceived -= Keyboard_VolumeKnobTurnedReceived;
+                    manager.AddHotKey(keys, k => OpenUrl(parameters[0]));
+                }
+            }
+        }
+
+
 
         private static void SetRandomKeyColors(VulcanKeyboard keyboard)
         {

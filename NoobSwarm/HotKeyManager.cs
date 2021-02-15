@@ -21,7 +21,7 @@ namespace NoobSwarm
         Active
     }
 
-    public class HotKeyManager : IDisposable
+    public class HotKeyManager
     {
         /// <summary>
         /// The hotkey to controll the hotkey mode
@@ -103,10 +103,9 @@ namespace NoobSwarm
         private byte[] lastColors;
         private KeyNode currentNode;
 
-        public HotKeyManager()
+         public HotKeyManager(VulcanKeyboard keyboard)
         {
-            keyboard = VulcanKeyboard.Initialize();
-
+            this.keyboard = keyboard;
             keyboard.SetColor(Color.Blue);
             keyboard.Update();
 
@@ -116,7 +115,7 @@ namespace NoobSwarm
             Mode = HotKeyMode.Passive;
         }
 
-        public HotKeyManager(LedKey singleHotKey) : this()
+        public HotKeyManager(VulcanKeyboard keyboard, LedKey singleHotKey) : this(keyboard)
         {
             HotKey = singleHotKey;
             Mode = HotKeyMode.Active;
@@ -137,12 +136,12 @@ namespace NoobSwarm
 
         private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
         {
-
+            var lastNode = currentNode;
             if (e.Key == HotKey && Mode == HotKeyMode.Active)
             {
-                if(!e.IsPressed)
-                    currentNode.KeineAhnungAction?.Invoke(keyboard);
                 IsExecuting = e.IsPressed;
+                if(!e.IsPressed)
+                    lastNode.KeineAhnungAction?.Invoke(keyboard);
 
                 // Always return so we dont try to get hotkey child which will not exist
                 return;
@@ -150,7 +149,8 @@ namespace NoobSwarm
 
             if (!e.IsPressed)
                 return;
-            else if (Mode == HotKeyMode.Passive && !isExecuting)
+            
+            if (Mode == HotKeyMode.Passive && !isExecuting)
             {
                 if (!tree.Children.ContainsKey(e.Key))
                     return;
@@ -161,9 +161,9 @@ namespace NoobSwarm
 
             if (Mode == HotKeyMode.Passive && (e.Key == EarlyExitKey || e.Key == ExitKey))
             {
-                if (e.Key == EarlyExitKey)
-                    currentNode.KeineAhnungAction?.Invoke(keyboard);
                 IsExecuting = false;
+                if (e.Key == EarlyExitKey)
+                    lastNode.KeineAhnungAction?.Invoke(keyboard);
             }
 
             if (!IsExecuting)
@@ -228,11 +228,6 @@ namespace NoobSwarm
 
             keyboard.SetColors(lastColors);
             keyboard.Update();
-        }
-
-        public void Dispose()
-        {
-            keyboard.Dispose();
         }
     }
 }
