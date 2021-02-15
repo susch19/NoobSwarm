@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,9 +34,9 @@ namespace NoobSwarm
                 };*/
     class Program
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "BlockInput")]
-        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        public static extern bool BlockInput([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)] bool fBlockIt);
+        [DllImport("user32.dll", EntryPoint = "BlockInput")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BlockInput([MarshalAs(UnmanagedType.Bool)] bool fBlockIt);
 
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
 
@@ -47,18 +48,10 @@ namespace NoobSwarm
 
         static void Main(string[] args)
         {
-            //var scanner = new DeviceScanner(0x1E7D, 0x3098);
-            //scanner.StartAsyncScan();
+            using var manager = new HotKeyManager();
+            manager.Mode = HotKeyMode.Passive;
 
-            //var dev = new USBDevice(0x1E7D, 0x3098, null);
-            ////scanner.DeviceArrived += (o, s) => {; };
-            ////scanner.DeviceRemoved += (o, s) => {; };
-            //dev.InputReportArrivedEvent += Dev_InputReportArrivedEvent;
-            //dev.StartAsyncRead();
-            //Console.ReadLine();
-            //scanner.StopAsyncScan();
             AutoResetEvent are = new AutoResetEvent(true);
-
 
             //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.O, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay"); });
             //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.M, LedKey.P, LedKey.OEMPERIOD }, (vk) => { Console.WriteLine("Jay2"); });
@@ -82,149 +75,151 @@ namespace NoobSwarm
 
             //tree.CreateNode(new List<LedKey> { LedKey.FN_Key, LedKey.B, LedKey.A, LedKey.N, LedKey.A, LedKey.N, LedKey.E, LedKey.N, LedKey.B, LedKey.R, LedKey.O, LedKey.T }, (vk) => { Console.WriteLine("Backt eh niemand"); });
 
-            tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, (vk) =>
-            {
-                Console.WriteLine("New Random Colors");
-                SetRandomKeyColors(vk);
-                are.Set();
-            });
+            //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.Q }, (vk) =>
+            //{
+            //    Console.WriteLine("New Random Colors");
+            //    SetRandomKeyColors(vk);
+            //    are.Set();
+            //});
             //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.W }, (vk) => { Console.WriteLine("Throw Granade"); });
             //tree.CreateNode(new List<LedKey> { LedKey.Q, LedKey.E }, (vk) => { Console.WriteLine("Dont even know"); });
 
 
-            foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
-            {
-                var hotkey = new List<LedKey> { LedKey.FN_Key };
+            //foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
+            //{
+            //    var hotkey = new List<LedKey> { LedKey.FN_Key };
 
-                foreach (var key in color.Name.ToUpper())
-                {
-                    hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
-                }
+            //    foreach (var key in color.Name.ToUpper())
+            //    {
+            //        hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
+            //    }
 
-                tree.CreateNode(hotkey, (vk) =>
-                {
-                    Console.WriteLine("Set Color to: " + color.Name);
-                    vk.SetColor((Color)color.GetValue(null));
-                    are.Set();
-                });
-            }
+            //    tree.CreateNode(hotkey, (vk) =>
+            //    {
+            //        Console.WriteLine("Set Color to: " + color.Name);
+            //        vk.SetColor((Color)color.GetValue(null));
+            //        are.Set();
+            //    });
+            //}
 
 
-            VulcanKeyboard keyboard = VulcanKeyboard.Initialize();
-            SetRandomKeyColors(keyboard);
+            //using VulcanKeyboard keyboard = VulcanKeyboard.Initialize();
+            //SetRandomKeyColors(keyboard);
 
-            keyboard.VolumeKnobTurnedReceived += (s, e) =>
-            {
-                //Console.WriteLine("Knob reached limit; Turned to direction " + (e.TurnedRight ? "Right" : "Left")); 
-            };
-            keyboard.VolumeKnobFxPressedReceived += (s, e) =>
-            {
-                //Console.WriteLine("FX Knob change value to " + (e.Data)); 
-                if (s is VulcanKeyboard vk)
-                {
+            //keyboard.VolumeKnobTurnedReceived += (s, e) =>
+            //{
+            //    //Console.WriteLine("Knob reached limit; Turned to direction " + (e.TurnedRight ? "Right" : "Left")); 
+            //};
+            //keyboard.VolumeKnobFxPressedReceived += (s, e) =>
+            //{
+            //    //Console.WriteLine("FX Knob change value to " + (e.Data)); 
+            //    if (s is VulcanKeyboard vk)
+            //    {
 
-                    vk.Brightness = e.Data;
-                    are.Set();
-                }
+            //        vk.Brightness = e.Data;
+            //        are.Set();
+            //    }
 
-            };
-            keyboard.VolumeKnobPressedReceived += (s, e) =>
-            {
-                //Console.WriteLine("Volume knob \"clicked\" " + e.IsPressed); 
-            };
-            keyboard.KeyPressedReceived += (s, e) =>
-            {
-                if (!(s is VulcanKeyboard vk))
-                    return;
+            //};
+            //keyboard.VolumeKnobPressedReceived += (s, e) =>
+            //{
+            //    //Console.WriteLine("Volume knob \"clicked\" " + e.IsPressed); 
+            //};
+            //keyboard.KeyPressedReceived += (s, e) =>
+            //{
+            //    if (!(s is VulcanKeyboard vk))
+            //        return;
 
-                currentNode ??= tree;
-                if (!e.IsPressed)
-                {
-                    if (e.Key == LedKey.ESC && currentNode != tree)
-                    {
-                        currentNode = tree;
-                        vk.SetColors(lastColorCopy);
-                        are.Set();
-                    }
-                }
+            //    currentNode ??= tree;
+            //    if (!e.IsPressed)
+            //    {
+            //        if (e.Key == LedKey.ESC && currentNode != tree)
+            //        {
+            //            currentNode = tree;
+            //            vk.SetColors(lastColorCopy);
+            //            are.Set();
+            //        }
+            //    }
 
-                if (e.IsPressed)
-                {
-                    if (e.Key == LedKey.ENTER && currentNode.KeineAhnungAction != null)
-                    {
-                        vk.SetColors(lastColorCopy);
-                        currentNode.KeineAhnungAction(vk);
-                        currentNode = tree;
-                    }
-                    else if (!currentNode.Children.TryGetValue(e.Key, out var node) && currentNode != tree)
-                    {
-                        vk.SetKeyColor(e.Key, Color.Red);
-                        are.Set();
-                        return;
-                    }
+            //    if (e.IsPressed)
+            //    {
+            //        if (e.Key == LedKey.ENTER && currentNode.KeineAhnungAction != null)
+            //        {
+            //            vk.SetColors(lastColorCopy);
+            //            currentNode.KeineAhnungAction(vk);
+            //            currentNode = tree;
+            //        }
+            //        else if (!currentNode.Children.TryGetValue(e.Key, out var node) && currentNode != tree)
+            //        {
+            //            vk.SetKeyColor(e.Key, Color.Red);
+            //            are.Set();
+            //            return;
+            //        }
 
-                    else if (node is not null)
-                    {
-                        if (currentNode == tree)
-                        {
-                            lastColorCopy = vk.GetLastSendColorsCopy();
+            //        else if (node is not null)
+            //        {
+            //            if (currentNode == tree)
+            //            {
+            //                lastColorCopy = vk.GetLastSendColorsCopy();
 
-                        }
+            //            }
 
-                        if (node.KeineAhnungAction == null && !node.HasSinglePath)
-                        {
-                            currentNode = node;
-                            vk.SetColor(Color.Black);
-                            foreach (var item in currentNode.Children)
-                                vk.SetKeyColor(item.Key, Color.Green);
+            //            if (node.KeineAhnungAction == null && !node.HasSinglePath)
+            //            {
+            //                currentNode = node;
+            //                vk.SetColor(Color.Black);
+            //                foreach (var item in currentNode.Children)
+            //                    vk.SetKeyColor(item.Key, Color.Green);
 
-                            are.Set();
-                            return;
-                        }
-                        else if (node.KeineAhnungAction != null && node.Children.Count > 0)
-                        {
-                            currentNode = node;
-                            vk.SetColor(Color.Black);
-                            foreach (var item in currentNode.Children)
-                                vk.SetKeyColor(item.Key, Color.Green);
+            //                are.Set();
+            //                return;
+            //            }
+            //            else if (node.KeineAhnungAction != null && node.Children.Count > 0)
+            //            {
+            //                currentNode = node;
+            //                vk.SetColor(Color.Black);
+            //                foreach (var item in currentNode.Children)
+            //                    vk.SetKeyColor(item.Key, Color.Green);
 
-                            vk.SetKeyColor(LedKey.ENTER, Color.BlueViolet);
-                            are.Set();
+            //                vk.SetKeyColor(LedKey.ENTER, Color.BlueViolet);
+            //                are.Set();
 
-                            return;
+            //                return;
 
-                        }
-                        currentNode = tree;
-                        vk.SetColors(lastColorCopy);
-                        node.SinglePathChild.KeineAhnungAction(vk);
-                    }
-                }
+            //            }
+            //            currentNode = tree;
+            //            vk.SetColors(lastColorCopy);
+            //            node.SinglePathChild.KeineAhnungAction(vk);
+            //        }
+            //    }
 
-                //Console.WriteLine($"Key Pressed {e.Key} {e.IsPressed}"  );
+            //    //Console.WriteLine($"Key Pressed {e.Key} {e.IsPressed}"  );
 
-                //if (e.IsPressed)
-                //    vk.SetKeyColor(e.Key, Color.Blue);
-                //else
-                //    vk.SetKeyColor(e.Key, Color.Black);
-                //are.Set();
-            };
+            //    //if (e.IsPressed)
+            //    //    vk.SetKeyColor(e.Key, Color.Blue);
+            //    //else
+            //    //    vk.SetKeyColor(e.Key, Color.Black);
+            //    //are.Set();
+            //};
 
-            var t = Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await keyboard.Update();
-                    are.WaitOne();
+            //var t = Task.Run(async () =>
+            //{
+            //    while (true)
+            //    {
+            //        await keyboard.Update();
+            //        are.WaitOne();
 
-                    Thread.Sleep(16);
-                }
-            });
+            //        Thread.Sleep(16);
+            //    }
+            //});
 
-            while (true)
-            {
+            //while (true)
+            //{
 
-                Console.ReadLine();
-            }
+            //    Console.ReadLine();
+            //}
+
+            Console.ReadLine();
         }
 
         private static void SetRandomKeyColors(VulcanKeyboard keyboard)
@@ -233,8 +228,6 @@ namespace NoobSwarm
             {
                 keyboard.SetKeyColor(i, Color.FromArgb(255 << 24 | r.Next(0, 255 << 16)));
             }
-
-
         }
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Vulcan.NET;
 
@@ -18,10 +15,10 @@ namespace NoobSwarm
             parent.Children.Add(key, node);
             return node;
         }
-        public void CreateNode(List<LedKey> hotkey, Action<VulcanKeyboard> action)
+        public void CreateNode(IList<LedKey> hotkey, Action<VulcanKeyboard> action)
         {
             KeyNode curNode = this;
-            for(int i=0;i<hotkey.Count;i++)
+            for (int i = 0; i < hotkey.Count; i++)
             {
                 var key = hotkey[i];
                 var tmpKey = AddOrGetNode(curNode, key);
@@ -30,7 +27,7 @@ namespace NoobSwarm
                 //    throw new Exception("node already has an action");
                 //}
                 curNode = tmpKey;
-                if (i == hotkey.Count -1)
+                if (i == hotkey.Count - 1)
                 {
                     tmpKey.KeineAhnungAction = action;
                 }
