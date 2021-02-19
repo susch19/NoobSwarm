@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -53,6 +54,14 @@ namespace NoobSwarm.Lights.LightEffects
                 {
                     keyFades.Remove(key.Key);
                 }
+            }
+        }
+
+        public override void Info(int counter, long elapsedMilliseconds, IReadOnlyCollection<LedKey> pressed)
+        {
+            foreach (var press in pressed)
+            {
+                keyFades[press] = biggest;
             }
         }
     }

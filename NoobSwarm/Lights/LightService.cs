@@ -148,7 +148,10 @@ namespace NoobSwarm.Lights
                     foreach (var lightEffect in LightLayers)
                     {
                         if (lightEffect.Initialized)
+                        {
                             lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
+                            lightEffect.Info(Counter, ElapsedMilliseconds, pressed);
+                        }
                     }
                 }
                 else
@@ -157,6 +160,13 @@ namespace NoobSwarm.Lights
                     {
                         if (lightEffect.Initialized)
                             lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
+                    }
+                    foreach (var lightEffect in LightLayers)
+                    {
+                        if (lightEffect.Initialized)
+                        {
+                            lightEffect.Info(Counter, ElapsedMilliseconds, pressed);
+                        }
                     }
                 }
                 keyboard.SetColors(currentColors);

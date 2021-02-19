@@ -55,5 +55,12 @@ namespace NoobSwarm.Lights.LightEffects
                 }
             }
         }
+        public override void Info(int counter, long elapsedMilliseconds, IReadOnlyCollection<LedKey> pressed)
+        {
+            foreach (var press in pressed)
+            {
+                keyFades[press] = biggest;
+            }
+        }
     }
 }
