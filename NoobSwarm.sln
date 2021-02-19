@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm", "NoobSwarm\NoobSwarm.csproj", "{892FF691-CA1A-415A-B458-F6DB7FF890BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoobSwarm.WPF", "NoobSwarm.WPF\NoobSwarm.WPF.csproj", "{423B69E6-4C03-4406-8561-2F3771B59E96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{423B69E6-4C03-4406-8561-2F3771B59E96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{423B69E6-4C03-4406-8561-2F3771B59E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{423B69E6-4C03-4406-8561-2F3771B59E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{423B69E6-4C03-4406-8561-2F3771B59E96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

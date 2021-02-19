@@ -30,16 +30,9 @@ namespace NoobSwarm
                 UseShellExecute = true
             });
         }
-        private static List<LedKeyPoint> LedKeyPoints = new();
-        private static Bitmap ledBitmap;
-        private static Rectangle bmpRect;
 
         static void Main(string[] args)
         {
-
-            AutoResetEvent are = new AutoResetEvent(false);
-
-
             using var keyboard = VulcanKeyboard.Initialize();
             var ls = new LightService(keyboard);
             var manager = new HotKeyManager(keyboard, ls, LedKey.FN_Key);
@@ -55,8 +48,6 @@ namespace NoobSwarm
             manager.AddHotKey(new[] { LedKey.P, LedKey.P }, x => Console.WriteLine("Pause"));
             manager.AddHotKey(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
             manager.AddHotKey(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
-
-
 
             foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
             {
@@ -85,7 +76,6 @@ namespace NoobSwarm
 
             keyboard.VolumeKnobFxPressedReceived += (s, e) =>
             {
-                Debug.WriteLine($"Brighness: {e.Data - 1}");
                 ls.Brightness = (byte)(e.Data - 1);
             };
 
@@ -104,24 +94,16 @@ namespace NoobSwarm
                         CreateNewUrlHotKey(keyboard, manager, commands.Skip(1).ToList());
                         break;
 
+                    case "record":
+                        Console.WriteLine(string.Join(" -> ", manager.RecordKeys()));
+                        break;
                     default:
                         break;
                 }
             }
 
         }
-
-        //private static void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
-        //{
-        //    if (e.IsPressed)
-        //    {
-        //        var point = PInvoke.User32.GetCursorPos();
-        //        var lkp = new LedKeyPoint(point.x, point.y, e.Key);
-        //        File.AppendAllText("LedPositionsNew123.txt", $"{lkp.X}|{lkp.Y}|{lkp.LedKey}{Environment.NewLine}");
-
-        //    }
-        //}
-
+        
         private static void CreateNewUrlHotKey(VulcanKeyboard keyboard, HotKeyManager manager, IReadOnlyList<string> parameters)
         {
             var keys = new List<LedKey>();

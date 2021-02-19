@@ -4,8 +4,13 @@ using NoobSwarm.Lights.LightEffects;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Vulcan.NET;
@@ -50,6 +55,7 @@ namespace NoobSwarm
         /// The key to execute a available hotkey when multiple hotkeys are available
         /// </summary>
         public LedKey EarlyExitKey { get; set; } = LedKey.ENTER;
+
         /// <summary>
         /// The key to stop hotkey execution. Will not execute any actions
         /// </summary>
@@ -86,7 +92,7 @@ namespace NoobSwarm
                 else if (isExecuting && !value)
                 {
                     // End of hotkey
-                    ResetColor();
+                    RestoreColor();
                     currentNode = tree;
                 }
 
@@ -100,6 +106,9 @@ namespace NoobSwarm
         /// </summary>
         public HotKeyMode Mode { get; set; }
 
+        public Color RecordingColorPrimary { get; set; } = Color.DarkGreen;
+        public Color RecordingColorSecondary { get; set; } = Color.Yellow;
+
         private readonly VulcanKeyboard keyboard;
         private readonly Tree tree = new();
 
@@ -110,14 +119,34 @@ namespace NoobSwarm
         private KeyNode currentNode;
         private Dictionary<LedKey, Color> ledColors = new();
 
+        // Synchron recording variables
+        private bool isSynchronRecording;
+        private List<LedKey> synchronRecordingKeys = new();
+        private AutoResetEvent synchronRecordingResetEvent = new(false);
+
+        private bool isAsyncRecording;
+        private TaskCompletionSource<LedKey> asyncTaskCompletionSource;
+        private CancellationTokenSource asyncToken;
+        private LedKey? lastAsyncRecordingKey;
+
         public HotKeyManager(VulcanKeyboard keyboard, LightService lightService)
         {
             this.keyboard = keyboard;
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
+            keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
+
             this.lightService = lightService;
             hotKeyEffect = new SingleKeysColorEffect(ledColors, Color.Black);
             currentNode = tree;
             Mode = HotKeyMode.Passive;
+        }
+
+        private void Keyboard_VolumeKnobTurnedReceived(object sender, VolumeKnDirectionArgs e)
+        {
+            if (isSynchronRecording)
+                synchronRecordingResetEvent.Set();
+            else if (isAsyncRecording)
+                asyncToken?.Cancel();
         }
 
         public HotKeyManager(VulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : this(keyboard, lightService)
@@ -139,8 +168,82 @@ namespace NoobSwarm
             tree.CreateNode(hotkeys, action);
         }
 
+        /// <summary>
+        /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
+        /// </summary>
+        public ReadOnlyCollection<LedKey> RecordKeys()
+        {
+            synchronRecordingKeys.Clear();
+            ledColors.Clear();
+            lightService.OverrideLightEffect = hotKeyEffect;
+            isSynchronRecording = true;
+
+            synchronRecordingResetEvent.WaitOne();
+            isSynchronRecording = false;
+            lightService.OverrideLightEffect = null;
+
+            return new ReadOnlyCollection<LedKey>(synchronRecordingKeys);
+        }
+
+        /// <summary>
+        /// Async ecording of all pressed keys until <paramref name="token"/> is cancelled or
+        /// <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
+        /// </summary>
+        /// <param name="token">Token to cancel the recording</param>
+        /// <returns>async enumerable which contains the recording keys</returns>
+        public async IAsyncEnumerable<LedKey> Record([EnumeratorCancellation] CancellationToken token)
+        {
+            asyncToken = CancellationTokenSource.CreateLinkedTokenSource(token);
+            asyncToken.Token.Register(() => asyncTaskCompletionSource?.TrySetCanceled());
+
+            ledColors.Clear();
+            lightService.OverrideLightEffect = hotKeyEffect;
+            isAsyncRecording = true;
+            try
+            {
+                while (!asyncToken.Token.IsCancellationRequested)
+                {
+                    asyncTaskCompletionSource = new TaskCompletionSource<LedKey>(TaskCreationOptions.AttachedToParent);
+                    yield return await asyncTaskCompletionSource.Task;
+                }
+            }
+            finally
+            {
+                isAsyncRecording = false;
+                lightService.OverrideLightEffect = null;
+            }
+        }
+
         private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
         {
+            if (isSynchronRecording || isAsyncRecording)
+            {
+                if (e.IsPressed)
+                {
+                    ledColors.Clear();
+
+                    if (isSynchronRecording)
+                    {
+                        if (synchronRecordingKeys.Count > 0)
+                            ledColors[synchronRecordingKeys[^1]] = RecordingColorSecondary;
+
+                        synchronRecordingKeys.Add(e.Key);
+                    }
+                    else if (isAsyncRecording)
+                    {
+                        if (lastAsyncRecordingKey is not null)
+                            ledColors[lastAsyncRecordingKey.Value] = RecordingColorSecondary;
+
+                        lastAsyncRecordingKey = e.Key;
+                        asyncTaskCompletionSource?.SetResult(e.Key);
+                    }
+
+                    ledColors[e.Key] = RecordingColorPrimary;
+                }
+
+                return;
+            }
+
             var lastNode = currentNode;
             if (e.Key == HotKey && Mode == HotKeyMode.Active)
             {
@@ -225,11 +328,10 @@ namespace NoobSwarm
 
         }
 
-        private void ResetColor()
+        private void RestoreColor()
         {
             lightService.OverrideLightEffect = null;
         }
 
-       
     }
 }
