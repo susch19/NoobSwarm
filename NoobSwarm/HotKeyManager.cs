@@ -1,4 +1,8 @@
-﻿using System;
+﻿
+using NoobSwarm.Lights;
+using NoobSwarm.Lights.LightEffects;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -75,8 +79,9 @@ namespace NoobSwarm
                 if (!isExecuting && value)
                 {
                     // Start of hotkey
-                    lastColors = keyboard.GetLastSendColorsCopy();
+
                     SetHotKeysColoring();
+                    lightService.OverrideLightEffect = hotKeyEffect;
                 }
                 else if (isExecuting && !value)
                 {
@@ -100,22 +105,22 @@ namespace NoobSwarm
 
         private bool isExecuting;
         private LedKey hotKey;
-        private byte[] lastColors;
+        private LightService lightService;
+        private SingleKeysColorEffect hotKeyEffect;
         private KeyNode currentNode;
+        private Dictionary<LedKey, Color> ledColors = new();
 
-         public HotKeyManager(VulcanKeyboard keyboard)
+        public HotKeyManager(VulcanKeyboard keyboard, LightService lightService)
         {
             this.keyboard = keyboard;
-            keyboard.SetColor(Color.Blue);
-            keyboard.Update();
-
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
-
+            this.lightService = lightService;
+            hotKeyEffect = new SingleKeysColorEffect(ledColors, Color.Black);
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
 
-        public HotKeyManager(VulcanKeyboard keyboard, LedKey singleHotKey) : this(keyboard)
+        public HotKeyManager(VulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : this(keyboard, lightService)
         {
             HotKey = singleHotKey;
             Mode = HotKeyMode.Active;
@@ -140,7 +145,7 @@ namespace NoobSwarm
             if (e.Key == HotKey && Mode == HotKeyMode.Active)
             {
                 IsExecuting = e.IsPressed;
-                if(!e.IsPressed)
+                if (!e.IsPressed)
                     lastNode.KeineAhnungAction?.Invoke(keyboard);
 
                 // Always return so we dont try to get hotkey child which will not exist
@@ -149,7 +154,7 @@ namespace NoobSwarm
 
             if (!e.IsPressed)
                 return;
-            
+
             if (Mode == HotKeyMode.Passive && !isExecuting)
             {
                 if (!tree.Children.ContainsKey(e.Key))
@@ -177,8 +182,8 @@ namespace NoobSwarm
                 TestSinglePath(currentNode);
             }
         }
-        
-    
+
+
 
         private bool TestSinglePath(KeyNode node)
         {
@@ -194,40 +199,37 @@ namespace NoobSwarm
 
         private void SetHotKeysColoring()
         {
-            keyboard.SetColor(Color.Black);
+            ledColors.Clear();
 
             if (currentNode is not null)
             {
                 foreach (var item in currentNode.Children)
-                    keyboard.SetKeyColor(item.Key, HotKeyColor);
+                    ledColors[item.Key] = HotKeyColor;
 
                 if (Mode == HotKeyMode.Passive)
-                    keyboard.SetKeyColor(ExitKey, ExitColor);
+                    ledColors[ExitKey] = ExitColor;
 
                 if (currentNode.KeineAhnungAction is not null)
                 {
                     switch (Mode)
                     {
                         case HotKeyMode.Passive:
-                            keyboard.SetKeyColor(EarlyExitKey, EarlyExitColor);
+                            ledColors[EarlyExitKey] = EarlyExitColor;
                             break;
                         case HotKeyMode.Active:
-                            keyboard.SetKeyColor(HotKey, EarlyExitColor);
+                            ledColors[HotKey] = EarlyExitColor;
                             break;
                     }
                 }
             }
 
-            keyboard.Update();
         }
 
         private void ResetColor()
         {
-            if (lastColors is null || lastColors.Length == 0)
-                return;
-
-            keyboard.SetColors(lastColors);
-            keyboard.Update();
+            lightService.OverrideLightEffect = null;
         }
+
+       
     }
 }
