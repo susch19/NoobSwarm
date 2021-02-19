@@ -27,7 +27,7 @@ namespace NoobSwarm.Brushes
                 var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 var ptr = (byte*)bmpData.Scan0;
 
-                var partSize = bmp.Width / hsvColors.Length;
+                var partSize = (bmp.Width + (bmp.Width % hsvColors.Length)) / hsvColors.Length;
 
                 for (int i = 0; i < hsvColors.Length; i++)
                 {
@@ -47,10 +47,10 @@ namespace NoobSwarm.Brushes
                     float toShiftVal = 0f;
                     if (hsvColors[i].Value != hsvColors[localIP].Value)
                     {
-                         valIncrease = hsvColors[i].Value < hsvColors[localIP].Value;
-                         toShiftVal = valIncrease ? hsvColors[localIP].Value - hsvColors[i].Value : hsvColors[i].Value - hsvColors[localIP].Value;
+                        valIncrease = hsvColors[i].Value < hsvColors[localIP].Value;
+                        toShiftVal = valIncrease ? hsvColors[localIP].Value - hsvColors[i].Value : hsvColors[i].Value - hsvColors[localIP].Value;
                     }
-                  
+
 
                     var sizeChangePerPixelHue = toShiftHue / partSize;
                     var sizeChangePerPixelSat = toShiftSat / partSize;
