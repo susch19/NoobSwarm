@@ -37,10 +37,11 @@ namespace NoobSwarm
             var ls = new LightService(keyboard);
             var manager = new HotKeyManager(keyboard, ls, LedKey.FN_Key);
             ls.AddToEnd(new RGBWanderEffect());
-            ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
-            //ls.AddToEnd(new SolidColorEffect());
+            //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
+            ls.AddToEnd(new SolidColorEffect());
+            ls.AddToEnd(new PressedFadeOutEffect(Color.Red));
             //ls.AddToEnd(new RandomColorPerKeyEffect());
-            ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
+            //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
             ls.Speed = 5;
 
 
