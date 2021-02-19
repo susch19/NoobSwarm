@@ -29,11 +29,28 @@ namespace NoobSwarm.Brushes
 
                 var partSize = (bmp.Width + (bmp.Width % hsvColors.Length)) / hsvColors.Length;
 
+
                 for (int i = 0; i < hsvColors.Length; i++)
                 {
                     var localIP = (i + 1) % hsvColors.Length;
 
-                    var toShiftHue = hsvColors[i].Hue < hsvColors[localIP].Hue ? hsvColors[localIP].Hue - hsvColors[i].Hue : hsvColors[localIP].Hue + 360f - hsvColors[i].Hue;
+                    bool hueIncrease = hsvColors[i].Hue < hsvColors[localIP].Hue;
+                    var toShiftHue = 0f;
+                    if (!hueIncrease)
+                    {
+                        hueIncrease = 360 - hsvColors[i].Hue + hsvColors[localIP].Hue < 180;
+                        if (hueIncrease)
+                            toShiftHue = hsvColors[localIP].Hue + 360f - hsvColors[i].Hue;
+                        else
+                        {
+                            toShiftHue = hsvColors[i].Hue - hsvColors[localIP].Hue;
+                        }
+                    }
+                    else
+                    {
+                        toShiftHue = hsvColors[localIP].Hue - hsvColors[i].Hue;
+                    }
+
 
                     bool satIncrease = false;
                     float toShiftSat = 0f;
@@ -59,7 +76,7 @@ namespace NoobSwarm.Brushes
                     for (int pX = partSize * i; pX < partSize * (i + 1); pX++)
                     {
                         var c = HSV.ColorFromHSV(
-                            hsvColors[i].Hue + (sizeChangePerPixelHue * (pX % partSize))
+                            hsvColors[i].Hue + (sizeChangePerPixelHue * (pX % partSize) * (hueIncrease ? 1 : -1))
                             , hsvColors[i].Saturation + (sizeChangePerPixelSat * (pX % partSize) * (satIncrease ? 1 : -1))
                             , hsvColors[i].Value + (sizeChangePerPixelVal * (pX % partSize) * (valIncrease ? 1 : -1)));
                         for (int pY = 0; pY < bmp.Height; pY++)
@@ -102,7 +119,7 @@ namespace NoobSwarm.Brushes
 
         public static Color ColorFromHSV(double hue, double saturation, double value)
         {
-            hue = hue % 360;
+            hue = (hue + 360) % 360;
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
             double f = hue / 60 - Math.Floor(hue / 60);
 

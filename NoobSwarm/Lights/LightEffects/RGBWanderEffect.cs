@@ -23,8 +23,9 @@ namespace NoobSwarm.Lights.LightEffects
 
             bmpRect = new Rectangle(0, 0, ledBitmap.Width, ledBitmap.Height);
 
-            var hsvGradient = new HSVGradientBrush(new[] { Color.Blue,Color.Green, });
+            var hsvGradient = new HSVGradientBrush(new[] { Color.Red,Color.Green, Color.Blue});
             hsvGradient.Draw(ledBitmap);
+            //ledBitmap.Save("Test.bmp");
             this.ledKeyPoints = ledKeyPoints;
             Initialized = true;
         }
