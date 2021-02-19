@@ -89,16 +89,7 @@ namespace NoobSwarm.Lights
 
             var lines = File.ReadAllLines("Assets/LedPositions.txt").Select(x => x.AsMemory());
 
-            foreach (var line in lines)
-            {
-                var span = line.Span;
-                var firstIndex = span.IndexOf('|');
-                var lastIndex = span.LastIndexOf('|');
-                var x = int.Parse(span.Slice(0, firstIndex));
-                var y = int.Parse(span.Slice(firstIndex + 1, lastIndex - firstIndex - 1));
-                var ledKey = Enum.Parse<LedKey>(span.Slice(lastIndex + 1, span.Length - lastIndex - 1).ToString());
-                ledKeyPoints.Add(new LedKeyPoint(x, y, ledKey));
-            }
+            ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
             Speed = 1;
             updateTask = Task.Run(UpdateLoop);
         }
