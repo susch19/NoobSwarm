@@ -33,7 +33,7 @@ namespace NoobSwarm
                 {
                     {"fn", new List<string>{"chess","chemie" } },
                 };*/
-    class Program
+    static class Program
     {
         [DllImport("user32.dll", EntryPoint = "BlockInput")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -41,9 +41,6 @@ namespace NoobSwarm
 
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
 
-        private static Tree tree = new Tree();
-        private static KeyNode currentNode;
-        private static byte[] lastColorCopy;
         private static Random r = new Random();
 
         private static void OpenUrl(string url)
@@ -56,15 +53,11 @@ namespace NoobSwarm
 
         static void Main(string[] args)
         {
-
             AutoResetEvent are = new AutoResetEvent(true);
-
-
+            
             using var keyboard = VulcanKeyboard.Initialize();
 
             var manager = new HotKeyManager(keyboard, LedKey.FN_Key);
-
-
 
             manager.AddHotKey(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
             manager.AddHotKey(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
@@ -88,8 +81,6 @@ namespace NoobSwarm
                     vk.Update();
                 });
             }
-
-
 
             keyboard.VolumeKnobFxPressedReceived += (s, e) =>
             {
@@ -209,6 +200,9 @@ namespace NoobSwarm
                         CreateNewUrlHotKey(keyboard, manager, commands.Skip(1).ToList());
                         break;
 
+                    case "record":
+                        Console.WriteLine(string.Join(" -> ", manager.RecordKeys()));
+                        break;
                     default:
                         break;
                 }
