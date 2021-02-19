@@ -27,4 +27,14 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\LedPositions.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
