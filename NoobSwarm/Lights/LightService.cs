@@ -16,6 +16,7 @@ namespace NoobSwarm.Lights
 {
     public class LightService
     {
+
         public IReadOnlyList<LightEffect> LightLayers => lightLayers;
 
         public long ElapsedMilliseconds { get; private set; }
@@ -23,19 +24,8 @@ namespace NoobSwarm.Lights
         public bool Reversed { get; set; }
         public ushort Speed { get; set; }
 
-        public LightEffect? OverrideLightEffect
-        {
-            get => overrideLightEffect; set
-            {
-                if (value == overrideLightEffect)
-                    return;
-                overrideLightEffect = value;
-                //msSleep = 16; //Increase Target rate, so the light feels more responsive
+        public IReadOnlyList<LightEffect> OverrideLightEffects => overrideLightEffects;
 
-                //if (value is null)
-                //    TargetUpdateRate = TargetUpdateRate; //Reset Target rate and return to default mode
-            }
-        }
         public byte Brightness
         {
             get => brightness; set
@@ -64,13 +54,14 @@ namespace NoobSwarm.Lights
 
         private int msSleep;
         private int targetUpdateRate;
-        private LightEffect overrideLightEffect;
         private byte brightness;
         private bool updateWithBrightness;
         private readonly Task updateTask;
         private readonly VulcanKeyboard keyboard;
         private readonly List<LedKeyPoint> ledKeyPoints = new();
         private readonly List<LightEffect> lightLayers = new();
+        private readonly List<LightEffect> overrideLightEffects = new();
+        private readonly List<LedKey> pressedKeys = new();
 
 
         private readonly Dictionary<LedKey, Color> currentColors;
@@ -78,6 +69,7 @@ namespace NoobSwarm.Lights
         public LightService(VulcanKeyboard keyboard)
         {
             this.keyboard = keyboard;
+            keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             currentColors = new Dictionary<LedKey, Color>() { };
             foreach (var ledKey in Enum.GetValues<LedKey>().Distinct())
             {
@@ -86,8 +78,6 @@ namespace NoobSwarm.Lights
 
             }
             TargetUpdateRate = 30;
-
-            var lines = File.ReadAllLines("Assets/LedPositions.txt").Select(x => x.AsMemory());
 
             ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
             Speed = 1;
@@ -113,31 +103,61 @@ namespace NoobSwarm.Lights
             lightEffect.Init(LedKeyPoints);
         }
 
+        public void AddOverrideToEnd(LightEffect lightEffect)
+        {
+            overrideLightEffects.Add(lightEffect);
+            lightEffect.Init(LedKeyPoints);
+
+        }
+        public void AddOverrideToStart(LightEffect lightEffect)
+        {
+            overrideLightEffects.Insert(0, lightEffect);
+            lightEffect.Init(LedKeyPoints);
+        }
+
+        public void AddOverrideAtPosition(LightEffect lightEffect, int position)
+        {
+            overrideLightEffects.Insert(position, lightEffect);
+            lightEffect.Init(LedKeyPoints);
+        }
+
         public void RemoveLightEffect(LightEffect lightEffect)
         {
             lightLayers.Remove(lightEffect);
+        }
+        public void RemoveOverrideEffect(LightEffect lightEffect)
+        {
+            overrideLightEffects.Remove(lightEffect);
+        }
+
+        public void ClearOverrideEffects()
+        {
+            overrideLightEffects.Clear();
         }
 
         private void UpdateLoop()
         {
             Stopwatch sw = new Stopwatch();
-
+            
             while (true)
             {
                 sw.Restart();
-                var copy = OverrideLightEffect;
-                if (copy is null)
+                var pressed = pressedKeys.AsReadOnly();
+                if (OverrideLightEffects.Count == 0)
                 {
                     foreach (var lightEffect in LightLayers)
                     {
                         if (lightEffect.Initialized)
-                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds);
+                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
                     }
                 }
                 else
                 {
-                    if (copy.Initialized)
-                        copy.Next(currentColors, Counter, ElapsedMilliseconds);
+                    foreach (var lightEffect in OverrideLightEffects)
+                    {
+                        if (lightEffect.Initialized)
+                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
+                    }
                 }
                 keyboard.SetColors(currentColors);
                 if (updateWithBrightness)
@@ -163,6 +183,13 @@ namespace NoobSwarm.Lights
                 if (sw.ElapsedMilliseconds < msSleep)
                     Thread.Sleep(msSleep - (int)sw.ElapsedMilliseconds);
             }
+        }
+        private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
+        {
+            if (e.IsPressed)
+                pressedKeys.Add(e.Key);
+            else
+                pressedKeys.Remove(e.Key);
         }
     }
 }

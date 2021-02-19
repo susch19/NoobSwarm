@@ -10,7 +10,7 @@ namespace NoobSwarm.Lights.LightEffects
     {
         public bool Initialized { get; internal set; }
 
-        public abstract void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds);
+        public abstract void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, IReadOnlyList<LedKey> pressed);
 
         public abstract void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints);
     }

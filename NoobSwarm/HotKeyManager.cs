@@ -87,12 +87,12 @@ namespace NoobSwarm
                     // Start of hotkey
 
                     SetHotKeysColoring();
-                    lightService.OverrideLightEffect = hotKeyEffect;
+                    AddHotKeyEffect();
                 }
                 else if (isExecuting && !value)
                 {
                     // End of hotkey
-                    RestoreColor();
+                    RemoveHotKeyEffect();
                     currentNode = tree;
                 }
 
@@ -116,6 +116,7 @@ namespace NoobSwarm
         private LedKey hotKey;
         private LightService lightService;
         private SingleKeysColorEffect hotKeyEffect;
+        private BreathingColorPerKeyEffect breathingHotKeyEffect;
         private KeyNode currentNode;
         private Dictionary<LedKey, Color> ledColors = new();
 
@@ -136,7 +137,8 @@ namespace NoobSwarm
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
 
             this.lightService = lightService;
-            hotKeyEffect = new SingleKeysColorEffect(ledColors, Color.Black);
+            hotKeyEffect = new SingleKeysColorEffect(new (), Color.Black);
+            breathingHotKeyEffect = new BreathingColorPerKeyEffect(ledColors);
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
@@ -175,12 +177,12 @@ namespace NoobSwarm
         {
             synchronRecordingKeys.Clear();
             ledColors.Clear();
-            lightService.OverrideLightEffect = hotKeyEffect;
+            AddHotKeyEffect();
             isSynchronRecording = true;
 
             synchronRecordingResetEvent.WaitOne();
             isSynchronRecording = false;
-            lightService.OverrideLightEffect = null;
+            RemoveHotKeyEffect();
 
             return new ReadOnlyCollection<LedKey>(synchronRecordingKeys);
         }
@@ -197,7 +199,7 @@ namespace NoobSwarm
             asyncToken.Token.Register(() => asyncTaskCompletionSource?.TrySetCanceled());
 
             ledColors.Clear();
-            lightService.OverrideLightEffect = hotKeyEffect;
+            AddHotKeyEffect();
             isAsyncRecording = true;
             try
             {
@@ -210,7 +212,7 @@ namespace NoobSwarm
             finally
             {
                 isAsyncRecording = false;
-                lightService.OverrideLightEffect = null;
+                RemoveHotKeyEffect();
             }
         }
 
@@ -328,9 +330,15 @@ namespace NoobSwarm
 
         }
 
-        private void RestoreColor()
+        private void RemoveHotKeyEffect()
         {
-            lightService.OverrideLightEffect = null;
+            lightService.RemoveOverrideEffect(hotKeyEffect);
+            lightService.RemoveOverrideEffect(breathingHotKeyEffect);
+        }
+        private void AddHotKeyEffect()
+        {
+            lightService.AddOverrideToStart(hotKeyEffect);
+            lightService.AddOverrideToEnd(breathingHotKeyEffect);
         }
 
     }
