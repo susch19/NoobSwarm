@@ -15,16 +15,9 @@
 
   <ItemGroup>
     <PackageReference Include="Desktop.Robot" Version="1.0.0-alpha" />
+    <PackageReference Include="NoobSwarm.Hid" Version="0.1.0.7" />
+    <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.3" />
     <PackageReference Include="PInvoke.User32" Version="0.7.78" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="NoobSwarm.Hid">
-      <HintPath>..\..\NoobSwarm.HidSharp\NoobSwarm.Hid\bin\Debug\NoobSwarm.Hid.dll</HintPath>
-    </Reference>
-    <Reference Include="NoobSwarm.Vulcan">
-      <HintPath>..\..\NoobSwarm.Vulcan\NoobSwarm.Vulcan\bin\Debug\NoobSwarm.Vulcan.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -87,7 +87,7 @@ namespace NoobSwarm.Lights
             }
             TargetUpdateRate = 30;
 
-            var lines = File.ReadAllLines("LedPositions.txt").Select(x => x.AsMemory());
+            var lines = File.ReadAllLines("Assets/LedPositions.txt").Select(x => x.AsMemory());
 
             foreach (var line in lines)
             {

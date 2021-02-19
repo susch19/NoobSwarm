@@ -1,5 +1,8 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+
+using NoobSwarm.Lights;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +23,7 @@ namespace NoobSwarm.WPF.ViewModel
         public string RecordingText { get; set; }
 
         private VulcanKeyboard keyboard;
+        private LightService lightService;
         private HotKeyManager hotKey;
         private CancellationTokenSource recordingCts;
 
@@ -57,7 +61,8 @@ namespace NoobSwarm.WPF.ViewModel
         private void Loaded()
         {
             keyboard = VulcanKeyboard.Initialize();
-            hotKey = new(keyboard, LedKey.FN_Key);
+            lightService = new (keyboard);
+            hotKey = new(keyboard,lightService, LedKey.FN_Key);
         }
 
         private void Unloaded()
