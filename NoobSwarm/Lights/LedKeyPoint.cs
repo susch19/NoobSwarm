@@ -9,7 +9,7 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights
 {
-    public class LedKeyPoint
+    public struct LedKeyPoint
     {
 
 

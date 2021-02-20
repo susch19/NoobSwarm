@@ -13,7 +13,7 @@ namespace NoobSwarm.Lights.LightEffects
     public class PressedFadeInEffect : LightEffect
     {
 
-        private Dictionary<LedKey, byte> keyFades = new();
+        private Dictionary<LedKey, short> keyFades = new();
         private Color color;
         private byte biggest;
         public PressedFadeInEffect(Color c)
@@ -28,7 +28,7 @@ namespace NoobSwarm.Lights.LightEffects
             Initialized = true;
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             foreach (var press in pressed)
             {
@@ -36,8 +36,9 @@ namespace NoobSwarm.Lights.LightEffects
             }
             if (keyFades.Count > 0)
             {
+                var step = (byte)Math.Min(Math.Abs(stepInrease), 255);
 
-                Dictionary<LedKey, byte> toDelete = new();
+                Dictionary<LedKey, short>? toDelete = null;
 
                 foreach (var fade in keyFades)
                 {
@@ -45,19 +46,24 @@ namespace NoobSwarm.Lights.LightEffects
                     var g = color.G * fade.Value / 255;
                     var b = color.B * fade.Value / 255;
                     currentColors[fade.Key] = Color.FromArgb(color.A, color.R - r, color.G - g, color.B - b);
-                    keyFades[fade.Key]--;
-                    if (keyFades[fade.Key] == 0)
+                    keyFades[fade.Key] += step;
+                    if (keyFades[fade.Key] > 255)
+                    {
+                        if (toDelete is null)
+                            toDelete = new();
                         toDelete.Add(fade.Key, fade.Value);
+                    }
                 }
 
-                foreach (var key in toDelete)
-                {
-                    keyFades.Remove(key.Key);
-                }
+                if (toDelete is not null)
+                    foreach (var key in toDelete)
+                    {
+                        keyFades.Remove(key.Key);
+                    }
             }
         }
 
-        public override void Info(int counter, long elapsedMilliseconds, IReadOnlyCollection<LedKey> pressed)
+        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed)
         {
             foreach (var press in pressed)
             {

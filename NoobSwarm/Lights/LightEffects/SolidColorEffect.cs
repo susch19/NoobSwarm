@@ -26,7 +26,7 @@ namespace NoobSwarm.Lights.LightEffects
             Initialized = true;
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             if (SolidColor.HasValue)
                 foreach (var key in currentColors.Keys)

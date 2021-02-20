@@ -18,10 +18,10 @@ using Vulcan.NET;
 
 namespace NoobSwarm
 {
-    
+
     class Program
     {
-      
+
 
         private static void OpenUrl(string url)
         {
@@ -36,7 +36,11 @@ namespace NoobSwarm
             using var keyboard = VulcanKeyboard.Initialize();
             var ls = new LightService(keyboard);
             var manager = new HotKeyManager(keyboard, ls, LedKey.FN_Key);
-            ls.AddToEnd(new RGBWanderEffect());
+            ls.AddToEnd(new RGBCycleEffect());
+            ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString().Length == 1).ToList()) { Direction = Direction.Up });
+            ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'F' && x.ToString().Length is <= 3 and > 1).ToList()) { Direction = Direction.Right });
+            ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'D' && x.ToString().Length == 2).ToList()) { Direction = Direction.Left });
+            ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList()) { Direction = Direction.Down});
             //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
             ls.AddToEnd(new SolidColorEffect());
             ls.AddToEnd(new PressedFadeOutEffect(Color.Red));
@@ -105,7 +109,7 @@ namespace NoobSwarm
             }
 
         }
-        
+
         private static void CreateNewUrlHotKey(VulcanKeyboard keyboard, HotKeyManager manager, IReadOnlyList<string> parameters)
         {
             var keys = new List<LedKey>();

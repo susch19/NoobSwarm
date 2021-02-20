@@ -11,15 +11,14 @@ namespace NoobSwarm.Lights.LightEffects
 {
     public class RandomColorPerKeyEffect : LightEffect
     {
-        private Random random;
+        private Random random = new();
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
-            random = new Random();
             Initialized = true;
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             foreach (var key in currentColors.Keys)
             {

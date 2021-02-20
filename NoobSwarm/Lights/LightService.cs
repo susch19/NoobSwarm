@@ -147,10 +147,10 @@ namespace NoobSwarm.Lights
                 {
                     foreach (var lightEffect in LightLayers)
                     {
-                        if (lightEffect.Initialized)
+                        if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
-                            lightEffect.Info(Counter, ElapsedMilliseconds, pressed);
+                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, Speed, pressed);
+                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressed);
                         }
                     }
                 }
@@ -158,14 +158,14 @@ namespace NoobSwarm.Lights
                 {
                     foreach (var lightEffect in OverrideLightEffects)
                     {
-                        if (lightEffect.Initialized)
-                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, pressed);
+                        if (lightEffect.Initialized && lightEffect.Active)
+                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, Speed, pressed);
                     }
                     foreach (var lightEffect in LightLayers)
                     {
-                        if (lightEffect.Initialized)
+                        if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Info(Counter, ElapsedMilliseconds, pressed);
+                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressed);
                         }
                     }
                 }
@@ -181,10 +181,12 @@ namespace NoobSwarm.Lights
                 }
 
                 sw.Stop();
+
                 if (sw.ElapsedMilliseconds > msSleep)
                     ElapsedMilliseconds += sw.ElapsedMilliseconds;
                 else
                     ElapsedMilliseconds += msSleep - sw.ElapsedMilliseconds;
+
                 if (Reversed)
                     Counter -= Speed;
                 else
@@ -194,7 +196,7 @@ namespace NoobSwarm.Lights
                     Thread.Sleep(msSleep - (int)sw.ElapsedMilliseconds);
             }
         }
-        private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
+        private void Keyboard_KeyPressedReceived(object? sender, KeyPressedArgs e)
         {
             if (e.IsPressed)
                 pressedKeys.Add(e.Key);

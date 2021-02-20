@@ -126,8 +126,8 @@ namespace NoobSwarm
         private AutoResetEvent synchronRecordingResetEvent = new(false);
 
         private bool isAsyncRecording;
-        private TaskCompletionSource<LedKey> asyncTaskCompletionSource;
-        private CancellationTokenSource asyncToken;
+        private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
+        private CancellationTokenSource? asyncToken;
         private LedKey? lastAsyncRecordingKey;
 
         public HotKeyManager(VulcanKeyboard keyboard, LightService lightService)
@@ -137,13 +137,13 @@ namespace NoobSwarm
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
 
             this.lightService = lightService;
-            hotKeyEffect = new SingleKeysColorEffect(new (), Color.Black);
+            hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
             breathingHotKeyEffect = new BreathingColorPerKeyEffect(ledColors);
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
 
-        private void Keyboard_VolumeKnobTurnedReceived(object sender, VolumeKnDirectionArgs e)
+        private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
         {
             if (isSynchronRecording)
                 synchronRecordingResetEvent.Set();
@@ -216,7 +216,7 @@ namespace NoobSwarm
             }
         }
 
-        private void Keyboard_KeyPressedReceived(object sender, KeyPressedArgs e)
+        private void Keyboard_KeyPressedReceived(object? sender, KeyPressedArgs e)
         {
             if (isSynchronRecording || isAsyncRecording)
             {
@@ -294,7 +294,7 @@ namespace NoobSwarm
         {
             if (node?.HasSinglePath ?? false)
             {
-                Task.Run(() => node.SinglePathChild.KeineAhnungAction?.Invoke(keyboard));
+                Task.Run(() => node.SinglePathChild!.KeineAhnungAction?.Invoke(keyboard));
                 IsExecuting = false;
                 return true;
             }
