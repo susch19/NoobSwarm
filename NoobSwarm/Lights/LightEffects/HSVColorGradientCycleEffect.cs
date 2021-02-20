@@ -46,7 +46,7 @@ namespace NoobSwarm.Lights.LightEffects
 
             var hsvGradient = new HSVGradientBrush(GradientColors);
             hsvGradient.Draw(ledBitmap);
-            ledBitmap.Save($"Cycle_{string.Join('_', GradientColors)}.bmp");
+            //ledBitmap.Save($"Cycle_{string.Join('_', GradientColors)}.bmp");
             base.Init(ledKeyPoints);
         }
 

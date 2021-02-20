@@ -48,7 +48,7 @@ namespace NoobSwarm.Lights.LightEffects
 
             var hsvGradient = new HSVGradientBrush(GradientColors);
             hsvGradient.Draw(ledBitmap);
-            ledBitmap.Save($"Wander_{string.Join('_', GradientColors)}.bmp");
+            //ledBitmap.Save($"Wander_{string.Join('_', GradientColors)}.bmp");
 
             base.Init(ledKeyPoints);
         }
