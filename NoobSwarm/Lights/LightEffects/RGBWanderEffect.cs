@@ -71,7 +71,7 @@ namespace NoobSwarm.Lights.LightEffects
                     foreach (var item in ledKeyPoints)
                     {
                         if (currentColors.ContainsKey(item.LedKey))
-                            SetKeyColor(currentColors, counter, xMulti, yMulti, item);
+                            SetKeyColor(currentColors, (int)(counter * Speed), xMulti, yMulti, item);
                     }
                 }
                 else
@@ -82,7 +82,7 @@ namespace NoobSwarm.Lights.LightEffects
                             continue;
 
                         if (currentColors.ContainsKey(item.LedKey))
-                            SetKeyColor(currentColors, counter, xMulti, yMulti, item);
+                            SetKeyColor(currentColors, (int)(counter * Speed), xMulti, yMulti, item);
                     }
                 }
             }

@@ -45,14 +45,14 @@ namespace NoobSwarm.Lights.LightEffects
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             
-            var step = counter % (biggest * 2);
+            var step = (int)(counter*Speed) % (biggest * 2);
             bool bigger = step > biggest;
-
 
             if (bigger)
             {
                 step -= biggest;
             }
+
             var r = Color.R * step / biggest;
             var g = Color.G * step / biggest;
             var b = Color.B * step / biggest;

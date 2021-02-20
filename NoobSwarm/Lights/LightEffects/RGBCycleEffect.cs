@@ -44,7 +44,7 @@ namespace NoobSwarm.Lights.LightEffects
         {
             if (ledKeyPoints is not null && ledBitmap is not null)
             {
-                var col = ledBitmap.GetPixel((counter / 5) % 360, 0);
+                var col = ledBitmap.GetPixel(((int)(counter * Speed) / stepInrease) % 360, 0);
                 if (LedKeys is null)
                     foreach (var item in ledKeyPoints)
                     {

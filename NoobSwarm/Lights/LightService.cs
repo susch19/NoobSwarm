@@ -141,17 +141,21 @@ namespace NoobSwarm.Lights
             Thread.CurrentThread.Name = "LightService_UpdateLoop";
             List<LedKey> pressedCopy = new();
             Dictionary<LedKey, Color> currentColorsCopy = new();
+            List<LightEffect> overrideLayersCopy = new();
+            List<LightEffect> lightLayersCopy = new();
             while (true)
             {
                 sw.Restart();
                 pressedCopy.AddRange(pressedKeys);
                 foreach (var copy in currentColors)
                     currentColorsCopy[copy.Key] = copy.Value;
+                overrideLayersCopy.AddRange(OverrideLightEffects);
+                lightLayersCopy.AddRange(LightLayers);
 
                 var pressed = pressedKeys.AsReadOnly();
-                if (OverrideLightEffects.Count == 0)
+                if (overrideLayersCopy.Count == 0)
                 {
-                    foreach (var lightEffect in LightLayers)
+                    foreach (var lightEffect in lightLayersCopy)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
@@ -175,7 +179,7 @@ namespace NoobSwarm.Lights
                 }
                 else
                 {
-                    foreach (var lightEffect in OverrideLightEffects)
+                    foreach (var lightEffect in overrideLayersCopy)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
@@ -188,7 +192,7 @@ namespace NoobSwarm.Lights
                             }
                         }
                     }
-                    foreach (var lightEffect in LightLayers)
+                    foreach (var lightEffect in lightLayersCopy)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
@@ -223,6 +227,8 @@ namespace NoobSwarm.Lights
                     pressedKeys.Remove(toRemove);
                 }
                 pressedKeysToRemove.Clear();
+                overrideLayersCopy.Clear();
+                lightLayersCopy.Clear();
 
                 sw.Stop();
 

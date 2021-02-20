@@ -36,12 +36,12 @@ namespace NoobSwarm.Lights.LightEffects
             if (keyFades.Count > 0)
             {
                 Dictionary<LedKey, short>? toDelete = null;
-                var step = (byte)Math.Min(stepInrease, (ushort)255);
+                var step = (byte)Math.Min((stepInrease * Speed), 255);
 
                 foreach (var fade in keyFades)
                 {
                     if (FasterPreKeyPress)
-                        step = (byte)Math.Min(stepInrease + fade.Value.multiplier, 255);
+                        step = (byte)Math.Min((stepInrease * Speed) + fade.Value.multiplier, 255);
 
                     var r = color.R * fade.Value.value / 255;
                     var g = color.G * fade.Value.value / 255;

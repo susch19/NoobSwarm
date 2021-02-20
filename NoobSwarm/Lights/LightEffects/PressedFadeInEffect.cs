@@ -36,7 +36,7 @@ namespace NoobSwarm.Lights.LightEffects
             }
             if (keyFades.Count > 0)
             {
-                var step = (byte)Math.Min(Math.Abs(stepInrease), 255);
+                var step = (byte)Math.Min((stepInrease * Speed), 255);
 
                 Dictionary<LedKey, short>? toDelete = null;
 
