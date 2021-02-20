@@ -85,7 +85,7 @@ namespace NoobSwarm.WPF.ViewModel
                     }
                 };
 
-                ServiceLocator.Current.GetInstance<LightService>().AddToEnd(new RGBWanderEffect());
+                ServiceLocator.Current.GetInstance<LightService>().AddToEnd(new HSVColorWanderEffect());
                 var manager = ServiceLocator.Current.GetInstance<HotKeyManager>();
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
