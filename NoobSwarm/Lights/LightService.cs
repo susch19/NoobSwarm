@@ -84,7 +84,6 @@ namespace NoobSwarm.Lights
             updateTask = Task.Run(UpdateLoop);
         }
 
-
         public void AddToEnd(LightEffect lightEffect)
         {
             lightLayers.Add(lightEffect);
@@ -138,10 +137,16 @@ namespace NoobSwarm.Lights
         private void UpdateLoop()
         {
             Stopwatch sw = new Stopwatch();
-            
+            Thread.CurrentThread.Name = "LightService_UpdateLoop";
+            List<LedKey> pressedCopy = new();
+            Dictionary<LedKey, Color> currentColorsCopy = new();
             while (true)
             {
                 sw.Restart();
+                pressedCopy.AddRange(pressedKeys);
+                foreach (var copy in currentColors)
+                    currentColorsCopy[copy.Key] = copy.Value;
+
                 var pressed = pressedKeys.AsReadOnly();
                 if (OverrideLightEffects.Count == 0)
                 {
@@ -149,8 +154,8 @@ namespace NoobSwarm.Lights
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, Speed, pressed);
-                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressed);
+                            lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
                         }
                     }
                 }
@@ -159,17 +164,17 @@ namespace NoobSwarm.Lights
                     foreach (var lightEffect in OverrideLightEffects)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
-                            lightEffect.Next(currentColors, Counter, ElapsedMilliseconds, Speed, pressed);
+                            lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
                     }
                     foreach (var lightEffect in LightLayers)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressed);
+                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
                         }
                     }
                 }
-                keyboard.SetColors(currentColors);
+                keyboard.SetColors(currentColorsCopy);
                 if (updateWithBrightness)
                 {
                     updateWithBrightness = false;
@@ -180,6 +185,11 @@ namespace NoobSwarm.Lights
                     keyboard.Update();
                 }
 
+                foreach (var copy in currentColorsCopy)
+                    currentColors[copy.Key] = copy.Value;
+
+                pressedCopy.Clear();
+                currentColorsCopy.Clear();
                 sw.Stop();
 
                 if (sw.ElapsedMilliseconds > msSleep)

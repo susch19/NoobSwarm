@@ -11,14 +11,16 @@ namespace NoobSwarm.Lights.LightEffects
 {
     public class PressedFadeOutEffect : LightEffect
     {
+        public bool FasterPreKeyPress { get; set; }
 
-        private Dictionary<LedKey, short> keyFades = new();
+        private Dictionary<LedKey, (short value, byte multiplier)> keyFades = new();
         private Color color;
         private byte biggest;
-        public PressedFadeOutEffect(Color c)
+
+        public PressedFadeOutEffect(Color c, bool fasterPreKeyPress = false)
         {
             color = c;
-
+            FasterPreKeyPress = fasterPreKeyPress;
             biggest = Math.Max(Math.Max(color.R, color.G), color.B);
         }
 
@@ -29,42 +31,60 @@ namespace NoobSwarm.Lights.LightEffects
 
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
-            foreach (var press in pressed)
-            {
-                keyFades[press] = biggest;
-            }
+            UpdateKeyPressed(pressed);
+
             if (keyFades.Count > 0)
             {
-                var step = (byte)Math.Min(Math.Abs(stepInrease), 255);
                 Dictionary<LedKey, short>? toDelete = null;
+                var step = (byte)Math.Min(stepInrease, (ushort)255);
 
                 foreach (var fade in keyFades)
                 {
-                    var r = color.R * fade.Value / 255;
-                    var g = color.G * fade.Value / 255;
-                    var b = color.B * fade.Value / 255;
+                    if (FasterPreKeyPress)
+                        step = (byte)Math.Min(stepInrease + fade.Value.multiplier, 255);
+
+                    var r = color.R * fade.Value.value / 255;
+                    var g = color.G * fade.Value.value / 255;
+                    var b = color.B * fade.Value.value / 255;
+
                     currentColors[fade.Key] = Color.FromArgb(color.A, r, g, b);
-                    keyFades[fade.Key] -= step;
-                    if (keyFades[fade.Key] <= 0)
+                    keyFades[fade.Key] = ((short)(keyFades[fade.Key].value - step), 0);
+
+                    if (keyFades[fade.Key].value <= 0)
                     {
-                        if (toDelete is null)
-                            toDelete = new();
-                        toDelete.Add(fade.Key, fade.Value);
+                        toDelete ??= new();
+                        toDelete.Add(fade.Key, fade.Value.value);
                     }
                 }
 
                 if (toDelete is not null)
+                {
                     foreach (var key in toDelete)
-                    {
                         keyFades.Remove(key.Key);
-                    }
+                }
             }
         }
         public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed)
         {
+            UpdateKeyPressed(pressed);
+        }
+
+        private void UpdateKeyPressed(IReadOnlyCollection<LedKey> pressed)
+        {
             foreach (var press in pressed)
             {
-                keyFades[press] = biggest;
+                keyFades[press] = (biggest, 0);
+                if (FasterPreKeyPress)
+                {
+                    for (int i = 0; i < keyFades.Count; i++)
+                    {
+                        var other = keyFades.ElementAt(i);
+                        if (other.Key == press)
+                            continue;
+
+                        keyFades[other.Key] = (other.Value.value, (byte)Math.Min(255, other.Value.multiplier + 10));
+                    }
+                }
             }
         }
     }

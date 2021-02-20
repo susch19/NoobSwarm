@@ -43,7 +43,7 @@ namespace NoobSwarm
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList()) { Direction = Direction.Down});
             //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
             ls.AddToEnd(new SolidColorEffect());
-            ls.AddToEnd(new PressedFadeOutEffect(Color.Red));
+            ls.AddToEnd(new PressedFadeOutEffect(Color.Blue, true));
             //ls.AddToEnd(new RandomColorPerKeyEffect());
             //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
             ls.Speed = 5;
