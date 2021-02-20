@@ -37,11 +37,6 @@ namespace NoobSwarm.Lights.LightEffects
 
 
 
-        public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
-        {
-            Initialized = true;
-        }
-
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             
@@ -60,9 +55,9 @@ namespace NoobSwarm.Lights.LightEffects
 
             if (bigger)
             {
-                r = (byte)(r* brightnessPercent);
-                g = (byte)(g* brightnessPercent);
-                b = (byte)(b* brightnessPercent);
+                r = (byte)(r* BrightnessPercent);
+                g = (byte)(g* BrightnessPercent);
+                b = (byte)(b* BrightnessPercent);
                 foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
                     currentColors[key] = Color.FromArgb(Color.A, r, g, b);
@@ -70,9 +65,9 @@ namespace NoobSwarm.Lights.LightEffects
             }
             else
             {
-                var rDown = (byte)((Color.R - r) * brightnessPercent);
-                var gDown = (byte)((Color.G - g) * brightnessPercent);
-                var bDown = (byte)((Color.B - b) * brightnessPercent);
+                var rDown = (byte)((Color.R - r) * BrightnessPercent);
+                var gDown = (byte)((Color.G - g) * BrightnessPercent);
+                var bDown = (byte)((Color.B - b) * BrightnessPercent);
                 foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
                     currentColors[key] = Color.FromArgb(Color.A, rDown, gDown, bDown);

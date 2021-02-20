@@ -28,10 +28,6 @@ namespace NoobSwarm.Lights.LightEffects
 
         }
 
-        public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
-        {
-        }
-
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
             if (NonSetKeyColor.HasValue)
@@ -40,7 +36,7 @@ namespace NoobSwarm.Lights.LightEffects
                 {
                     if (!KeyColors.TryGetValue(col.Key, out var color))
                         color = NonSetKeyColor.Value;
-                    currentColors[col.Key] = Color.FromArgb(color.A, (byte)(color.R * brightnessPercent), (byte)(color.G * brightnessPercent), (byte)(color.B * brightnessPercent)); 
+                    currentColors[col.Key] = Color.FromArgb(color.A, (byte)(color.R * BrightnessPercent), (byte)(color.G * BrightnessPercent), (byte)(color.B * BrightnessPercent)); 
                 }
             }
             else
@@ -48,7 +44,7 @@ namespace NoobSwarm.Lights.LightEffects
                 foreach (var keyColor in KeyColors)
                 {
                     if (currentColors.ContainsKey(keyColor.Key))
-                        currentColors[keyColor.Key] = Color.FromArgb(keyColor.Value.A, (byte)(keyColor.Value.R * brightnessPercent), (byte)(keyColor.Value.G * brightnessPercent), (byte)(keyColor.Value.B * brightnessPercent));
+                        currentColors[keyColor.Key] = Color.FromArgb(keyColor.Value.A, (byte)(keyColor.Value.R * BrightnessPercent), (byte)(keyColor.Value.G * BrightnessPercent), (byte)(keyColor.Value.B * BrightnessPercent));
                 }
             }
 

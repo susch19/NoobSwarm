@@ -11,20 +11,31 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class RGBCycleEffect : PerKeyLightEffect
+    public class HSVColorGradientCycleEffect : PerKeyLightEffect
     {
+        public IReadOnlyList<Color> GradientColors { get; init; }
+
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
-        private IReadOnlyList<LedKeyPoint>? ledKeyPoints;
 
-        public RGBCycleEffect()
+        public HSVColorGradientCycleEffect()
         {
             LedKeys = null;
+            GradientColors = new List<Color> { Color.Red, Color.FromArgb(0,0xff,0), Color.Blue };
         }
 
-        public RGBCycleEffect(List<LedKey> keys)
+        public HSVColorGradientCycleEffect(List<LedKey> keys) : this()
         {
             LedKeys = keys;
+        }
+        public HSVColorGradientCycleEffect(IReadOnlyList<Color> gradientColors) : this()
+        {
+            GradientColors = gradientColors;
+        }
+        public HSVColorGradientCycleEffect(List<LedKey> keys, IReadOnlyList<Color> gradientColors)
+        {
+            LedKeys = keys;
+            GradientColors = gradientColors;
         }
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
@@ -33,27 +44,26 @@ namespace NoobSwarm.Lights.LightEffects
 
             bmpRect = new Rectangle(0, 0, ledBitmap.Width, ledBitmap.Height);
 
-            var hsvGradient = new HSVGradientBrush(new[] { Color.Red, Color.Green, Color.Blue });
+            var hsvGradient = new HSVGradientBrush(GradientColors);
             hsvGradient.Draw(ledBitmap);
-            //ledBitmap.Save("Cycle.bmp");
-            this.ledKeyPoints = ledKeyPoints;
-            Initialized = true;
+            ledBitmap.Save($"Cycle_{string.Join('_', GradientColors)}.bmp");
+            base.Init(ledKeyPoints);
         }
 
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
-            if (ledKeyPoints is not null && ledBitmap is not null)
+            if (LedKeyPoints is not null && ledBitmap is not null)
             {
                 var col = ledBitmap.GetPixel(((int)(counter * Speed) / stepInrease) % 360, 0);
-                col = Color.FromArgb(col.A, (byte)(col.R * brightnessPercent), (byte)(col.G * brightnessPercent), (byte)(col.B * brightnessPercent));
+                col = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
                 if (LedKeys is null)
-                    foreach (var item in ledKeyPoints)
+                    foreach (var item in LedKeyPoints)
                     {
                         if (currentColors.ContainsKey(item.LedKey))
                             currentColors[item.LedKey] = col;
                     }
                 else
-                    foreach (var item in ledKeyPoints)
+                    foreach (var item in LedKeyPoints)
                     {
                         if (LedKeys.Contains(item.LedKey) && currentColors.ContainsKey(item.LedKey))
                                 currentColors[item.LedKey] = col;

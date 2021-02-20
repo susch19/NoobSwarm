@@ -11,23 +11,33 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class RGBWanderEffect : PerKeyLightEffect
+    public class HSVColorWanderEffect : PerKeyLightEffect
     {
         public Direction Direction { get; set; }
+        public IReadOnlyList<Color> GradientColors { get; init; }
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
-        private IReadOnlyList<LedKeyPoint>? ledKeyPoints;
 
 
-        public RGBWanderEffect()
+        public HSVColorWanderEffect()
         {
             LedKeys = null;
+            GradientColors = new List<Color> { Color.Red, Color.FromArgb(0, 0xff, 0), Color.Blue };
         }
 
-        public RGBWanderEffect(List<LedKey> keys)
+        public HSVColorWanderEffect(List<LedKey> keys) : this()
         {
             LedKeys = keys;
+        }
+        public HSVColorWanderEffect(IReadOnlyList<Color> gradientColors) : this()
+        {
+            GradientColors = gradientColors;
+        }
+        public HSVColorWanderEffect(List<LedKey> keys, IReadOnlyList<Color> gradientColors)
+        {
+            LedKeys = keys;
+            GradientColors = gradientColors;
         }
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
@@ -36,16 +46,16 @@ namespace NoobSwarm.Lights.LightEffects
 
             bmpRect = new Rectangle(0, 0, ledBitmap.Width, ledBitmap.Height);
 
-            var hsvGradient = new HSVGradientBrush(new[] { Color.Red, Color.Green, Color.Blue });
+            var hsvGradient = new HSVGradientBrush(GradientColors);
             hsvGradient.Draw(ledBitmap);
-            //ledBitmap.Save("Test.bmp");
-            this.ledKeyPoints = ledKeyPoints;
-            Initialized = true;
+            ledBitmap.Save($"Wander_{string.Join('_', GradientColors)}.bmp");
+
+            base.Init(ledKeyPoints);
         }
 
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
-            if (ledKeyPoints is not null && ledBitmap is not null)
+            if (LedKeyPoints is not null && ledBitmap is not null)
             {
                 var xMulti = 1;
                 var yMulti = 0;
@@ -68,7 +78,7 @@ namespace NoobSwarm.Lights.LightEffects
 
                 if (LedKeys is null)
                 {
-                    foreach (var item in ledKeyPoints)
+                    foreach (var item in LedKeyPoints)
                     {
                         if (currentColors.ContainsKey(item.LedKey))
                             SetKeyColor(currentColors, (int)(counter * Speed), xMulti, yMulti, item);
@@ -76,7 +86,7 @@ namespace NoobSwarm.Lights.LightEffects
                 }
                 else
                 {
-                    foreach (var item in ledKeyPoints)
+                    foreach (var item in LedKeyPoints)
                     {
                         if (!LedKeys.Contains(item.LedKey))
                             continue;
@@ -90,19 +100,18 @@ namespace NoobSwarm.Lights.LightEffects
 
         private void SetKeyColor(Dictionary<LedKey, Color> currentColors, int counter, int xMulti, int yMulti, LedKeyPoint item)
         {
-            if (Brightness != 255) 
-                ;
+
             if (xMulti != 0)
             {
                 var xPos = (((item.X + (counter * xMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
                 var col = ledBitmap.GetPixel(xPos, 0);
-                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * brightnessPercent), (byte)(col.G * brightnessPercent), (byte)(col.B * brightnessPercent));
+                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
             }
             else if (yMulti != 0)
             {
                 var yPos = (((item.Y + (counter * yMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
                 var col = ledBitmap.GetPixel(yPos, 0);
-                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * brightnessPercent), (byte)(col.G * brightnessPercent), (byte)(col.B * brightnessPercent));
+                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
             }
         }
     }

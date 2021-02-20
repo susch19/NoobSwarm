@@ -13,9 +13,9 @@ namespace NoobSwarm.Brushes
     {
         private HSV[] hsvColors;
 
-        public HSVGradientBrush(Color[] colors)
+        public HSVGradientBrush(IReadOnlyCollection<Color> colors)
         {
-            if (colors.Length < 2)
+            if (colors.Count < 2)
                 throw new ArgumentException();
             hsvColors = colors.Select(x => new HSV(x)).ToArray();
         }

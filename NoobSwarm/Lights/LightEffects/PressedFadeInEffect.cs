@@ -23,10 +23,6 @@ namespace NoobSwarm.Lights.LightEffects
             biggest = Math.Max(Math.Max(color.R, color.G), color.B);
         }
 
-        public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
-        {
-            Initialized = true;
-        }
 
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
@@ -45,7 +41,7 @@ namespace NoobSwarm.Lights.LightEffects
                     var r = color.R * fade.Value / 255;
                     var g = color.G * fade.Value / 255;
                     var b = color.B * fade.Value / 255;
-                    currentColors[fade.Key] = Color.FromArgb(color.A, (byte)((color.R - r)*brightnessPercent), (byte)((color.G - g) * brightnessPercent), (byte)((color.B - b)*brightnessPercent));
+                    currentColors[fade.Key] = Color.FromArgb(color.A, (byte)((color.R - r)*BrightnessPercent), (byte)((color.G - g) * BrightnessPercent), (byte)((color.B - b)*BrightnessPercent));
                     keyFades[fade.Key] += step;
                     if (keyFades[fade.Key] > 255)
                     {
