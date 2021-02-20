@@ -9,10 +9,8 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class BreathingColorEffect : LightEffect
+    public class BreathingColorEffect : PerKeyLightEffect
     {
-        public List<LedKey> KeysForBreathing { get; private set; }
-        public bool AllKeys { get; set; }
         public Color Color
         {
             get => color; set
@@ -22,21 +20,22 @@ namespace NoobSwarm.Lights.LightEffects
                 biggest = Math.Max(Math.Max(Color.R, Color.G), Color.B);
             }
         }
+
         private byte biggest;
         private Color color;
 
         public BreathingColorEffect(Color color)
         {
-            KeysForBreathing = new List<LedKey>();
-            AllKeys = true;
+            LedKeys = null;
             Color = color;
         }
         public BreathingColorEffect(List<LedKey> breathingKeys, Color color)
         {
-            KeysForBreathing = breathingKeys;
-            AllKeys = false;
+            LedKeys = breathingKeys;
             Color = color;
         }
+
+
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
@@ -45,6 +44,7 @@ namespace NoobSwarm.Lights.LightEffects
 
         public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
         {
+            
             var step = counter % (biggest * 2);
             bool bigger = step > biggest;
 
@@ -56,17 +56,19 @@ namespace NoobSwarm.Lights.LightEffects
             var r = Color.R * step / biggest;
             var g = Color.G * step / biggest;
             var b = Color.B * step / biggest;
+
+
             if (bigger)
             {
 
-                foreach (var key in (AllKeys ? currentColors.Keys : (IReadOnlyCollection<LedKey>)KeysForBreathing))
+                foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
                     currentColors[key] = Color.FromArgb(Color.A, r, g, b);
                 }
             }
             else
             {
-                foreach (var key in (AllKeys ? currentColors.Keys : (IReadOnlyCollection<LedKey>)KeysForBreathing))
+                foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
                     currentColors[key] = Color.FromArgb(Color.A, Color.R - r, Color.G - g, Color.B - b);
                 }

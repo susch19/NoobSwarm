@@ -154,8 +154,21 @@ namespace NoobSwarm.Lights
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
-                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            try
+                            {
+                                lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            }
+                            catch
+                            {
+                            }
+                            try
+                            {
+                                lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            }
+                            catch
+                            {
+                            }
+                           
                         }
                     }
                 }
@@ -164,13 +177,27 @@ namespace NoobSwarm.Lights
                     foreach (var lightEffect in OverrideLightEffects)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
-                            lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                        {
+                            try
+                            {
+                                lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            }
+                            catch 
+                            {
+                            }
+                        }
                     }
                     foreach (var lightEffect in LightLayers)
                     {
                         if (lightEffect.Initialized && lightEffect.Active)
                         {
-                            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            try
+                            {
+                                lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            }
+                            catch
+                            {
+                            }
                         }
                     }
                 }

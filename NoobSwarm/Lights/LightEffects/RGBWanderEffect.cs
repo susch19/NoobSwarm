@@ -11,24 +11,23 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class RGBWanderEffect : LightEffect
+    public class RGBWanderEffect : PerKeyLightEffect
     {
         public Direction Direction { get; set; }
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
         private IReadOnlyList<LedKeyPoint>? ledKeyPoints;
-        private List<LedKey>? ledKeys;
 
 
         public RGBWanderEffect()
         {
-            ledKeys = null;
+            LedKeys = null;
         }
 
         public RGBWanderEffect(List<LedKey> keys)
         {
-            ledKeys = keys;
+            LedKeys = keys;
         }
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
@@ -67,21 +66,23 @@ namespace NoobSwarm.Lights.LightEffects
                         break;
                 }
 
-                if (ledKeys is null)
+                if (LedKeys is null)
                 {
                     foreach (var item in ledKeyPoints)
                     {
-                        SetKeyColor(currentColors, counter, xMulti, yMulti, item);
+                        if (currentColors.ContainsKey(item.LedKey))
+                            SetKeyColor(currentColors, counter, xMulti, yMulti, item);
                     }
                 }
                 else
                 {
                     foreach (var item in ledKeyPoints)
                     {
-                        if (!ledKeys.Contains(item.LedKey))
+                        if (!LedKeys.Contains(item.LedKey))
                             continue;
 
-                        SetKeyColor(currentColors, counter, xMulti, yMulti, item);
+                        if (currentColors.ContainsKey(item.LedKey))
+                            SetKeyColor(currentColors, counter, xMulti, yMulti, item);
                     }
                 }
             }

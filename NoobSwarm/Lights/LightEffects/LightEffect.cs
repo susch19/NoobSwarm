@@ -18,4 +18,8 @@ namespace NoobSwarm.Lights.LightEffects
 
         public virtual void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed) { }
     }
+    public abstract class PerKeyLightEffect : LightEffect
+    {
+        public List<LedKey>? LedKeys { get; set; }
+    }
 }

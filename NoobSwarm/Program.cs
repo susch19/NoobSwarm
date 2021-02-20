@@ -40,7 +40,7 @@ namespace NoobSwarm
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString().Length == 1).ToList()) { Direction = Direction.Up });
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'F' && x.ToString().Length is <= 3 and > 1).ToList()) { Direction = Direction.Right });
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'D' && x.ToString().Length == 2).ToList()) { Direction = Direction.Left });
-            ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList()) { Direction = Direction.Down});
+            ls.AddToEnd(new BreathingColorPerKeyEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList(), new RGBWanderEffect()));
             //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
             ls.AddToEnd(new SolidColorEffect());
             ls.AddToEnd(new PressedFadeOutEffect(Color.Blue, true));

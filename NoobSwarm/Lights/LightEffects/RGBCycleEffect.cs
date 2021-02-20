@@ -11,21 +11,20 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class RGBCycleEffect : LightEffect
+    public class RGBCycleEffect : PerKeyLightEffect
     {
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
         private IReadOnlyList<LedKeyPoint>? ledKeyPoints;
 
-        private List<LedKey>? ledKeys;
         public RGBCycleEffect()
         {
-            ledKeys = null;
+            LedKeys = null;
         }
 
         public RGBCycleEffect(List<LedKey> keys)
         {
-            ledKeys = keys;
+            LedKeys = keys;
         }
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
@@ -46,16 +45,17 @@ namespace NoobSwarm.Lights.LightEffects
             if (ledKeyPoints is not null && ledBitmap is not null)
             {
                 var col = ledBitmap.GetPixel((counter / 5) % 360, 0);
-                if (ledKeys is null)
+                if (LedKeys is null)
                     foreach (var item in ledKeyPoints)
                     {
-                        currentColors[item.LedKey] = col;
+                        if (currentColors.ContainsKey(item.LedKey))
+                            currentColors[item.LedKey] = col;
                     }
                 else
                     foreach (var item in ledKeyPoints)
                     {
-                        if (ledKeys.Contains(item.LedKey))
-                            currentColors[item.LedKey] = col;
+                        if (LedKeys.Contains(item.LedKey) && currentColors.ContainsKey(item.LedKey))
+                                currentColors[item.LedKey] = col;
                     }
             }
         }
