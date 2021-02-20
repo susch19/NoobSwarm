@@ -138,7 +138,7 @@ namespace NoobSwarm
 
             this.lightService = lightService;
             hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
-            breathingHotKeyEffect = new BreathingColorPerKeyEffect(ledColors);
+            breathingHotKeyEffect = new BreathingColorPerKeyEffect(ledColors) { Speed = 20 };
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
