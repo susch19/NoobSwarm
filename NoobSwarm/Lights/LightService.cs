@@ -56,7 +56,6 @@ namespace NoobSwarm.Lights
         private int targetUpdateRate;
         private byte brightness;
         private bool updateWithBrightness;
-        private readonly Task updateTask;
         private readonly VulcanKeyboard keyboard;
         private readonly List<LedKeyPoint> ledKeyPoints = new();
         private readonly List<LightEffect> lightLayers = new();
@@ -82,7 +81,6 @@ namespace NoobSwarm.Lights
 
             ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
             Speed = 1;
-            updateTask = Task.Run(UpdateLoop);
         }
 
         public void AddToEnd(LightEffect lightEffect)
@@ -135,7 +133,7 @@ namespace NoobSwarm.Lights
             overrideLightEffects.Clear();
         }
 
-        private void UpdateLoop()
+        public void UpdateLoop()
         {
             Stopwatch sw = new Stopwatch();
             Thread.CurrentThread.Name = "LightService_UpdateLoop";

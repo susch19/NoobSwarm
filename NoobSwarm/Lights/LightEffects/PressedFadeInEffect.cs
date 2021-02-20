@@ -10,17 +10,38 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class PressedFadeInEffect : LightEffect
+    public class PressedFadeInEffect : PerKeyLightEffect
     {
 
         private Dictionary<LedKey, short> keyFades = new();
         private Color color;
+        private PerKeyLightEffect? effect;
         private byte biggest;
+
         public PressedFadeInEffect(Color c)
         {
             color = c;
-
             biggest = Math.Max(Math.Max(color.R, color.G), color.B);
+        }
+
+        public PressedFadeInEffect(PerKeyLightEffect e)
+        {
+            effect = e;
+            biggest = 255;
+        }
+
+        public PressedFadeInEffect(Color c, List<LedKey> ledKeys)
+        {
+            color = c;
+            biggest = Math.Max(Math.Max(color.R, color.G), color.B);
+            LedKeys = ledKeys;
+        }
+
+        public PressedFadeInEffect(PerKeyLightEffect e, List<LedKey> ledKeys)
+        {
+            effect = e;
+            LedKeys = ledKeys;
+            biggest = 255;
         }
 
 
@@ -28,22 +49,38 @@ namespace NoobSwarm.Lights.LightEffects
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = biggest;
+                keyFades[press] = 0;
             }
             if (keyFades.Count > 0)
             {
                 var step = (byte)Math.Min((stepInrease * Speed), 255);
 
+                Dictionary<LedKey, Color>? effectColors = null;
                 Dictionary<LedKey, short>? toDelete = null;
+
+                if (effect is not null)
+                {
+                    effectColors = keyFades.ToDictionary(x => x.Key, x => Color.Black);
+                    if (!effect.Initialized && LedKeyPoints is not null)
+                        effect.Init(LedKeyPoints);
+                    else if (effect.Initialized)
+                        effect.Next(effectColors, counter, elapsedMilliseconds, stepInrease, pressed);
+                }
 
                 foreach (var fade in keyFades)
                 {
-                    var r = color.R * fade.Value / 255;
-                    var g = color.G * fade.Value / 255;
-                    var b = color.B * fade.Value / 255;
-                    currentColors[fade.Key] = Color.FromArgb(color.A, (byte)((color.R - r)*BrightnessPercent), (byte)((color.G - g) * BrightnessPercent), (byte)((color.B - b)*BrightnessPercent));
+                    Color localColor;
+                    if (effectColors is null || !effectColors.TryGetValue(fade.Key, out localColor))
+                    {
+                        localColor = color;
+                    }
+
+                    var r = localColor.R * fade.Value / 255;
+                    var g = localColor.G * fade.Value / 255;
+                    var b = localColor.B * fade.Value / 255;
+                    currentColors[fade.Key] = Color.FromArgb(localColor.A, (byte)(r * BrightnessPercent), (byte)(g * BrightnessPercent), (byte)(b * BrightnessPercent));
                     keyFades[fade.Key] += step;
-                    if (keyFades[fade.Key] > 255)
+                    if (keyFades[fade.Key] > biggest)
                     {
                         if (toDelete is null)
                             toDelete = new();
@@ -63,7 +100,7 @@ namespace NoobSwarm.Lights.LightEffects
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = biggest;
+                keyFades[press] = 0;
             }
         }
     }
