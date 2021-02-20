@@ -22,7 +22,7 @@ namespace NoobSwarm.Lights.LightEffects
         {
             foreach (var key in currentColors.Keys)
             {
-                currentColors[key] = Color.FromArgb(random.Next(0, 256), random.Next(0, 256), random.Next(0, 256));
+                currentColors[key] = Color.FromArgb(random.Next(0, Brightness+1), random.Next(0,  Brightness + 1), random.Next(0, Brightness + 1));
             }
         }
     }

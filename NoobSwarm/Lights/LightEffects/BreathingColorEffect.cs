@@ -60,7 +60,9 @@ namespace NoobSwarm.Lights.LightEffects
 
             if (bigger)
             {
-
+                r = (byte)(r* brightnessPercent);
+                g = (byte)(g* brightnessPercent);
+                b = (byte)(b* brightnessPercent);
                 foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
                     currentColors[key] = Color.FromArgb(Color.A, r, g, b);
@@ -68,9 +70,12 @@ namespace NoobSwarm.Lights.LightEffects
             }
             else
             {
+                var rDown = (byte)((Color.R - r) * brightnessPercent);
+                var gDown = (byte)((Color.G - g) * brightnessPercent);
+                var bDown = (byte)((Color.B - b) * brightnessPercent);
                 foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
                 {
-                    currentColors[key] = Color.FromArgb(Color.A, Color.R - r, Color.G - g, Color.B - b);
+                    currentColors[key] = Color.FromArgb(Color.A, rDown, gDown, bDown);
                 }
 
             }

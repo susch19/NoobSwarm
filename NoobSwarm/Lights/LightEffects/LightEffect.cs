@@ -15,7 +15,7 @@ namespace NoobSwarm.Lights.LightEffects
         public float Speed { get => speed; set { if (value == speed) return; speed = Math.Max(value, 0f); } }
         public byte Brightness { get; set; } = 255;
 
-        private float brightnessPercent => 255f / Brightness;
+        protected float brightnessPercent => Brightness / 255f;
         private float speed = 1f;
 
         public abstract void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed);

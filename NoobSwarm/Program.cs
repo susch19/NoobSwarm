@@ -40,11 +40,11 @@ namespace NoobSwarm
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString().Length == 1).ToList()) { Direction = Direction.Up });
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'F' && x.ToString().Length is <= 3 and > 1).ToList()) { Direction = Direction.Right });
             ls.AddToEnd(new RGBWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'D' && x.ToString().Length == 2).ToList()) { Direction = Direction.Left });
-            ls.AddToEnd(new BreathingColorPerKeyEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList(), new RGBWanderEffect()){Speed = .1f });
+            ls.AddToEnd(new BreathingColorPerKeyEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList(), new RGBWanderEffect()) { Speed = .1f, Brightness = 50 });
             //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
-            ls.AddToEnd(new SolidColorEffect());
+            ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
             ls.AddToEnd(new PressedFadeOutEffect(Color.Blue, true));
-            //ls.AddToEnd(new RandomColorPerKeyEffect());
+            //ls.AddToEnd(new RandomColorPerKeyEffect() { Brightness=10});
             //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
             ls.Speed = 5;
 

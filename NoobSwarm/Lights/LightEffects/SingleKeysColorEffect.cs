@@ -40,14 +40,15 @@ namespace NoobSwarm.Lights.LightEffects
                 {
                     if (!KeyColors.TryGetValue(col.Key, out var color))
                         color = NonSetKeyColor.Value;
-                    currentColors[col.Key] = color;
+                    currentColors[col.Key] = Color.FromArgb(color.A, (byte)(color.R * brightnessPercent), (byte)(color.G * brightnessPercent), (byte)(color.B * brightnessPercent)); 
                 }
             }
             else
             {
                 foreach (var keyColor in KeyColors)
                 {
-                    currentColors[keyColor.Key] = keyColor.Value;
+                    if (currentColors.ContainsKey(keyColor.Key))
+                        currentColors[keyColor.Key] = Color.FromArgb(keyColor.Value.A, (byte)(keyColor.Value.R * brightnessPercent), (byte)(keyColor.Value.G * brightnessPercent), (byte)(keyColor.Value.B * brightnessPercent));
                 }
             }
 

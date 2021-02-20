@@ -90,15 +90,19 @@ namespace NoobSwarm.Lights.LightEffects
 
         private void SetKeyColor(Dictionary<LedKey, Color> currentColors, int counter, int xMulti, int yMulti, LedKeyPoint item)
         {
+            if (Brightness != 255) 
+                ;
             if (xMulti != 0)
             {
                 var xPos = (((item.X + (counter * xMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
-                currentColors[item.LedKey] = ledBitmap.GetPixel(xPos, 0);
+                var col = ledBitmap.GetPixel(xPos, 0);
+                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * brightnessPercent), (byte)(col.G * brightnessPercent), (byte)(col.B * brightnessPercent));
             }
             else if (yMulti != 0)
             {
                 var yPos = (((item.Y + (counter * yMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
-                currentColors[item.LedKey] = ledBitmap.GetPixel(yPos, 0);
+                var col = ledBitmap.GetPixel(yPos, 0);
+                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * brightnessPercent), (byte)(col.G * brightnessPercent), (byte)(col.B * brightnessPercent));
             }
         }
     }

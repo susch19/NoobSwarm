@@ -45,7 +45,7 @@ namespace NoobSwarm.Lights.LightEffects
                     var r = color.R * fade.Value / 255;
                     var g = color.G * fade.Value / 255;
                     var b = color.B * fade.Value / 255;
-                    currentColors[fade.Key] = Color.FromArgb(color.A, color.R - r, color.G - g, color.B - b);
+                    currentColors[fade.Key] = Color.FromArgb(color.A, (byte)((color.R - r)*brightnessPercent), (byte)((color.G - g) * brightnessPercent), (byte)((color.B - b)*brightnessPercent));
                     keyFades[fade.Key] += step;
                     if (keyFades[fade.Key] > 255)
                     {

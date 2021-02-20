@@ -43,9 +43,9 @@ namespace NoobSwarm.Lights.LightEffects
                     if (FasterPreKeyPress)
                         step = (byte)Math.Min((stepInrease * Speed) + fade.Value.multiplier, 255);
 
-                    var r = color.R * fade.Value.value / 255;
-                    var g = color.G * fade.Value.value / 255;
-                    var b = color.B * fade.Value.value / 255;
+                    var r = (byte)((color.R * fade.Value.value / 255) * brightnessPercent);
+                    var g = (byte)((color.G * fade.Value.value / 255) * brightnessPercent);
+                    var b = (byte)((color.B * fade.Value.value / 255) * brightnessPercent);
 
                     currentColors[fade.Key] = Color.FromArgb(color.A, r, g, b);
                     keyFades[fade.Key] = ((short)(keyFades[fade.Key].value - step), 0);

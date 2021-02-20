@@ -60,9 +60,9 @@ namespace NoobSwarm.Lights.LightEffects
                 {
                     if (!currentColors.ContainsKey(keyCol.Key))
                         continue;
-                    var r = keyCol.Value.R * step / 255;
-                    var g = keyCol.Value.G * step / 255;
-                    var b = keyCol.Value.B * step / 255;
+                    var r = (byte)((keyCol.Value.R * step / 255) * brightnessPercent);
+                    var g = (byte)((keyCol.Value.G * step / 255) * brightnessPercent);
+                    var b = (byte)((keyCol.Value.B * step / 255) * brightnessPercent);
                     currentColors[keyCol.Key] = Color.FromArgb(keyCol.Value.A, r, g, b);
                 }
             }
@@ -72,10 +72,11 @@ namespace NoobSwarm.Lights.LightEffects
                 {
                     if (!currentColors.ContainsKey(keyCol.Key))
                         continue;
-                    var r = keyCol.Value.R * step / 255;
-                    var g = keyCol.Value.G * step / 255;
-                    var b = keyCol.Value.B * step / 255;
-                    currentColors[keyCol.Key] = Color.FromArgb(keyCol.Value.A, keyCol.Value.R - r, keyCol.Value.G - g, keyCol.Value.B - b);
+                 
+                    var r = (byte)((keyCol.Value.R - (keyCol.Value.R * step / 255)) * brightnessPercent);
+                    var g = (byte)((keyCol.Value.G - (keyCol.Value.G * step / 255)) * brightnessPercent);
+                    var b = (byte)((keyCol.Value.B - (keyCol.Value.B * step / 255)) * brightnessPercent);
+                    currentColors[keyCol.Key] = Color.FromArgb(keyCol.Value.A, r, g, b);
                 }
             }
 

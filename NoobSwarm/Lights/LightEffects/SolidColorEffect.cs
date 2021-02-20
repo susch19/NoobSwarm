@@ -31,7 +31,7 @@ namespace NoobSwarm.Lights.LightEffects
             if (SolidColor.HasValue)
                 foreach (var key in currentColors.Keys)
                 {
-                    currentColors[key] = SolidColor.Value;
+                    currentColors[key] = Color.FromArgb(SolidColor.Value.A, (byte)(SolidColor.Value.R * brightnessPercent), (byte)(SolidColor.Value.G * brightnessPercent), (byte)(SolidColor.Value.B * brightnessPercent)); ;
                 }
         }
     }
