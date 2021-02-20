@@ -62,6 +62,7 @@ namespace NoobSwarm.Lights
         private readonly List<LightEffect> lightLayers = new();
         private readonly List<LightEffect> overrideLightEffects = new();
         private readonly List<LedKey> pressedKeys = new();
+        private readonly List<LedKey> pressedKeysToRemove = new();
 
 
         private readonly Dictionary<LedKey, Color> currentColors;
@@ -217,6 +218,12 @@ namespace NoobSwarm.Lights
 
                 pressedCopy.Clear();
                 currentColorsCopy.Clear();
+                foreach (var toRemove in pressedKeysToRemove)
+                {
+                    pressedKeys.Remove(toRemove);
+                }
+                pressedKeysToRemove.Clear();
+
                 sw.Stop();
 
                 if (sw.ElapsedMilliseconds > msSleep)
@@ -238,7 +245,7 @@ namespace NoobSwarm.Lights
             if (e.IsPressed)
                 pressedKeys.Add(e.Key);
             else
-                pressedKeys.Remove(e.Key);
+                pressedKeysToRemove.Add(e.Key);
         }
     }
 }
