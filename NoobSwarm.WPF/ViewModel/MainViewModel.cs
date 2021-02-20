@@ -1,85 +1,174 @@
-﻿using GalaSoft.MvvmLight;
+﻿using CommonServiceLocator;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-
+using MaterialDesignThemes.Wpf;
 using NoobSwarm.Lights;
-
+using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.WPF.Model;
+using NoobSwarm.WPF.View;
+using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using Vulcan.NET;
+using Key = System.Windows.Input.Key;
 
 namespace NoobSwarm.WPF.ViewModel
 {
     public sealed class MainViewModel : ViewModelBase
     {
+        #region Menu
+        public ObservableCollection<MenuGroup> Menu { get; set; }
+
+        public ICommand MenuClickedCommand { get; set; }
+        #endregion
+
         public ICommand LoadedCommand { get; set; }
         public ICommand UnloadedCommand { get; set; }
 
-        public bool IsRecording { get; set; }
+        public ICommand MenuItemSettingsCommand { get; set; }
+        public ICommand MenuItemInfoCommand { get; set; }
+        public ICommand MenuItemExitCommand { get; set; }
 
-        public string RecordingText { get; set; }
+        public ICommand KeyDownCommand { get; set; }
+        
+        public ISnackbarMessageQueue SnackbarMessageQueue { get; set; }
+        public object CurrentView { get; set; }
+        public string Title { get; set; }
+        public ICommand TitleClickedCommand { get; set; }
 
-        private VulcanKeyboard keyboard;
-        private LightService lightService;
-        private HotKeyManager hotKey;
-        private CancellationTokenSource recordingCts;
-
+        private readonly ObservableCollection<Exception> StartupExceptions = new ObservableCollection<Exception>();
+        private readonly CockpitControl cockpitControl;
+        
         public MainViewModel()
         {
+            Title = "NoobSwarm";
+
             if (IsInDesignMode)
             {
                 // Code runs in Blend --> create design time data.
             }
             else
             {
+                Log.Logger = new LoggerConfiguration()
+                    .WriteTo.File("logs\\log.txt")
+                    .CreateLogger();
+
                 // Code runs "for real"
+                PropertyChanged += MainViewModel_PropertyChanged;
+
                 LoadedCommand = new RelayCommand(Loaded);
                 UnloadedCommand = new RelayCommand(Unloaded);
-                PropertyChanged += MainViewModel_PropertyChanged;
+                KeyDownCommand = new RelayCommand<KeyEventArgs>(KeyDown);
+                MenuClickedCommand = new RelayCommand<object>(MenuClicked);
+                TitleClickedCommand = new RelayCommand(TitleClicked);
+
+                MenuItemSettingsCommand = new RelayCommand(() => { });
+                MenuItemInfoCommand = new RelayCommand(() => { /* TODO: Show dialog with version number of ui and packages dynamically */ });
+                MenuItemExitCommand = new RelayCommand(Application.Current.Shutdown);
+
+                cockpitControl = new CockpitControl();
+                CurrentView = cockpitControl;
+
+                Menu = new ObservableCollection<MenuGroup>()
+                {
+                    new MenuGroup()
+                    {
+                        Name = "Settings",
+                        Items = new ObservableCollection<MenuItem>()
+                        {
+                            new MenuItem("Theme Designer", PackIconKind.ColorHelper, new ThemeDesignerControl()),
+                            new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
+                        }
+                    }
+                };
+
+                ServiceLocator.Current.GetInstance<LightService>().AddToEnd(new RGBWanderEffect());
+                var manager = ServiceLocator.Current.GetInstance<HotKeyManager>();
+                manager.Mode = HotKeyMode.Active;
+                manager.HotKey = LedKey.FN_Key;
             }
+        }
+
+        private void KeyDown(KeyEventArgs e)
+        {
+            if (!IsControl())
+                return;
+
+            switch (e.Key)
+            {
+                case Key.S:
+                    MenuItemSettingsCommand.Execute(null);
+                    break;
+
+                case Key.I:
+                    MenuItemInfoCommand.Execute(null);
+                    break;
+
+                case Key.E:
+                    MenuItemExitCommand.Execute(null);
+                    break;
+            }
+
+            static bool IsControl()
+            {
+                return (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+            }
+        }
+
+        public void TitleClicked()
+        {
+            CurrentView = cockpitControl;
+        }
+
+        public void MenuClicked(object content)
+        {
+            CurrentView = content;
+        }
+
+        public void ShowError(Exception exception, [CallerMemberName] string caller = null)
+        {
+            Log.Error(exception, caller ?? "");
+            if (SnackbarMessageQueue != null)
+            {
+                SnackbarMessageQueue.Enqueue($"error: {exception.Message}", "show more",
+                    () => SnackbarMessageQueue.Enqueue($"{exception}"));
+            }
+            else
+            {
+                // if theres an exception at application startup, 
+                // the viewmodel loads before the view and SnackbarMessageQueue is not declared yet
+                StartupExceptions.Add(exception);
+            }
+        }
+
+        private void ShowStartupExceptions()
+        {
+            foreach (Exception ex in StartupExceptions)
+                ShowError(ex);
+
+            StartupExceptions.Clear();
         }
 
         private void MainViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IsRecording))
+            switch (e.PropertyName)
             {
-                if (IsRecording)
-                {
-                    recordingCts = new CancellationTokenSource();
-                    Record(recordingCts.Token);
-                }
-                else
-                {
-                    recordingCts?.Cancel();
-                }
+                case nameof(SnackbarMessageQueue):
+                    ShowStartupExceptions();
+                    break;
             }
         }
 
         private void Loaded()
         {
-            keyboard = VulcanKeyboard.Initialize();
-            lightService = new (keyboard);
-            hotKey = new(keyboard,lightService, LedKey.FN_Key);
+
         }
 
         private void Unloaded()
         {
-            keyboard?.Dispose();
-        }
-
-        private async void Record(CancellationToken token)
-        {
-            RecordingText = "";
-            try
-            {
-                await foreach (var item in hotKey.Record(token))
-                    RecordingText += " " + item.ToString();
-            }
-            catch (TaskCanceledException) { }
-            IsRecording = false;
         }
     }
 }

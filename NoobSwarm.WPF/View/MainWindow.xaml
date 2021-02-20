@@ -5,47 +5,173 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
-        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-        xmlns:Custom="http://www.galasoft.ch/mvvmlight"
-        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:NoobSwarm.WPF"
+        xmlns:model="clr-namespace:NoobSwarm.WPF.Model"
         mc:Ignorable="d"
         Style="{StaticResource MaterialDesignWindow}" 
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
         Title="MainWindow" Height="450" Width="800">
 
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Loaded">
-            <Custom:EventToCommand Command="{Binding LoadedCommand}"/>
-        </i:EventTrigger>
+    <behaviors:Interaction.Triggers>
+        <behaviors:EventTrigger EventName="Loaded">
+            <behaviors:InvokeCommandAction Command="{Binding LoadedCommand}"/>
+        </behaviors:EventTrigger>
 
-        <i:EventTrigger EventName="Unloaded">
-            <Custom:EventToCommand Command="{Binding UnloadedCommand}"/>
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
+        <behaviors:EventTrigger EventName="Unloaded">
+            <behaviors:InvokeCommandAction Command="{Binding UnloadedCommand}"/>
+        </behaviors:EventTrigger>
 
-    <Grid>
-        <ToggleButton
-            Style="{StaticResource MaterialDesignActionToggleButton}"
-            ToolTip="MaterialDesignActionLightToggleButton"
-            Content="{materialDesign:PackIcon Kind=Record,Size=36}"
-            Width="48" Height="48"
-            IsChecked="{Binding IsRecording}"
-            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
-        
-        <TextBox
-            Margin="50"
-            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-            VerticalAlignment="Top"
-            Height="100"
-            IsEnabled="{Binding IsRecording}"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
-            VerticalScrollBarVisibility="Auto"
-            PreviewKeyDown="TextBox_PreviewKeyDown"
-            Text="{Binding RecordingText}"
-            CaretBrush="Transparent"
-            IsEnabledChanged="TextBox_IsEnabledChanged"
-            materialDesign:HintAssist.Hint="Recorded Keys"/>
-    </Grid>
+        <behaviors:EventTrigger EventName="KeyDown">
+            <behaviors:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
+        </behaviors:EventTrigger>
+    </behaviors:Interaction.Triggers>
+
+    <materialDesign:DialogHost
+        Identifier="RootDialog"
+        DialogTheme="Inherit"
+        SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
+
+        <materialDesign:DrawerHost
+            IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
+            <materialDesign:DrawerHost.LeftDrawerContent>
+                <DockPanel MinWidth="220">
+                    <ToggleButton 
+                        Style="{StaticResource MaterialDesignHamburgerToggleButton}" 
+                        DockPanel.Dock="Top"
+                        HorizontalAlignment="Right" 
+                        Margin="16"
+                        IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}"/>
+
+                    <ScrollViewer Margin="0 16 0 16">
+                        <ScrollViewer.Resources>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource MaterialDesignScrollBarMinimal}"/>
+                        </ScrollViewer.Resources>
+                        <ItemsControl x:Name="MenuItemsControl"
+                                  ItemsSource="{Binding Menu}">
+                            <ItemsControl.ItemTemplate>
+
+                                <!--Start: Menu group-->
+                                <DataTemplate DataType="{x:Type model:MenuGroup}">
+                                    <Expander Header="{Binding Name}"
+                                          Background="Transparent"
+                                          HorizontalAlignment="Stretch">
+                                        <ItemsControl ItemsSource="{Binding Items}" Margin="16 .5 16 0">
+                                            <ItemsControl.ItemTemplate>
+
+                                                <!--Start: Menu item-->
+                                                <DataTemplate DataType="{x:Type model:MenuItem}">
+                                                    <Button HorizontalContentAlignment="Left"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                                        Foreground="{DynamicResource PrimaryHueDarkForegroundBrush}"
+                                                        Command="{Binding DataContext.MenuClickedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding Content}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <materialDesign:PackIcon Margin="0 .5 4 0" Kind="{Binding Icon}" />
+                                                            <TextBlock Text="{Binding Name}"/>
+                                                        </StackPanel>
+                                                        <behaviors:Interaction.Triggers>
+                                                            <behaviors:EventTrigger EventName="Click">
+                                                                <behaviors:ChangePropertyAction TargetObject="{Binding ElementName=MenuToggleButton}" PropertyName="IsChecked" Value="False"/>
+                                                            </behaviors:EventTrigger>
+                                                        </behaviors:Interaction.Triggers>
+                                                    </Button>
+                                                </DataTemplate>
+                                                <!--End: Menu item-->
+
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </DataTemplate>
+                                <!--End: Menu group-->
+
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </materialDesign:DrawerHost.LeftDrawerContent>
+
+            <DockPanel>
+                <materialDesign:ColorZone
+                    Padding="16"
+                    materialDesign:ShadowAssist.ShadowDepth="Depth2"
+                    Mode="PrimaryMid"
+                    DockPanel.Dock="Top">
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton
+                                x:Name="MenuToggleButton"
+                                Style="{StaticResource MaterialDesignHamburgerToggleButton}"
+                                IsChecked="False"/>
+                        </StackPanel>
+
+                        <materialDesign:PopupBox
+                            DockPanel.Dock="Right"
+                            PlacementMode="BottomAndAlignRightEdges"
+                            StaysOpen="False">
+                            <StackPanel>
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="10">
+                                    <TextBlock
+                                        Text="Light"
+                                        Margin="0 0 10 0"/>
+                                    <ToggleButton
+                                        x:Name="DarkModeToggleButton"
+                                        Click="MenuDarkModeButton_Click"/>
+                                    <TextBlock
+                                        Text="Dark"
+                                        Margin="10 0 0 0"/>
+                                </StackPanel>
+
+                                <Separator/>
+
+                                <MenuItem Header="Settings" InputGestureText="Ctrl+S" Command="{Binding MenuItemSettingsCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Opacity=".5" Kind="Settings" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Info" InputGestureText="Ctrl+I" Command="{Binding MenuItemInfoCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Opacity=".5" Kind="Information"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Exit" InputGestureText="Ctrl+E" Command="{Binding MenuItemExitCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Opacity=".5" Kind="ExitToApp"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </StackPanel>
+                        </materialDesign:PopupBox>
+
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="22"
+                            Text="{Binding Title}">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding TitleClickedCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
+                    </DockPanel>
+                </materialDesign:ColorZone>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!--Here is the main view-->
+                    <ContentControl Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    VerticalAlignment="Stretch"
+                                    Content="{Binding CurrentView, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <wpf:Snackbar MessageQueue="{wpf:MessageQueue}" x:Name="MainSnackbar" Grid.Row="1" />
+                </Grid>
+            </DockPanel>
+        </materialDesign:DrawerHost>
+    </materialDesign:DialogHost>
 </Window>

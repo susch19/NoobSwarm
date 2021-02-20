@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="NoobSwarm.WPF.View.RecordingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:NoobSwarm.WPF.View"
+             mc:Ignorable="d" 
+             DataContext="{Binding Source={StaticResource Locator}, Path=RecordingViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel Orientation="Vertical">
+        
+        
+        <TextBox
+            Margin="50"
+            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+            VerticalAlignment="Top"
+            Height="100"
+            IsEnabled="{Binding IsRecording}"
+            AcceptsReturn="True"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto"
+            PreviewKeyDown="TextBox_PreviewKeyDown"
+            Text="{Binding RecordingText}"
+            CaretBrush="Transparent"
+            IsEnabledChanged="TextBox_IsEnabledChanged"
+            materialDesign:HintAssist.Hint="Recorded Keys"/>
+        
+        <ToggleButton
+            Style="{StaticResource MaterialDesignActionToggleButton}"
+            ToolTip="MaterialDesignActionLightToggleButton"
+            Content="{materialDesign:PackIcon Kind=Record,Size=36}"
+            Width="48" Height="48"
+            IsChecked="{Binding IsRecording}"
+            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
+    </StackPanel>
+</UserControl>
