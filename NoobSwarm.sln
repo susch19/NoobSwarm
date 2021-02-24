@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.WPF", "NoobSwarm.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Service", "NoobSwarm.Service\NoobSwarm.Service.csproj", "{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Windows.Events", "NoobSwarm.Windows.Events\NoobSwarm.Windows.Events.csproj", "{9BF875C6-3DB2-469E-9222-02EBD177757F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Windows", "NoobSwarm.Windows\NoobSwarm.Windows.csproj", "{9BF875C6-3DB2-469E-9222-02EBD177757F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,24 +1,17 @@
-﻿using NoobSwarm.Brushes;
-using NoobSwarm.Lights;
+﻿using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
-
+using NoobSwarm.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Vulcan.NET;
 
 namespace NoobSwarm
 {
-
     class Program
     {
         private static Task lightLoop;
@@ -106,7 +99,7 @@ namespace NoobSwarm
                         break;
 
                     case "tooltips":
-                        foreach (var item in NoobSwarm.Windows.Events.Toolbar.GetToolbarButtonsText(Windows.Events.Toolbar.ToolbarButtonLocation.All))
+                        foreach (var item in Toolbar.GetToolbarButtonsText(Toolbar.ToolbarButtonLocation.All))
                             Console.WriteLine(item);
                         break;
 

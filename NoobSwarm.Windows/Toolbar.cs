@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace NoobSwarm.Windows.Events
+namespace NoobSwarm.Windows
 {
     // Most code from https://github.com/BarRaider/streamdeck-battery/blob/c1dd1d3c4d19bad3d36e7d53d9d28f4911831dc7/streamdeck-battery/Internal/ToolbarScanner.cs
     // and https://stackoverflow.com/questions/17724168/win32-how-to-access-button-on-toolbar

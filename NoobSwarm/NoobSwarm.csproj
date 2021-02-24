@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NoobSwarm.Windows.Events\NoobSwarm.Windows.Events.csproj" />
+    <ProjectReference Include="..\NoobSwarm.Windows\NoobSwarm.Windows.csproj" />
   </ItemGroup>
 
   <ItemGroup>
