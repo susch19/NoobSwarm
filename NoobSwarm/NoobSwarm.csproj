@@ -4,13 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -23,6 +16,10 @@
 
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NoobSwarm.Windows.Events\NoobSwarm.Windows.Events.csproj" />
   </ItemGroup>
 
   <ItemGroup>

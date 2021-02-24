@@ -104,6 +104,12 @@ namespace NoobSwarm
                     case "record":
                         Console.WriteLine(string.Join(" -> ", manager.RecordKeys()));
                         break;
+
+                    case "tooltips":
+                        foreach (var item in NoobSwarm.Windows.Events.Toolbar.GetToolbarButtonsText(Windows.Events.Toolbar.ToolbarButtonLocation.All))
+                            Console.WriteLine(item);
+                        break;
+
                     default:
                         break;
                 }
