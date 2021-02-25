@@ -188,6 +188,34 @@ namespace NoobSwarm
         }
 
         /// <summary>
+        /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
+        /// </summary>
+        public ReadOnlyCollection<(LedKey, int)> RecordKeysWithTime()
+        {
+            var recWithTime = new List<(LedKey, int)>();
+            Stopwatch stopWatch = new Stopwatch();
+
+            keyboard.KeyPressedReceived += (s, e) =>
+            {
+                if (e.IsPressed)
+                {
+                    recWithTime.Add((e.Key, (int)stopWatch.Elapsed.TotalMilliseconds));
+                    stopWatch.Restart();
+                }
+            };
+            synchronRecordingKeys.Clear();
+            ledColors.Clear();
+            AddHotKeyEffect();
+            isSynchronRecording = true;
+
+            synchronRecordingResetEvent.WaitOne();
+            isSynchronRecording = false;
+            RemoveHotKeyEffect();
+
+            return new ReadOnlyCollection<(LedKey, int)>(recWithTime);
+        }
+
+        /// <summary>
         /// Async ecording of all pressed keys until <paramref name="token"/> is cancelled or
         /// <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
         /// </summary>

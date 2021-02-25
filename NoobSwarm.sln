@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm", "NoobSwarm\Noob
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.WPF", "NoobSwarm.WPF\NoobSwarm.WPF.csproj", "{423B69E6-4C03-4406-8561-2F3771B59E96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoobSwarm.Service", "NoobSwarm.Service\NoobSwarm.Service.csproj", "{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Service", "NoobSwarm.Service\NoobSwarm.Service.csproj", "{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.VirtualHID", "NoobSwarm.VirtualHID\NoobSwarm.VirtualHID.csproj", "{FFDCB540-50C5-4480-BC51-56DE92DFEB55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47AB59D9-DB15-4CBC-8062-A69CB9B0C6DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

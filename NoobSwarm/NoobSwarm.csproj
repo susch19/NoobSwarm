@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <StartupObject>NoobSwarm.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,7 +19,7 @@
     <PackageReference Include="Desktop.Robot" Version="1.0.0-alpha" />
     <PackageReference Include="NoobSwarm.Hid" Version="0.1.0.7" />
     <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.3" />
-    <PackageReference Include="PInvoke.User32" Version="0.7.78" />
+    <!--<PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.3" />-->
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +29,18 @@
   <ItemGroup>
     <None Update="Assets\LedPositions.txt">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\KeyboardHooktest.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\KeyboardHooktest.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\KeyboardHooktestDll.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\KeyboardHooktestDll.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
