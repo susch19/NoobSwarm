@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Service", "NoobSw
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.VirtualHID", "NoobSwarm.VirtualHID\NoobSwarm.VirtualHID.csproj", "{FFDCB540-50C5-4480-BC51-56DE92DFEB55}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Windows", "NoobSwarm.Windows\NoobSwarm.Windows.csproj", "{9BF875C6-3DB2-469E-9222-02EBD177757F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFDCB540-50C5-4480-BC51-56DE92DFEB55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

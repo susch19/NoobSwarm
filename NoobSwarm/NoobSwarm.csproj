@@ -4,14 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <StartupObject>NoobSwarm.Program</StartupObject>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -19,11 +11,15 @@
     <PackageReference Include="Desktop.Robot" Version="1.0.0-alpha" />
     <PackageReference Include="NoobSwarm.Hid" Version="0.1.0.7" />
     <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.3" />
-    <!--<PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.3" />-->
+    <PackageReference Include="PInvoke.User32" Version="0.7.78" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NoobSwarm.Windows\NoobSwarm.Windows.csproj" />
   </ItemGroup>
 
   <ItemGroup>
