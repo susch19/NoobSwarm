@@ -81,6 +81,7 @@ namespace NoobSwarm.WPF.ViewModel
                         {
                             new MenuItem("Theme Designer", PackIconKind.ColorHelper, new ThemeDesignerControl()),
                             new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
+                            new MenuItem("Toolbar", PackIconKind.PlayBox, new ToolbarControl()),
                         }
                     }
                 };
