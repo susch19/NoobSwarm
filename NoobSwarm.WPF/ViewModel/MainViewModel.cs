@@ -10,6 +10,8 @@ using Serilog;
 using System;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Vulcan.NET;
@@ -39,8 +41,9 @@ namespace NoobSwarm.WPF.ViewModel
         public string Title { get; set; }
         public ICommand TitleClickedCommand { get; set; }
 
-        private readonly ObservableCollection<Exception> StartupExceptions = new ObservableCollection<Exception>();
+        private readonly ObservableCollection<Exception> StartupExceptions = new();
         private readonly CockpitControl cockpitControl;
+        private readonly CancellationTokenSource cts = new();
         
         public MainViewModel()
         {
@@ -86,7 +89,11 @@ namespace NoobSwarm.WPF.ViewModel
                     }
                 };
 
-                ServiceLocator.Current.GetInstance<LightService>().AddToEnd(new HSVColorWanderEffect());
+                var lightService = ServiceLocator.Current.GetInstance<LightService>();
+                lightService.AddToEnd(new HSVColorWanderEffect());
+                lightService.Speed = 5;
+                _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
+
                 var manager = ServiceLocator.Current.GetInstance<HotKeyManager>();
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
@@ -170,6 +177,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         private void Unloaded()
         {
+            cts.Cancel();
         }
     }
 }
