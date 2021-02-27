@@ -14,10 +14,10 @@ namespace NoobSwarm.Makros
 {
     public class MakroHotkeyCommand : IHotkeyCommand
     {
-        private IKeyboard keyboard;
+        private IKeyboard? keyboard;
 
         public HotKeyType HotKeyType { get; set; }
-        public List<RecordKey> Makro { get; set; }
+        public List<RecordKey>? Makro { get; set; }
 
         public MakroHotkeyCommand()
         {

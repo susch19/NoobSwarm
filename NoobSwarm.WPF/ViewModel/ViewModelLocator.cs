@@ -24,17 +24,17 @@ namespace NoobSwarm.WPF.ViewModel
 
             //ServiceLocator.SetLocatorProvider(() => typeContainer);
 
-            TypeContainer.Register<MainViewModel>();
-            TypeContainer.Register<CockpitViewModel>();
-            TypeContainer.Register<ThemeDesignerViewModel>();
-            TypeContainer.Register<RecordingViewModel>();
-            TypeContainer.Register<MakroManager>();
+            TypeContainer.Register<MainViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<CockpitViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<ThemeDesignerViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<RecordingViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<MakroManager>(InstanceBehaviour.Singleton);
             TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
-            TypeContainer.Register<ToolbarViewModel>();
+            TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register(VulcanKeyboard.Initialize());
-            TypeContainer.Register(new LightService(TypeContainer.Get<VulcanKeyboard>()));
-            TypeContainer.Register(new HotKeyManager(TypeContainer.Get<VulcanKeyboard>(), TypeContainer.Get<LightService>()));
+            TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
           
         }
 

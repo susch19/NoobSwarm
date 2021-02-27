@@ -128,6 +128,9 @@ namespace NoobSwarm.Lights
             overrideLightEffects.Remove(lightEffect);
         }
 
+        public bool Contains(LightEffect effect) => lightLayers.Contains(effect);
+        
+
         public void ClearOverrideEffects()
         {
             overrideLightEffects.Clear();

@@ -43,7 +43,9 @@ namespace NoobSwarm
         static void Main(string[] args)
         {
             Console.CancelKeyPress += (s, e) => cts.Cancel();
-
+            TypeContainer.Register(VulcanKeyboard.Initialize());
+            TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
             //start_message_loop();
 
             //var t = Task.Run(MessageLoopCpp);
@@ -97,10 +99,12 @@ namespace NoobSwarm
             //while (true)
             //    Console.ReadLine();
 
-            using var keyboard = VulcanKeyboard.Initialize();
-            var ls = new LightService(keyboard);
-            var manager = new HotKeyManager(keyboard, ls, LedKey.FN_Key);
-            var makroManager = new MakroManager();
+
+            var manager = TypeContainer.Get<HotKeyManager>();
+            manager.Mode = HotKeyMode.Active;
+            manager.HotKey = LedKey.FN_Key;
+            var ls = TypeContainer.Get<LightService>();
+            var keyboard = TypeContainer.Get<VulcanKeyboard>();
             ls.AddToEnd(new HSVColorWanderEffect());
             //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString().Length == 1).ToList(), new List<Color> { Color.Orange, Color.Green, Color.Red }) { Direction = Direction.Up, Speed = 1 });
             //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'F' && x.ToString().Length is <= 3 and > 1).ToList()) { Direction = Direction.Right });
@@ -121,23 +125,25 @@ namespace NoobSwarm
             // manager.AddHotKey(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
             // manager.AddHotKey(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
 
-            // foreach (var color in typeof(Color).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Where(x => x.PropertyType == typeof(Color)))
-            // {
-            //     var hotkey = new List<LedKey> { LedKey.C, LedKey.O, LedKey.L };
-            //
-            //     foreach (var key in color.Name.ToUpper())
-            //     {
-            //         hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
-            //     }
-            //     manager.AddHotKey(hotkey, (vk) =>
-            //     {
-            //         var solid = ls.LightLayers.FirstOrDefault(x => x.GetType() == typeof(SolidColorEffect));
-            //         if (solid == default)
-            //             return;
-            //         ((SolidColorEffect)solid).SolidColor = (Color)(color.GetValue(null) ?? Color.Black);
-            //     });
-            // }
-            //
+            foreach (var color in typeof(Color)
+                .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .Where(x => x.PropertyType == typeof(Color)))
+            {
+                var hotkey = new List<LedKey> {LedKey.C, LedKey.O, LedKey.L};
+
+                foreach (var key in color.Name.ToUpper())
+                {
+                    hotkey.Add(Enum.Parse<LedKey>(key.ToString()));
+                }
+
+                manager.AddHotKey(hotkey,
+                    new AddRemoveLightCommand(
+                        new SolidColorEffect((Color) (color.GetValue(null) ?? Color.Black)))
+                    {
+                        InsertAtEnd = true
+                    });
+            }
+
             // manager.AddHotKey(new[] { LedKey.C, LedKey.O, LedKey.L, LedKey.E, LedKey.M, LedKey.P, LedKey.T, LedKey.Y }, (vk) =>
             // {
             //     var solid = ls.LightLayers.FirstOrDefault(x => x.GetType() == typeof(SolidColorEffect));
