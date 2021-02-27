@@ -28,7 +28,7 @@ namespace NoobSwarm.Service
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                lightService.UpdateLoop();
+                lightService.UpdateLoop(stoppingToken);
             }
         }
     }
