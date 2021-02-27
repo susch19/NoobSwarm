@@ -8,30 +8,51 @@
              mc:Ignorable="d" 
              DataContext="{Binding Source={StaticResource Locator}, Path=RecordingViewModel}"
              d:DesignHeight="450" d:DesignWidth="800">
-    <StackPanel Orientation="Vertical">
-        
-        
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <TextBox
-            Margin="50"
+            Margin="10"
             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-            VerticalAlignment="Top"
-            Height="100"
-            IsEnabled="{Binding IsRecording}"
+            Grid.Row="0"
+            IsReadOnly="True"
+            VerticalAlignment="Stretch"
+            FontFamily="Consolas"
             AcceptsReturn="True"
             TextWrapping="Wrap"
             VerticalScrollBarVisibility="Auto"
             PreviewKeyDown="TextBox_PreviewKeyDown"
             Text="{Binding RecordingText}"
             CaretBrush="Transparent"
+            TextChanged="Textbox_ScrollToEnd"
             IsEnabledChanged="TextBox_IsEnabledChanged"
             materialDesign:HintAssist.Hint="Recorded Keys"/>
-        
-        <ToggleButton
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Block Input during Recording" 
+                           VerticalAlignment="Center" 
+                           Margin="10,0,16,0"
+                           Style="{StaticResource MaterialDesignTextBlock}"/>
+                <ToggleButton  VerticalAlignment="Center" IsChecked="{Binding BlockInput}"/>
+            </StackPanel>
+            <ToggleButton Grid.Column="1"
             Style="{StaticResource MaterialDesignActionToggleButton}"
             ToolTip="MaterialDesignActionLightToggleButton"
             Content="{materialDesign:PackIcon Kind=Record,Size=36}"
             Width="48" Height="48"
+            Margin="10"
+            Grid.Row="1"
             IsChecked="{Binding IsRecording}"
             materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
-    </StackPanel>
+        </Grid>
+    </Grid>
 </UserControl>

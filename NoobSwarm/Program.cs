@@ -4,7 +4,6 @@ using NoobSwarm.Hid.Reports;
 using NoobSwarm.Hid.Reports.Input;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
-using NoobSwarm.VirtualHID;
 
 using NoobSwarm.Windows;
 using System;
@@ -69,7 +68,7 @@ namespace NoobSwarm
 
             //StartHook();
 
-            using var kb = new Keyboard();
+            //using var kb = new Keyboard();
             //kb.SendChar('h');
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
@@ -194,8 +193,8 @@ namespace NoobSwarm
                         //Console.WriteLine(string.Join(" -> ", recorded));
                         break;
                     case "recordWithTime":
-                        lastRecordedMM = makroManager.StartRecording().ToList();
-                        Console.WriteLine(string.Join("\r\n", lastRecordedMM));
+                        //lastRecordedMM = makroManager.StartRecording().ToList();
+                        //Console.WriteLine(string.Join("\r\n", lastRecordedMM));
                         break;
                     case "playback":
                         //if (lastRecordedMM is null)

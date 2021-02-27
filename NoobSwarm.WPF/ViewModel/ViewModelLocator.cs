@@ -1,6 +1,10 @@
 ﻿using CommonServiceLocator;
+
 using GalaSoft.MvvmLight.Ioc;
+
 using NoobSwarm.Lights;
+using NoobSwarm.VirtualHID;
+
 using Vulcan.NET;
 
 namespace NoobSwarm.WPF.ViewModel
@@ -20,10 +24,15 @@ namespace NoobSwarm.WPF.ViewModel
             SimpleIoc.Default.Register<CockpitViewModel>();
             SimpleIoc.Default.Register<ThemeDesignerViewModel>();
             SimpleIoc.Default.Register<RecordingViewModel>();
+            SimpleIoc.Default.Register<MakroManager>();
+            SimpleIoc.Default.Register<Keyboard>();
 
             SimpleIoc.Default.Register(() => VulcanKeyboard.Initialize());
             SimpleIoc.Default.Register(() => new LightService(ServiceLocator.Current.GetInstance<VulcanKeyboard>()));
             SimpleIoc.Default.Register(() => new HotKeyManager(ServiceLocator.Current.GetInstance<VulcanKeyboard>(), ServiceLocator.Current.GetInstance<LightService>()));
+          
         }
+
+     
     }
 }

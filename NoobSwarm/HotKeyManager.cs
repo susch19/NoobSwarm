@@ -32,6 +32,9 @@ namespace NoobSwarm
 
     public class HotKeyManager
     {
+        public event EventHandler StartedHotkeyMode;
+        public event EventHandler StoppedHotkeyMode;
+
         /// <summary>
         /// The hotkey to controll the hotkey mode
         /// </summary>
@@ -85,7 +88,7 @@ namespace NoobSwarm
                 if (!isExecuting && value)
                 {
                     // Start of hotkey
-
+                    StartedHotkeyMode?.Invoke(this, new());
                     SetHotKeysColoring();
                     AddHotKeyEffect();
                 }
@@ -94,9 +97,10 @@ namespace NoobSwarm
                     // End of hotkey
                     RemoveHotKeyEffect();
                     currentNode = tree;
+                    StoppedHotkeyMode?.Invoke(this, new());
                 }
 
-                Console.Title = value.ToString();
+                //Console.Title = value.ToString();
                 isExecuting = value;
             }
         }
@@ -123,7 +127,7 @@ namespace NoobSwarm
         // Synchron recording variables
         private bool isSynchronRecording;
         private List<LedKey> synchronRecordingKeys = new();
-        private AutoResetEvent synchronRecordingResetEvent = new(false);
+        private SemaphoreSlim synchronRecordingSemaphore = new(0);
 
         private bool isAsyncRecording;
         private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
@@ -146,7 +150,7 @@ namespace NoobSwarm
         private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
         {
             if (isSynchronRecording)
-                synchronRecordingResetEvent.Set();
+                synchronRecordingSemaphore.Release();
             else if (isAsyncRecording)
                 asyncToken?.Cancel();
         }
@@ -170,17 +174,26 @@ namespace NoobSwarm
             tree.CreateNode(hotkeys, action);
         }
 
+
         /// <summary>
         /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
         /// </summary>
-        public ReadOnlyCollection<LedKey> RecordKeys()
+        public async Task<ReadOnlyCollection<LedKey>> RecordKeys(CancellationToken token)
         {
             synchronRecordingKeys.Clear();
             ledColors.Clear();
             AddHotKeyEffect();
-            isSynchronRecording = true;
+            isSynchronRecording = true;            
+            StartedHotkeyMode?.Invoke(this, new());
+            try
+            {
+                await synchronRecordingSemaphore.WaitAsync(token);
+            }
+            catch (OperationCanceledException x)
+            {
+            }
+            StoppedHotkeyMode?.Invoke(this, new());
 
-            synchronRecordingResetEvent.WaitOne();
             isSynchronRecording = false;
             RemoveHotKeyEffect();
 
@@ -208,7 +221,7 @@ namespace NoobSwarm
             AddHotKeyEffect();
             isSynchronRecording = true;
 
-            synchronRecordingResetEvent.WaitOne();
+            synchronRecordingSemaphore.Release();
             isSynchronRecording = false;
             RemoveHotKeyEffect();
 

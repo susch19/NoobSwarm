@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NoobSwarm.VirtualHID
 {
@@ -52,13 +53,13 @@ namespace NoobSwarm.VirtualHID
         public Keyboard()
         {
             keyboardLayout = GetKeyboardLayout(0);
-            var devices = DeviceList.Local.GetHidDevices(255).Where(x => x.ProductID == 0xAFFE).ToList();
-            var controlDevice = devices.FirstOrDefault(x => x.GetReportDescriptor().Reports.Any(y => y.ReportID == 0x40));
+            var devices = DeviceList.Local.GetHidDevices(0xAFFE).Where(x => x.ProductID == 0xCAFE).ToList();
+            var controlDevice = devices.Where(x => x.GetReportDescriptor().Reports.Any(y => y.ReportID == 0x40)).ToList();
             var kbDevice = devices.First(x => x.DevicePath.EndsWith("kbd"));
 
-            if (controlDevice != default && controlDevice.TryOpen(out vKeyboardStream))
+            if (controlDevice != default && controlDevice[0].TryOpen(out vKeyboardStream))
             {
-                var rd = controlDevice.GetReportDescriptor();
+                var rd = controlDevice[0].GetReportDescriptor();
                 var rdkbd = kbDevice.GetReportDescriptor();
                 var inputRep = rd.Reports.First(x => x.ReportType == ReportType.Input);
                 var inputRepKbd = rdkbd.Reports.First(x => x.ReportType == ReportType.Input);
@@ -105,6 +106,68 @@ namespace NoobSwarm.VirtualHID
 
             }
         }
+
+        public Task PlayMacro(System.Collections.ObjectModel.ReadOnlyCollection<NoobSwarm.MakroManager.RecordKey> recKeys)
+        {
+            return Task.Run(async () =>
+            {
+                KeyModifier modifier = KeyModifier.None;
+                for (int i = 0; i < recKeys.Count; i++)
+                {
+                    MakroManager.RecordKey rec = recKeys[i];
+                    if (rec.TimeBeforePress > 0)
+                        await Task.Delay(rec.TimeBeforePress);
+
+                    if (rec.Key == Makros.Key.LSHIFT || rec.Key == Makros.Key.RSHIFT)
+                    {
+                        var mod = Keyboard.KeyModifier.left_shift;
+                        if (rec.Pressed)
+                            modifier |= mod;
+                        else if ((modifier & mod) > 0)
+                            modifier -= mod;
+                    }
+                    else if (rec.Key == Makros.Key.LMENU || rec.Key == Makros.Key.RMENU)
+                    {
+                        var mod = Keyboard.KeyModifier.left_alt;
+                        if (rec.Pressed)
+                            modifier |= mod;
+                        else if ((modifier & mod) > 0)
+                            modifier -= mod;
+                    }
+                    else if (rec.Key == Makros.Key.LCONTROL|| rec.Key == Makros.Key.RCONTROL)
+                    {
+                        var mod = Keyboard.KeyModifier.left_control;
+                        if (rec.Pressed)
+                            modifier |= mod;
+                        else if ((modifier & mod) > 0)
+                            modifier -= mod;
+                    }
+                    else if (rec.Key == Makros.Key.LWIN || rec.Key == Makros.Key.RWIN)
+                    {
+                        if (recKeys.Count > i && (recKeys[i + 1].Key == Makros.Key.LWIN || recKeys[i + 1].Key == Makros.Key.RWIN))
+                        {
+                            SendVirtualKey(0, Keyboard.KeyModifier.left_gui);
+                            i++;
+                        }
+                        else
+                        {
+                            var mod = Keyboard.KeyModifier.left_gui;
+                            if (rec.Pressed)
+                                modifier |= mod;
+                            else if ((modifier & mod) > 0)
+                                modifier -= mod;
+                        }
+                    }
+                    else if (rec.Pressed)
+                    {
+                        SendVirtualKey((ushort)rec.Key, modifier);
+                    }
+
+                }
+
+            });
+        }
+
 
         //public string VKCodeToUnicode(uint VKCode)
         //{
@@ -187,7 +250,7 @@ namespace NoobSwarm.VirtualHID
                 }
             }
 
-           
+
         }
 
         public void SendChar(char charToTest)

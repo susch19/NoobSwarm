@@ -21,6 +21,7 @@ namespace NoobSwarm
     {
 
         public event EventHandler RecordingStarted;
+        public event EventHandler<RecordKey> RecordAdded;
         public event EventHandler<IReadOnlyCollection<RecordKey>> RecordingFinished;
 
         public record RecordKey(Makros.Key Key, int TimeBeforePress, bool Pressed);
@@ -29,20 +30,22 @@ namespace NoobSwarm
 
         // Synchron recording variables
         private bool isSynchronRecording;
-        private AutoResetEvent synchronRecordingResetEvent = new(false);
-
+        //private AutoResetEvent synchronRecordingResetEvent = new(false);
         private List<RecordKey> records = new();
 
         private bool isAsyncRecording;
-        private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
+        private TaskCompletionSource<Makros.Key>? asyncTaskCompletionSource;
         private CancellationTokenSource? asyncToken;
         private readonly Stopwatch stopWatch = new();
+        private SemaphoreSlim slim = new SemaphoreSlim(0);
+        private Queue<Makros.Key> keyQueue = new();
+        private AutoResetEvent resetEvent = new(false);
 
 
         public void FinishRecording()
         {
             if (isSynchronRecording)
-                synchronRecordingResetEvent.Set();
+                slim.Release();
             else if (isAsyncRecording)
                 asyncToken?.Cancel();
 
@@ -53,14 +56,21 @@ namespace NoobSwarm
         /// <summary>
         /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
         /// </summary>
-        public ReadOnlyCollection<RecordKey> StartRecording()
+        public async Task<ReadOnlyCollection<RecordKey>> StartRecording(CancellationToken token)
         {
-            RecordingStarted?.Invoke(this, new EventArgs());
             stopWatch.Reset();
             records.Clear();
+            RecordingStarted?.Invoke(this, new EventArgs());
             isSynchronRecording = true;
+            try
+            {
 
-            synchronRecordingResetEvent.WaitOne();
+                await slim.WaitAsync(token);
+            }
+            catch (OperationCanceledException x)
+            {
+
+            }
             isSynchronRecording = false;
 
             return new ReadOnlyCollection<RecordKey>(records);
@@ -72,7 +82,7 @@ namespace NoobSwarm
         /// </summary>
         /// <param name="token">Token to cancel the recording</param>
         /// <returns>async enumerable which contains the recording keys</returns>
-        public async IAsyncEnumerable<LedKey> Record([EnumeratorCancellation] CancellationToken token)
+        public async IAsyncEnumerable<Makros.Key> Record([EnumeratorCancellation] CancellationToken token)
         {
             RecordingStarted?.Invoke(this, new EventArgs());
             asyncToken = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -83,7 +93,12 @@ namespace NoobSwarm
             {
                 while (!asyncToken.Token.IsCancellationRequested)
                 {
-                    asyncTaskCompletionSource = new TaskCompletionSource<LedKey>(TaskCreationOptions.AttachedToParent);
+                    asyncTaskCompletionSource = new TaskCompletionSource<Makros.Key>(TaskCreationOptions.AttachedToParent);
+                    Makros.Key res;
+                    while (!keyQueue.TryDequeue(out res))
+                        resetEvent.WaitOne();
+                    asyncTaskCompletionSource.SetResult(res);
+
                     yield return await asyncTaskCompletionSource.Task;
                 }
             }
@@ -93,16 +108,26 @@ namespace NoobSwarm
             }
         }
 
+
+
         public void KeyReceived(Makros.Key key, bool down)
         {
-            if(StopRecordKey == key)
+            if (StopRecordKey == key)
             {
                 FinishRecording();
             }
             else if (isSynchronRecording || isAsyncRecording)
             {
-                records.Add(new(key, (int)stopWatch.Elapsed.TotalMilliseconds, down));
+                var rec = new RecordKey(key, (int)stopWatch.Elapsed.TotalMilliseconds, down);
+                records.Add(rec);
                 stopWatch.Restart();
+                RecordAdded?.Invoke(this,rec);
+                if (isAsyncRecording)
+                {
+
+                    keyQueue.Enqueue(key);
+                    resetEvent.Set();
+                }
             }
         }
 

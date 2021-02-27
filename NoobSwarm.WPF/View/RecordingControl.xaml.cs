@@ -35,5 +35,14 @@ namespace NoobSwarm.WPF.View
             if ((bool)e.NewValue)
                 ((TextBox)sender).Focus();
         }
+
+        private void Textbox_ScrollToEnd(object sender, TextChangedEventArgs e)
+        {
+            if(sender is TextBox tb)
+            {
+                tb.CaretIndex = tb.Text.Length;
+                tb.ScrollToEnd();
+            }
+        }
     }
 }

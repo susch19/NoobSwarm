@@ -4,6 +4,7 @@ using GalaSoft.MvvmLight.Command;
 using MaterialDesignThemes.Wpf;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Windows;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
 using Serilog;
@@ -89,6 +90,13 @@ namespace NoobSwarm.WPF.ViewModel
                 var manager = ServiceLocator.Current.GetInstance<HotKeyManager>();
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
+
+                var kb = ServiceLocator.Current.GetInstance<VirtualHID.Keyboard>();
+                LowLevelKeyboardHook hook = null;
+
+                manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
+                manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
+
             }
         }
 
