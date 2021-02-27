@@ -1,8 +1,10 @@
-﻿using CommonServiceLocator;
-
+﻿
 using GalaSoft.MvvmLight.Ioc;
 
+using NonSucking.Framework.Extension.IoC;
+
 using NoobSwarm.Lights;
+using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 
 using Vulcan.NET;
@@ -11,27 +13,28 @@ namespace NoobSwarm.WPF.ViewModel
 {
     public sealed class ViewModelLocator
     {
-        public MainViewModel Main => ServiceLocator.Current.GetInstance<MainViewModel>();
-        public CockpitViewModel CockpitViewModel => ServiceLocator.Current.GetInstance<CockpitViewModel>();
-        public ThemeDesignerViewModel ThemeDesignerViewModel => ServiceLocator.Current.GetInstance<ThemeDesignerViewModel>();
-        public RecordingViewModel RecordingViewModel => ServiceLocator.Current.GetInstance<RecordingViewModel>();
-        public ToolbarViewModel ToolbarViewModel => ServiceLocator.Current.GetInstance<ToolbarViewModel>();
+        public MainViewModel Main => TypeContainer.Get<MainViewModel>();
+        public CockpitViewModel CockpitViewModel => TypeContainer.Get<CockpitViewModel>();
+        public ThemeDesignerViewModel ThemeDesignerViewModel => TypeContainer.Get<ThemeDesignerViewModel>();
+        public RecordingViewModel RecordingViewModel => TypeContainer.Get<RecordingViewModel>();
+        public ToolbarViewModel ToolbarViewModel => TypeContainer.Get<ToolbarViewModel>();
 
         public ViewModelLocator()
         {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            SimpleIoc.Default.Register<MainViewModel>();
-            SimpleIoc.Default.Register<CockpitViewModel>();
-            SimpleIoc.Default.Register<ThemeDesignerViewModel>();
-            SimpleIoc.Default.Register<RecordingViewModel>();
-            SimpleIoc.Default.Register<MakroManager>();
-            SimpleIoc.Default.Register<Keyboard>();
-            SimpleIoc.Default.Register<ToolbarViewModel>();
+            //ServiceLocator.SetLocatorProvider(() => typeContainer);
 
-            SimpleIoc.Default.Register(() => VulcanKeyboard.Initialize());
-            SimpleIoc.Default.Register(() => new LightService(ServiceLocator.Current.GetInstance<VulcanKeyboard>()));
-            SimpleIoc.Default.Register(() => new HotKeyManager(ServiceLocator.Current.GetInstance<VulcanKeyboard>(), ServiceLocator.Current.GetInstance<LightService>()));
+            TypeContainer.Register<MainViewModel>();
+            TypeContainer.Register<CockpitViewModel>();
+            TypeContainer.Register<ThemeDesignerViewModel>();
+            TypeContainer.Register<RecordingViewModel>();
+            TypeContainer.Register<MakroManager>();
+            TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<ToolbarViewModel>();
+            TypeContainer.Register(VulcanKeyboard.Initialize());
+            TypeContainer.Register(new LightService(TypeContainer.Get<VulcanKeyboard>()));
+            TypeContainer.Register(new HotKeyManager(TypeContainer.Get<VulcanKeyboard>(), TypeContainer.Get<LightService>()));
           
         }
 

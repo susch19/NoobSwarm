@@ -1,7 +1,9 @@
 ﻿using NoobSwarm.Hid;
 using NoobSwarm.Hid.Reports;
+using NoobSwarm.Makros;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace NoobSwarm.VirtualHID
 {
-    public class Keyboard : IDisposable
+    public class Keyboard : IKeyboard, IDisposable
     {
         private bool disposedValue;
         private IntPtr keyboardLayout;
@@ -20,19 +22,7 @@ namespace NoobSwarm.VirtualHID
         private const int ctrl = 0b1000000000;
         private const int alt = 0b10000000000;
 
-        [Flags]
-        public enum KeyModifier : byte
-        {
-            None = 0,
-            left_control = 1 << 0,
-            left_shift = 1 << 1,
-            left_alt = 1 << 2,
-            left_gui = 1 << 3,
-            right_control = 1 << 4,
-            right_shift = 1 << 5,
-            right_alt = 1 << 6,
-            right_gui = 1 << 7
-        }
+    
 
 
         [DllImport("user32.dll")]
@@ -107,7 +97,7 @@ namespace NoobSwarm.VirtualHID
             }
         }
 
-        public Task PlayMacro(System.Collections.ObjectModel.ReadOnlyCollection<NoobSwarm.MakroManager.RecordKey> recKeys)
+        public Task PlayMacro(IReadOnlyList<NoobSwarm.MakroManager.RecordKey> recKeys)
         {
             return Task.Run(async () =>
             {
@@ -120,7 +110,7 @@ namespace NoobSwarm.VirtualHID
 
                     if (rec.Key == Makros.Key.LSHIFT || rec.Key == Makros.Key.RSHIFT)
                     {
-                        var mod = Keyboard.KeyModifier.left_shift;
+                        var mod = KeyModifier.Left_Shift;
                         if (rec.Pressed)
                             modifier |= mod;
                         else if ((modifier & mod) > 0)
@@ -128,15 +118,15 @@ namespace NoobSwarm.VirtualHID
                     }
                     else if (rec.Key == Makros.Key.LMENU || rec.Key == Makros.Key.RMENU)
                     {
-                        var mod = Keyboard.KeyModifier.left_alt;
+                        var mod = KeyModifier.Left_Alt;
                         if (rec.Pressed)
                             modifier |= mod;
                         else if ((modifier & mod) > 0)
                             modifier -= mod;
                     }
-                    else if (rec.Key == Makros.Key.LCONTROL|| rec.Key == Makros.Key.RCONTROL)
+                    else if (rec.Key == Makros.Key.LCONTROL || rec.Key == Makros.Key.RCONTROL)
                     {
-                        var mod = Keyboard.KeyModifier.left_control;
+                        var mod = KeyModifier.Left_Control;
                         if (rec.Pressed)
                             modifier |= mod;
                         else if ((modifier & mod) > 0)
@@ -146,12 +136,12 @@ namespace NoobSwarm.VirtualHID
                     {
                         if (recKeys.Count > i && (recKeys[i + 1].Key == Makros.Key.LWIN || recKeys[i + 1].Key == Makros.Key.RWIN))
                         {
-                            SendVirtualKey(0, Keyboard.KeyModifier.left_gui);
+                            SendVirtualKey(0, KeyModifier.Left_Gui);
                             i++;
                         }
                         else
                         {
-                            var mod = Keyboard.KeyModifier.left_gui;
+                            var mod = KeyModifier.Left_Gui;
                             if (rec.Pressed)
                                 modifier |= mod;
                             else if ((modifier & mod) > 0)
@@ -205,7 +195,7 @@ namespace NoobSwarm.VirtualHID
 
             if (winScanCode == 91)
             {
-                modifier |= KeyModifier.left_gui;
+                modifier |= KeyModifier.Left_Gui;
                 winScanCode -= 91;
             }
             if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
@@ -305,17 +295,17 @@ namespace NoobSwarm.VirtualHID
                 if ((virtualKey & shift) > 0)
                 {
                     virtualKey -= shift;
-                    modifier |= (byte)KeyModifier.left_shift;
+                    modifier |= (byte)KeyModifier.Left_Shift;
                 }
                 if ((virtualKey & ctrl) > 0)
                 {
                     virtualKey -= ctrl;
-                    modifier |= (byte)KeyModifier.left_control;
+                    modifier |= (byte)KeyModifier.Left_Control;
                 }
                 if ((virtualKey & alt) > 0)
                 {
                     virtualKey -= alt;
-                    modifier |= (byte)KeyModifier.left_alt;
+                    modifier |= (byte)KeyModifier.Left_Alt;
                 }
             }
             winScanCode = (ushort)PInvoke.User32.MapVirtualKey(virtualKey, PInvoke.User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);

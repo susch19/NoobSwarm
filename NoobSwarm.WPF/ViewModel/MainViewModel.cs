@@ -1,7 +1,9 @@
-﻿using CommonServiceLocator;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using MaterialDesignThemes.Wpf;
+
+using NonSucking.Framework.Extension.IoC;
+
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Windows;
@@ -90,16 +92,16 @@ namespace NoobSwarm.WPF.ViewModel
                     }
                 };
 
-                var lightService = ServiceLocator.Current.GetInstance<LightService>();
+                var lightService = TypeContainer.Get<LightService>();
                 lightService.AddToEnd(new HSVColorWanderEffect());
                 lightService.Speed = 5;
                 _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
 
-                var manager = ServiceLocator.Current.GetInstance<HotKeyManager>();
+                var manager = TypeContainer.Get<HotKeyManager>();
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
 
-                var kb = ServiceLocator.Current.GetInstance<VirtualHID.Keyboard>();
+                var kb = TypeContainer.Get<VirtualHID.Keyboard>();
                 LowLevelKeyboardHook hook = null;
 
                 manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };

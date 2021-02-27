@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NoobSwarm.Hotkeys;
+
+using System;
 using System.Collections.Generic;
 
 using Vulcan.NET;
@@ -15,7 +17,7 @@ namespace NoobSwarm
             parent.Children.Add(key, node);
             return node;
         }
-        public void CreateNode(IReadOnlyList<LedKey> hotkey, Action<VulcanKeyboard> action)
+        public void CreateNode(IReadOnlyList<LedKey> hotkey, IHotkeyCommand action)
         {
             KeyNode curNode = this;
             for (int i = 0; i < hotkey.Count; i++)
@@ -29,7 +31,7 @@ namespace NoobSwarm
                 curNode = tmpKey;
                 if (i == hotkey.Count - 1)
                 {
-                    tmpKey.KeineAhnungAction = action;
+                    tmpKey.Command = action;
                 }
             }
         }

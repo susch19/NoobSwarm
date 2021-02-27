@@ -100,8 +100,7 @@ namespace NoobSwarm.Windows
                 source.Dispose();
                 source = null;
             }
-            if (hookWithMessageLoop is not null)
-                hookWithMessageLoop = null;
+            hookWithMessageLoop = null;
             StopHook();
         }
     }

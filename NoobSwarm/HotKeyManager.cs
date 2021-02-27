@@ -1,4 +1,5 @@
 ﻿
+using NoobSwarm.Hotkeys;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 
@@ -165,13 +166,13 @@ namespace NoobSwarm
         /// Add a new hotkey to the tree
         /// </summary>
         /// <param name="hotkeys">A list of keys to be pressed for the hotkey execution. Needs atleast one key. First key is used as the hotkey entry, if <see cref="Mode"/> is <see cref="HotKeyMode.Passive"/></param>
-        /// <param name="action">Action to be called, when the hotkey is executed</param>
-        public void AddHotKey(IReadOnlyList<LedKey> hotkeys, Action<VulcanKeyboard> action)
+        /// <param name="command">Command to be called, when the hotkey is executed</param>
+        public void AddHotKey(IReadOnlyList<LedKey> hotkeys, IHotkeyCommand command)
         {
             if (hotkeys.Count < 1)
                 return;
 
-            tree.CreateNode(hotkeys, action);
+            tree.CreateNode(hotkeys, command);
         }
 
 
@@ -292,7 +293,7 @@ namespace NoobSwarm
             {
                 IsExecuting = e.IsPressed;
                 if (!e.IsPressed)
-                    lastNode.KeineAhnungAction?.Invoke(keyboard);
+                    lastNode.Command?.Execute();
 
                 // Always return so we dont try to get hotkey child which will not exist
                 return;
@@ -314,7 +315,7 @@ namespace NoobSwarm
             {
                 IsExecuting = false;
                 if (e.Key == EarlyExitKey)
-                    lastNode.KeineAhnungAction?.Invoke(keyboard);
+                    lastNode.Command?.Execute();
             }
 
             if (!IsExecuting)
@@ -335,7 +336,7 @@ namespace NoobSwarm
         {
             if (node?.HasSinglePath ?? false)
             {
-                Task.Run(() => node.SinglePathChild!.KeineAhnungAction?.Invoke(keyboard));
+                Task.Run(() => node.SinglePathChild!.Command?.Execute());
                 IsExecuting = false;
                 return true;
             }
@@ -355,7 +356,7 @@ namespace NoobSwarm
                 if (Mode == HotKeyMode.Passive)
                     ledColors[ExitKey] = ExitColor;
 
-                if (currentNode.KeineAhnungAction is not null)
+                if (currentNode.Command is not null)
                 {
                     switch (Mode)
                     {

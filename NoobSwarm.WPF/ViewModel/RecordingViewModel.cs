@@ -1,7 +1,8 @@
-﻿using CommonServiceLocator;
+﻿using GalaSoft.MvvmLight;
 
-using GalaSoft.MvvmLight;
+using NonSucking.Framework.Extension.IoC;
 
+using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.Windows;
 
@@ -38,9 +39,9 @@ namespace NoobSwarm.WPF.ViewModel
             else
             {
                 PropertyChanged += RecordingViewModel_PropertyChanged;
-                makroManager = ServiceLocator.Current.GetInstance<MakroManager>();
-                hotKey = ServiceLocator.Current.GetInstance<HotKeyManager>();
-                keyboard = ServiceLocator.Current.GetInstance<Keyboard>();
+                makroManager = TypeContainer.Get<MakroManager>();
+                hotKey = TypeContainer.Get<HotKeyManager>();
+                keyboard = TypeContainer.Get<Keyboard>();
                 makroManager.RecordAdded += HotKey_RecordAdded;
                 makroManager.RecordingFinished += (s, e) => { IsRecording = false; };
             }
@@ -84,7 +85,7 @@ namespace NoobSwarm.WPF.ViewModel
                 hook.OnKeyUnpressed += (s, e) => { makroManager.KeyReceived((Makros.Key)e, false); };
                 RecordingText = "Press the Makro Keys\r\n";
                 var recKeys = await makroManager.StartRecording(token);
-                hotKey.AddHotKey(hkKeys, (vk) => { keyboard.PlayMacro(recKeys); });
+                hotKey.AddHotKey(hkKeys,new MakroHotkeyCommand(recKeys));
             }
             IsRecording = false;
         }

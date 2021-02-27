@@ -56,7 +56,7 @@ namespace NoobSwarm
         /// <summary>
         /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
         /// </summary>
-        public async Task<ReadOnlyCollection<RecordKey>> StartRecording(CancellationToken token)
+        public async Task<List<RecordKey>> StartRecording(CancellationToken token)
         {
             stopWatch.Reset();
             records.Clear();
@@ -73,7 +73,7 @@ namespace NoobSwarm
             }
             isSynchronRecording = false;
 
-            return new ReadOnlyCollection<RecordKey>(records);
+            return records.ToList();
         }
 
         /// <summary>
