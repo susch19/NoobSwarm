@@ -133,7 +133,7 @@ namespace NoobSwarm.Lights
             overrideLightEffects.Clear();
         }
 
-        public void UpdateLoop()
+        public void UpdateLoop(CancellationToken token)
         {
             Stopwatch sw = new Stopwatch();
             Thread.CurrentThread.Name = "LightService_UpdateLoop";
@@ -141,7 +141,7 @@ namespace NoobSwarm.Lights
             Dictionary<LedKey, Color> currentColorsCopy = new();
             List<LightEffect> overrideLayersCopy = new();
             List<LightEffect> lightLayersCopy = new();
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 sw.Restart();
                 pressedCopy.AddRange(pressedKeys);

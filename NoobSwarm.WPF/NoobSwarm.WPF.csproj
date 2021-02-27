@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NoobSwarm.VirtualHID\NoobSwarm.VirtualHID.csproj" />
+    <ProjectReference Include="..\NoobSwarm.Windows\NoobSwarm.Windows.csproj" />
     <ProjectReference Include="..\NoobSwarm\NoobSwarm.csproj" />
   </ItemGroup>
 

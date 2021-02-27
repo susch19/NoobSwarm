@@ -1,36 +1,19 @@
-﻿using NoobSwarm.Brushes;
-using NoobSwarm.Hid;
-using NoobSwarm.Hid.Reports;
-using NoobSwarm.Hid.Reports.Input;
-using NoobSwarm.Lights;
+﻿using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
-
-using NoobSwarm.Windows;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-
 using Vulcan.NET;
-
 
 namespace NoobSwarm
 {
     class Program
     {
-
-
-
-        private static Task lightLoop;
-
         private static void OpenUrl(string url)
         {
             Process.Start(new ProcessStartInfo(url)
@@ -54,10 +37,12 @@ namespace NoobSwarm
 
         //public static extern void StopHook();
 
+        private static readonly CancellationTokenSource cts = new();
+
         [STAThread]
         static void Main(string[] args)
         {
-      
+            Console.CancelKeyPress += (s, e) => cts.Cancel();
 
             //start_message_loop();
        
@@ -128,7 +113,7 @@ namespace NoobSwarm
             //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
             ls.Speed = 5;
 
-            lightLoop = Task.Run(ls.UpdateLoop);
+            _ = Task.Run(() => ls.UpdateLoop(cts.Token));
 
             manager.AddHotKey(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
             manager.AddHotKey(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
@@ -200,11 +185,6 @@ namespace NoobSwarm
                         //if (lastRecordedMM is null)
                         //    break;
                         //RunMakro(kb, lastRecordedMM);
-                        break;
-
-                    case "tooltips":
-                        foreach (var item in Toolbar.GetToolbarButtonsText(Toolbar.ToolbarButtonLocation.All))
-                            Console.WriteLine(item);
                         break;
 
                     default:

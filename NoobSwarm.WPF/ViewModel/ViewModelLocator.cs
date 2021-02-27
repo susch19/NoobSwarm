@@ -15,6 +15,7 @@ namespace NoobSwarm.WPF.ViewModel
         public CockpitViewModel CockpitViewModel => ServiceLocator.Current.GetInstance<CockpitViewModel>();
         public ThemeDesignerViewModel ThemeDesignerViewModel => ServiceLocator.Current.GetInstance<ThemeDesignerViewModel>();
         public RecordingViewModel RecordingViewModel => ServiceLocator.Current.GetInstance<RecordingViewModel>();
+        public ToolbarViewModel ToolbarViewModel => ServiceLocator.Current.GetInstance<ToolbarViewModel>();
 
         public ViewModelLocator()
         {
@@ -26,6 +27,7 @@ namespace NoobSwarm.WPF.ViewModel
             SimpleIoc.Default.Register<RecordingViewModel>();
             SimpleIoc.Default.Register<MakroManager>();
             SimpleIoc.Default.Register<Keyboard>();
+            SimpleIoc.Default.Register<ToolbarViewModel>();
 
             SimpleIoc.Default.Register(() => VulcanKeyboard.Initialize());
             SimpleIoc.Default.Register(() => new LightService(ServiceLocator.Current.GetInstance<VulcanKeyboard>()));
