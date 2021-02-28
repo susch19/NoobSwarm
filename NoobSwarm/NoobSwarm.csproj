@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Assets\LedPositions.txt">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
