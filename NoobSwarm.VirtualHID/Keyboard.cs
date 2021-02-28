@@ -2,6 +2,8 @@
 using NoobSwarm.Hid.Reports;
 using NoobSwarm.Makros;
 
+using PInvoke;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,19 +16,27 @@ namespace NoobSwarm.VirtualHID
 {
     public class Keyboard : IKeyboard, IDisposable
     {
+        public bool CanUseDriver => canUseDriver;
+        public bool PreferWinApi { get; set; }
+
         private bool disposedValue;
         private IntPtr keyboardLayout;
         private HidStream vKeyboardStream;
         private readonly byte[] buf;
+        private readonly User32.INPUT[] inputs = new PInvoke.User32.INPUT[64];
         private const int shift = 0b100000000;
         private const int ctrl = 0b1000000000;
         private const int alt = 0b10000000000;
 
-    
+
+        private bool canUseDriver = false;
+        private bool useWinAPI => PreferWinApi || !canUseDriver;
 
 
         [DllImport("user32.dll")]
-        static extern int ToUnicodeEx(uint wVirtKey, uint wScanCode, byte[] lpKeyState, [Out, MarshalAs(UnmanagedType.LPWStr)] System.Text.StringBuilder pwszBuff, int cchBuff, uint wFlags, IntPtr dwhkl);
+        static extern int ToUnicodeEx(uint wVirtKey, uint wScanCode, byte[] lpKeyState,
+            [Out, MarshalAs(UnmanagedType.LPWStr)] System.Text.StringBuilder pwszBuff, int cchBuff, uint wFlags,
+            IntPtr dwhkl);
 
         [DllImport("user32.dll")]
         static extern bool GetKeyboardState(byte[] lpKeyState);
@@ -40,154 +50,65 @@ namespace NoobSwarm.VirtualHID
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         static extern short VkKeyScanEx(char ch, IntPtr dwhkl);
 
+
         public Keyboard()
         {
             keyboardLayout = GetKeyboardLayout(0);
-            var devices = DeviceList.Local.GetHidDevices(0xAFFE).Where(x => x.ProductID == 0xCAFE).ToList();
-            var controlDevice = devices.Where(x => x.GetReportDescriptor().Reports.Any(y => y.ReportID == 0x40)).ToList();
-            var kbDevice = devices.First(x => x.DevicePath.EndsWith("kbd"));
 
-            if (controlDevice != default && controlDevice[0].TryOpen(out vKeyboardStream))
+            try
             {
-                var rd = controlDevice[0].GetReportDescriptor();
-                var rdkbd = kbDevice.GetReportDescriptor();
-                var inputRep = rd.Reports.First(x => x.ReportType == ReportType.Input);
-                var inputRepKbd = rdkbd.Reports.First(x => x.ReportType == ReportType.Input);
-                buf = inputRep.CreateBuffer();
-                buf[0] = 0x40;
-                buf[1] = (byte)inputRepKbd.Length;//length of subReport
-                //buf[2] = inputRepKbd.ReportID;
-                //buf[3] = 8;
-                //try
-                //{
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[3] = 0;
-                //    //vKeyboardStream.Write(buf);
-                //    //Thread.Sleep(10);
-                //    buf[5] = 0x0;
-                //    buf[6] = 0xcd;
-                //    //buf[6] = 0x01;
-                //    vKeyboardStream.Write(buf);
-                //    Thread.Sleep(100);
-                //    buf[5] = 0x0;
-                //    buf[6] = 0x0;
-                //    //buf[6] = 0x0;
-                //    vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x08;
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x0f;
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x0f;
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x12;
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x1f;
-                //    //vKeyboardStream.Write(buf);
-                //    //buf[5] = 0x0;
-                //    //vKeyboardStream.Write(buf);
-                //    Thread.Sleep(5000);
-                //}
-                //finally
-                //{
-                //    buf[5] = 0x0;
-                //    vKeyboardStream.Write(buf);
-                //}
+                var devices = DeviceList.Local.GetHidDevices(0xAFFE).Where(x => x.ProductID == 0xCAFE).ToList();
+                var controlDevice = devices.Where(x => x.GetReportDescriptor().Reports.Any(y => y.ReportID == 0x40))
+                    .ToList();
+                var kbDevice = devices.First(x => x.DevicePath.EndsWith("kbd"));
 
-
+                if (controlDevice != default && controlDevice[0].TryOpen(out vKeyboardStream))
+                {
+                    var rd = controlDevice[0].GetReportDescriptor();
+                    var rdkbd = kbDevice.GetReportDescriptor();
+                    var inputRep = rd.Reports.First(x => x.ReportType == ReportType.Input);
+                    var inputRepKbd = rdkbd.Reports.First(x => x.ReportType == ReportType.Input);
+                    buf = inputRep.CreateBuffer();
+                    buf[0] = 0x40;
+                    buf[1] = (byte)inputRepKbd.Length; //length of subReport
+                }
+                canUseDriver = true;
+            }
+            catch (Exception ex)
+            {
             }
         }
 
-        public Task PlayMacro(IReadOnlyList<NoobSwarm.MakroManager.RecordKey> recKeys)
+        private Makros.Key[] winKeys = new[] { Makros.Key.RWIN, Makros.Key.LWIN };
+        private Makros.Key[] ctrlKeys = new[] { Makros.Key.LCONTROL, Makros.Key.RCONTROL };
+        private Makros.Key[] shiftKeys = new[] { Makros.Key.LSHIFT, Makros.Key.RSHIFT };
+        private Makros.Key[] menuKeys = new[] { Makros.Key.LMENU, Makros.Key.RMENU };
+        public Task PlayMacro(IReadOnlyList<MakroManager.RecordKey> recKeysMem)
         {
             return Task.Run(async () =>
             {
                 KeyModifier modifier = KeyModifier.None;
-                for (int i = 0; i < recKeys.Count; i++)
+                for (int i = 0; i < recKeysMem.Count; i++)
                 {
-                    MakroManager.RecordKey rec = recKeys[i];
+                    MakroManager.RecordKey rec = recKeysMem[i];
                     if (rec.TimeBeforePress > 0)
                         await Task.Delay(rec.TimeBeforePress);
-
-                    if (rec.Key == Makros.Key.LSHIFT || rec.Key == Makros.Key.RSHIFT)
-                    {
-                        var mod = KeyModifier.Left_Shift;
-                        if (rec.Pressed)
-                            modifier |= mod;
-                        else if ((modifier & mod) > 0)
-                            modifier -= mod;
-                    }
-                    else if (rec.Key == Makros.Key.LMENU || rec.Key == Makros.Key.RMENU)
-                    {
-                        var mod = KeyModifier.Left_Alt;
-                        if (rec.Pressed)
-                            modifier |= mod;
-                        else if ((modifier & mod) > 0)
-                            modifier -= mod;
-                    }
-                    else if (rec.Key == Makros.Key.LCONTROL || rec.Key == Makros.Key.RCONTROL)
-                    {
-                        var mod = KeyModifier.Left_Control;
-                        if (rec.Pressed)
-                            modifier |= mod;
-                        else if ((modifier & mod) > 0)
-                            modifier -= mod;
-                    }
-                    else if (rec.Key == Makros.Key.LWIN || rec.Key == Makros.Key.RWIN)
-                    {
-                        if (recKeys.Count > i && (recKeys[i + 1].Key == Makros.Key.LWIN || recKeys[i + 1].Key == Makros.Key.RWIN))
-                        {
-                            SendVirtualKey(0, KeyModifier.Left_Gui);
-                            i++;
-                        }
-                        else
-                        {
-                            var mod = KeyModifier.Left_Gui;
-                            if (rec.Pressed)
-                                modifier |= mod;
-                            else if ((modifier & mod) > 0)
-                                modifier -= mod;
-                        }
-                    }
+                    if (
+                        TestForModifierKey(rec, recKeysMem, shiftKeys, KeyModifier.Left_Shift, ref modifier, ref i)
+                    || TestForModifierKey(rec, recKeysMem, menuKeys, KeyModifier.Left_Alt, ref modifier, ref i)
+                    || TestForModifierKey(rec, recKeysMem, ctrlKeys, KeyModifier.Left_Control, ref modifier, ref i)
+                    || TestForModifierKey(rec, recKeysMem, winKeys, KeyModifier.Left_Gui, ref modifier, ref i))
+                    { }
                     else if (rec.Pressed)
                     {
                         SendVirtualKey((ushort)rec.Key, modifier);
                     }
-
                 }
 
+                SendVirtualKey(0, KeyModifier.None);
             });
         }
 
-
-        //public string VKCodeToUnicode(uint VKCode)
-        //{
-        //    System.Text.StringBuilder sbString = new System.Text.StringBuilder();
-
-        //    byte[] bKeyState = new byte[255];
-        //    bool bKeyStateStatus = GetKeyboardState(bKeyState);
-        //    if (!bKeyStateStatus)
-        //        return "";
-        //    uint lScanCode = MapVirtualKey(VKCode, 0);
-
-        //    var shift = 0b100000000;
-        //    var strg = 0b1000000000;
-        //    var alt = 0b10000000000;
-
-        //    var smallH = VkKeyScanEx('a', keyboardLayout);
-
-        //    var mapped = PInvoke.User32.MapVirtualKey(smallH, PInvoke.User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
-        //    var smallZ = VkKeyScanEx('z', keyboardLayout);
-        //    var mappedZ = PInvoke.User32.MapVirtualKey(smallZ, PInvoke.User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
-        //    var bigZ = VkKeyScanEx('Z', keyboardLayout);
-        //    var smallA = VkKeyScanEx('a', keyboardLayout);
-        //    var bigA = VkKeyScanEx('A', keyboardLayout);
-        //    var small2 = VkKeyScanEx('2', keyboardLayout);
-        //    var big2 = VkKeyScanEx('"', keyboardLayout);
-        //    var huge2 = VkKeyScanEx('²', keyboardLayout);
-
-        //    ToUnicodeEx(VKCode, lScanCode, bKeyState, sbString, (int)5, (uint)0, HKL);
-        //    return sbString.ToString();
-        //}
 
         public void SendVirtualKey(ushort key)
         {
@@ -198,7 +119,15 @@ namespace NoobSwarm.VirtualHID
                 modifier |= KeyModifier.Left_Gui;
                 winScanCode -= 91;
             }
-            if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
+
+            if (useWinAPI)
+            {
+                //if (modifier > 0 && key == 0)
+                //    SendKeyWinApi(KeyModifier.None, (ushort)User32.ScanCode.LWIN);
+                //else
+                SendKeyWinApi(modifier, winScanCode);
+            }
+            else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
             {
                 SendKey(modifier, val);
             }
@@ -207,13 +136,20 @@ namespace NoobSwarm.VirtualHID
                 SendKey(modifier, 0x070000);
             }
         }
+
         public void SendVirtualKey(ushort key, KeyModifier modifier)
         {
-
             key = ExtractModifierAndWinScanCode(key, out KeyModifier addModifier, out var winScanCode);
 
             modifier |= addModifier;
-            if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
+            if (useWinAPI)
+            {
+                //if (modifier > 0 && key == 0)
+                //    SendKeyWinApi(KeyModifier.None, (ushort)User32.ScanCode.LWIN);
+                //else
+                SendKeyWinApi(modifier, winScanCode);
+            }
+            else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
             {
                 SendKey(modifier, val);
             }
@@ -225,12 +161,14 @@ namespace NoobSwarm.VirtualHID
 
         public void SendVirtualKeysSequence(ReadOnlySpan<ushort> keys, KeyModifier modifier)
         {
-
             foreach (var item in keys)
             {
                 ExtractModifierAndWinScanCode(item, out KeyModifier addModifier, out var winScanCode);
-
-                if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
+                if (useWinAPI)
+                {
+                    SendKeyWinApi(addModifier, winScanCode);
+                }
+                else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
                 {
                     SendKey(modifier, val);
                 }
@@ -239,8 +177,6 @@ namespace NoobSwarm.VirtualHID
                     SendKey(modifier, 0x070000);
                 }
             }
-
-
         }
 
         public void SendChar(char charToTest)
@@ -249,12 +185,16 @@ namespace NoobSwarm.VirtualHID
             KeyModifier modifier;
             ushort winScanCode;
             virtualKey = ExtractModifierAndWinScanCode(virtualKey, out modifier, out winScanCode);
-
-            if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
+            if (useWinAPI)
+            {
+                SendKeyWinApi(modifier, winScanCode);
+            }
+            else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
             {
                 SendKey(modifier, val);
             }
         }
+
         public void SendChar(char charToTest, KeyModifier modifier)
         {
             var virtualKey = (ushort)VkKeyScanEx(charToTest, keyboardLayout);
@@ -262,11 +202,17 @@ namespace NoobSwarm.VirtualHID
             virtualKey = ExtractModifierAndWinScanCode(virtualKey, out KeyModifier addmodifier, out var winScanCode);
             modifier |= addmodifier;
 
-            if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
+            if (useWinAPI)
+            {
+                SendKeyWinApi(addmodifier, winScanCode);
+            }
+            else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode, out var val))
             {
                 SendKey(modifier, val);
             }
         }
+
+
         public bool SendCharsSequene(ReadOnlySpan<char> charsToTest)
         {
             Span<byte> modifier = stackalloc byte[charsToTest.Length];
@@ -280,14 +226,20 @@ namespace NoobSwarm.VirtualHID
             }
 
             for (int i = 0; i < charsToTest.Length; i++)
-                if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode[i], out var val))
+                if (useWinAPI)
+                {
+                    SendKeyWinApi((KeyModifier)modifier[i], winScanCode[i]);
+                }
+                else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode[i], out var val))
                 {
                     SendKey((KeyModifier)modifier[i], val);
                 }
+
             return true;
         }
 
-        private static ushort ExtractModifierAndWinScanCode(ushort virtualKey, out byte modifier, out ushort winScanCode)
+        private static ushort ExtractModifierAndWinScanCode(ushort virtualKey, out byte modifier,
+            out ushort winScanCode)
         {
             modifier = (byte)KeyModifier.None;
             if (virtualKey >= shift)
@@ -297,25 +249,166 @@ namespace NoobSwarm.VirtualHID
                     virtualKey -= shift;
                     modifier |= (byte)KeyModifier.Left_Shift;
                 }
+
                 if ((virtualKey & ctrl) > 0)
                 {
                     virtualKey -= ctrl;
                     modifier |= (byte)KeyModifier.Left_Control;
                 }
+
                 if ((virtualKey & alt) > 0)
                 {
                     virtualKey -= alt;
                     modifier |= (byte)KeyModifier.Left_Alt;
                 }
             }
-            winScanCode = (ushort)PInvoke.User32.MapVirtualKey(virtualKey, PInvoke.User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
+
+            winScanCode =
+                (ushort)PInvoke.User32.MapVirtualKey(virtualKey,
+                    PInvoke.User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
             return virtualKey;
         }
-        private static ushort ExtractModifierAndWinScanCode(ushort virtualKey, out KeyModifier modifier, out ushort winScanCode)
+
+        private static ushort ExtractModifierAndWinScanCode(ushort virtualKey, out KeyModifier modifier,
+            out ushort winScanCode)
         {
             virtualKey = ExtractModifierAndWinScanCode(virtualKey, out byte keyMod, out winScanCode);
             modifier = (KeyModifier)keyMod;
             return virtualKey;
+        }
+
+        private bool TestForModifierKey(MakroManager.RecordKey rec, IReadOnlyList<MakroManager.RecordKey> recKeys,
+            ReadOnlySpan<Key> keysToCheck, KeyModifier modifierToAdd, ref KeyModifier modifier, ref int i)
+        {
+            var contains = false;
+
+            bool Contains(MakroManager.RecordKey innerRecKey, ReadOnlySpan<Key> innerKeysToCheck)
+            {
+                foreach (var t in innerKeysToCheck)
+                {
+                    if (innerRecKey.Key == t)
+                        return true;
+                }
+
+                return false;
+            }
+
+
+            if (!Contains(recKeys[i], keysToCheck))
+                return false;
+
+            if (recKeys.Count > i && recKeys[i].Pressed && !recKeys[i + 1].Pressed && Contains(recKeys[i + 1], keysToCheck))
+            {
+                SendVirtualKey(0, modifierToAdd);
+                i++;
+            }
+            else
+            {
+                if (rec.Pressed)
+                    modifier |= modifierToAdd;
+                else if ((modifier & modifierToAdd) > 0)
+                    modifier -= modifierToAdd;
+            }
+
+            return true;
+
+        }
+
+        [DebuggerStepThrough]
+        private void SendKeyWinApi(KeyModifier addmodifier, ushort winScanCode)
+        {
+            int i = 0;
+            var input = new PInvoke.User32.INPUT();
+
+            // if ((addmodifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > 0)
+            //     AddInput(ref i, ref input, User32.ScanCode.LMENU, User32.KEYEVENTF.KEYEVENTF_SCANCODE);
+            // else
+            //     AddInput(ref i, ref input, User32.ScanCode.LMENU,
+            //         User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            //
+            // if ((addmodifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > 0)
+            //     AddInput(ref i, ref input, User32.ScanCode.CONTROL, User32.KEYEVENTF.KEYEVENTF_SCANCODE);
+            // else
+            //     AddInput(ref i, ref input, User32.ScanCode.CONTROL,
+            //         User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            //
+            // if (winScanCode != (ushort) User32.ScanCode.LWIN)
+            //     if ((addmodifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > 0)
+            //         AddInput(ref i, ref input, User32.ScanCode.LWIN, User32.KEYEVENTF.KEYEVENTF_SCANCODE);
+            //     else
+            //         AddInput(ref i, ref input, User32.ScanCode.LWIN,
+            //             User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            //
+            // if ((addmodifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > 0)
+            //     AddInput(ref i, ref input, User32.ScanCode.SHIFT, User32.KEYEVENTF.KEYEVENTF_SCANCODE);
+            // else
+            //     AddInput(ref i, ref input, User32.ScanCode.SHIFT,
+            //         User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            //
+            if ((addmodifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LMENU, 0);
+
+            if ((addmodifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LCONTROL, 0);
+
+            if ((addmodifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, 0);
+
+            if ((addmodifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_SHIFT, 0);
+
+            if (winScanCode > 0)
+            {
+                //AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, 0);
+                //AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                //}
+                //else
+                //{
+                AddInput(ref i, ref input, (User32.ScanCode)winScanCode, User32.KEYEVENTF.KEYEVENTF_SCANCODE);
+                AddInput(ref i, ref input, (User32.ScanCode)winScanCode,
+                    User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            }
+
+            if ((addmodifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LMENU, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+            if ((addmodifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LCONTROL, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+
+            if ((addmodifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+
+            if ((addmodifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > 0)
+                AddInput(ref i, ref input, User32.VirtualKey.VK_SHIFT, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+
+            unsafe
+            {
+                User32.SendInput(i, inputs, sizeof(User32.INPUT));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                inputs[j] = default;
+            }
+        }
+
+        private void AddInput(ref int i, ref User32.INPUT input, User32.ScanCode code, User32.KEYEVENTF flags)
+        {
+            input.type = PInvoke.User32.InputType.INPUT_KEYBOARD; // 1 = Keyboard Input
+            input.Inputs.ki.wScan = code;
+            input.Inputs.ki.dwFlags = flags;
+            inputs[i] = input;
+            input = new PInvoke.User32.INPUT();
+            i++;
+        }
+
+        private void AddInput(ref int i, ref User32.INPUT input, User32.VirtualKey code, User32.KEYEVENTF flags)
+        {
+            input.type = PInvoke.User32.InputType.INPUT_KEYBOARD; // 1 = Keyboard Input
+            input.Inputs.ki.wVk = code;
+            input.Inputs.ki.dwFlags = flags;
+            inputs[i] = input;
+            input = new PInvoke.User32.INPUT();
+            i++;
         }
 
         [DebuggerStepThrough]
@@ -342,7 +435,6 @@ namespace NoobSwarm.VirtualHID
                 disposedValue = true;
             }
         }
-
 
 
         public void Dispose()
