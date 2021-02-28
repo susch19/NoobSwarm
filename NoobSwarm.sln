@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.VirtualHID", "Noo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Windows", "NoobSwarm.Windows\NoobSwarm.Windows.csproj", "{9BF875C6-3DB2-469E-9222-02EBD177757F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Plugin.Ts", "NoobSwarm.Plugin.Ts\NoobSwarm.Plugin.Ts.csproj", "{457A1CDF-9287-4240-B3C2-49B9D2B372A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BF875C6-3DB2-469E-9222-02EBD177757F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
