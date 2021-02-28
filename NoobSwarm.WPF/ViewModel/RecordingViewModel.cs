@@ -86,6 +86,7 @@ namespace NoobSwarm.WPF.ViewModel
                 RecordingText = "Press the Makro Keys\r\n";
                 var recKeys = await makroManager.StartRecording(token);
                 hotKey.AddHotKey(hkKeys,new MakroHotkeyCommand(recKeys));
+                hotKey.Serialize();
             }
             IsRecording = false;
         }

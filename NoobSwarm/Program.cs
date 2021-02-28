@@ -1,14 +1,23 @@
-﻿using NonSucking.Framework.Extension.IoC;
+﻿using MessagePack;
+
+using NonSucking.Framework.Extension.IoC;
+
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Makros;
+using NoobSwarm.MessagePackFormatters;
+
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Vulcan.NET;
 
 namespace NoobSwarm
@@ -100,9 +109,36 @@ namespace NoobSwarm
             //    Console.ReadLine();
 
 
+            var asdhotkey = new MakroHotkeyCommand(new List<MakroManager.RecordKey> {
+                new MakroManager.RecordKey(Makros.Key.A, 120,true),
+                new MakroManager.RecordKey(Makros.Key.A, 50,false)
+            });
+
+         
+
             var manager = TypeContainer.Get<HotKeyManager>();
             manager.Mode = HotKeyMode.Active;
             manager.HotKey = LedKey.FN_Key;
+            manager.AddHotKey(new List<LedKey> {LedKey.A }, asdhotkey);
+            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
+                new SystemDrawingColorFormatter());
+
+            var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
+                MessagePack.Resolvers.StandardResolver.Instance, 
+                MessagePack.Resolvers.StaticCompositeResolver.Instance);
+            var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
+            
+            MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
+
+            var ser = MessagePack.MessagePackSerializer.Serialize<HotKeyManager>(manager);
+            //manager.Serialize();
+            var set2 = File.ReadAllBytes("Makros.save");
+            var kn2 = MessagePack.MessagePackSerializer.Deserialize<HotKeyManager>(ser);
+            var kn3 = HotKeyManager.Deserialize();
+
+            ser = MessagePack.MessagePackSerializer.Typeless.Serialize(manager);
+            var manager2 = (HotKeyManager)MessagePack.MessagePackSerializer.Typeless.Deserialize(ser);
+
             var ls = TypeContainer.Get<LightService>();
             var keyboard = TypeContainer.Get<VulcanKeyboard>();
             ls.AddToEnd(new HSVColorWanderEffect());
@@ -111,7 +147,7 @@ namespace NoobSwarm
             //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'D' && x.ToString().Length == 2).ToList()) { Direction = Direction.Left });
             //ls.AddToEnd(new BreathingColorPerKeyEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList(), new HSVColorWanderEffect()) { Speed = .1f });
             //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
-            ls.AddToEnd(new SolidColorEffect() {Brightness = 50});
+            ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
             //ls.AddToEnd(new PressedFadeOutEffect(new HSVColorWanderEffect() { Direction = Direction.Right, Speed = 5 }));
             //ls.AddToEnd(new RandomColorPerKeyEffect() { Brightness=10});
             //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
@@ -129,7 +165,7 @@ namespace NoobSwarm
                 .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
                 .Where(x => x.PropertyType == typeof(Color)))
             {
-                var hotkey = new List<LedKey> {LedKey.C, LedKey.O, LedKey.L};
+                var hotkey = new List<LedKey> { LedKey.C, LedKey.O, LedKey.L };
 
                 foreach (var key in color.Name.ToUpper())
                 {
@@ -138,7 +174,7 @@ namespace NoobSwarm
 
                 manager.AddHotKey(hotkey,
                     new AddRemoveLightCommand(
-                        new SolidColorEffect((Color) (color.GetValue(null) ?? Color.Black)))
+                        new SolidColorEffect((Color)(color.GetValue(null) ?? Color.Black)))
                     {
                         InsertAtEnd = true
                     });
@@ -152,14 +188,14 @@ namespace NoobSwarm
             //     ((SolidColorEffect)solid).SolidColor = null;
             // });
 
-            keyboard.VolumeKnobFxPressedReceived += (s, e) => { ls.Brightness = (byte) (e.Data - 1); };
+            keyboard.VolumeKnobFxPressedReceived += (s, e) => { ls.Brightness = (byte)(e.Data - 1); };
 
             string url = string.Empty;
             List<(LedKey, int)> lastRecorded = null;
             List<MakroManager.RecordKey> lastRecordedMM = null;
             while (true)
             {
-                var commands = Console.ReadLine()?.Split('|') ?? new[] {""};
+                var commands = Console.ReadLine()?.Split('|') ?? new[] { "" };
                 var command = commands[0];
 
                 switch (command)

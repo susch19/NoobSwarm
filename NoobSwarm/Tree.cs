@@ -1,4 +1,6 @@
-﻿using NoobSwarm.Hotkeys;
+﻿using MessagePack;
+
+using NoobSwarm.Hotkeys;
 
 using System;
 using System.Collections.Generic;

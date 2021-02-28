@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NoobSwarm.Lights.LightEffects;
 using static NoobSwarm.MakroManager;
+using MessagePack;
 
 namespace NoobSwarm.Lights
 {
@@ -52,14 +53,6 @@ namespace NoobSwarm.Lights
                         lightService.AddToStart(Effect);
                 }
             }
-        }
-
-        public void Deserialize()
-        {
-        }
-
-        public void Serialize()
-        {
         }
     }
 }

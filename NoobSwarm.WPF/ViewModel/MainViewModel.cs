@@ -98,6 +98,7 @@ namespace NoobSwarm.WPF.ViewModel
                 _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
 
                 var manager = TypeContainer.Get<HotKeyManager>();
+
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
 

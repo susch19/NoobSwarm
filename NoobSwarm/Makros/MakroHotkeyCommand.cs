@@ -1,4 +1,6 @@
-﻿using NonSucking.Framework.Extension.IoC;
+﻿using MessagePack;
+
+using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
 
@@ -12,11 +14,15 @@ using static NoobSwarm.MakroManager;
 
 namespace NoobSwarm.Makros
 {
+    [MessagePackObject]
     public class MakroHotkeyCommand : IHotkeyCommand
     {
+        [IgnoreMember]
         private IKeyboard? keyboard;
 
+        [IgnoreMember]
         public HotKeyType HotKeyType { get; set; }
+        [Key(0)]
         public List<RecordKey>? Makro { get; set; }
 
         public MakroHotkeyCommand()
@@ -40,12 +46,5 @@ namespace NoobSwarm.Makros
                 keyboard.PlayMacro(Makro);
         }
 
-        public void Deserialize()
-        {
-        }
-
-        public void Serialize()
-        {
-        }
     }
 }

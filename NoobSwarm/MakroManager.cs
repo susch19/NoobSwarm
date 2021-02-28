@@ -1,4 +1,6 @@
-﻿using NoobSwarm.Lights;
+﻿using MessagePack;
+
+using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
 
@@ -7,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -24,7 +27,11 @@ namespace NoobSwarm
         public event EventHandler<RecordKey> RecordAdded;
         public event EventHandler<IReadOnlyCollection<RecordKey>> RecordingFinished;
 
-        public record RecordKey(Makros.Key Key, int TimeBeforePress, bool Pressed);
+        [MessagePackObject()]
+        public record RecordKey(
+            [property: Key(0)] Makros.Key Key, 
+            [property: Key(1)] int TimeBeforePress, 
+            [property: Key(2)] bool Pressed);
 
         public Makros.Key StopRecordKey { get; set; } = Makros.Key.PAUSE;
 
@@ -40,6 +47,7 @@ namespace NoobSwarm
         private SemaphoreSlim slim = new SemaphoreSlim(0);
         private Queue<Makros.Key> keyQueue = new();
         private AutoResetEvent resetEvent = new(false);
+
 
 
         public void FinishRecording()
@@ -121,7 +129,7 @@ namespace NoobSwarm
                 var rec = new RecordKey(key, (int)stopWatch.Elapsed.TotalMilliseconds, down);
                 records.Add(rec);
                 stopWatch.Restart();
-                RecordAdded?.Invoke(this,rec);
+                RecordAdded?.Invoke(this, rec);
                 if (isAsyncRecording)
                 {
 

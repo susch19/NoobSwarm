@@ -1,13 +1,21 @@
 ﻿
+using MessagePack;
+using MessagePack.Formatters;
+using MessagePack.Resolvers;
+
+using NonSucking.Framework.Extension.IoC;
+
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.MessagePackFormatters;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -31,6 +39,7 @@ namespace NoobSwarm
         Active
     }
 
+    [MessagePackFormatter(typeof(HotKeyManagerFormatter))]
     public class HotKeyManager
     {
         public event EventHandler StartedHotkeyMode;
@@ -114,9 +123,8 @@ namespace NoobSwarm
         public Color RecordingColorPrimary { get; set; } = Color.DarkGreen;
         public Color RecordingColorSecondary { get; set; } = Color.Yellow;
 
+        private Tree tree  = new();
         private readonly VulcanKeyboard keyboard;
-        private readonly Tree tree = new();
-
         private bool isExecuting;
         private LedKey hotKey;
         private LightService lightService;
@@ -124,12 +132,9 @@ namespace NoobSwarm
         private BreathingColorPerKeyEffect breathingHotKeyEffect;
         private KeyNode currentNode;
         private Dictionary<LedKey, Color> ledColors = new();
-
-        // Synchron recording variables
         private bool isSynchronRecording;
         private List<LedKey> synchronRecordingKeys = new();
         private SemaphoreSlim synchronRecordingSemaphore = new(0);
-
         private bool isAsyncRecording;
         private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
         private CancellationTokenSource? asyncToken;
@@ -148,13 +153,11 @@ namespace NoobSwarm
             Mode = HotKeyMode.Passive;
         }
 
-        private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
+        public HotKeyManager()
         {
-            if (isSynchronRecording)
-                synchronRecordingSemaphore.Release();
-            else if (isAsyncRecording)
-                asyncToken?.Cancel();
+
         }
+
 
         public HotKeyManager(VulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : this(keyboard, lightService)
         {
@@ -162,6 +165,26 @@ namespace NoobSwarm
             Mode = HotKeyMode.Active;
         }
 
+        public void Serialize()
+        {
+            using var fs = File.OpenWrite("Makros.save");
+            MessagePackSerializer.Serialize(fs, this);
+        }
+        public static HotKeyManager Deserialize()
+        {
+            if (!File.Exists("Makros.save"))
+                return TypeContainer.CreateObject<HotKeyManager>();
+            using var fs = File.OpenRead("Makros.save");
+            return MessagePackSerializer.Deserialize< HotKeyManager>(fs);
+        }
+
+        private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
+        {
+            if (isSynchronRecording)
+                synchronRecordingSemaphore.Release();
+            else if (isAsyncRecording)
+                asyncToken?.Cancel();
+        }
         /// <summary>
         /// Add a new hotkey to the tree
         /// </summary>
@@ -184,7 +207,7 @@ namespace NoobSwarm
             synchronRecordingKeys.Clear();
             ledColors.Clear();
             AddHotKeyEffect();
-            isSynchronRecording = true;            
+            isSynchronRecording = true;
             StartedHotkeyMode?.Invoke(this, new());
             try
             {
@@ -381,6 +404,44 @@ namespace NoobSwarm
         {
             lightService.AddOverrideToStart(hotKeyEffect);
             lightService.AddOverrideToEnd(breathingHotKeyEffect);
+        }
+
+
+        class HotKeyManagerFormatter : IMessagePackFormatter<HotKeyManager>
+        {
+            public void Serialize(ref MessagePackWriter writer, HotKeyManager value, MessagePackSerializerOptions options)
+            {
+                //is not registered in resolver: MessagePack.Resolvers.StandardResolver
+
+                MessagePackSerializer.Serialize(ref writer, value.HotKey);
+                MessagePackSerializer.Serialize(ref writer, value.HotKeyColor);
+                MessagePackSerializer.Serialize(ref writer, value.EarlyExitKey);
+                MessagePackSerializer.Serialize(ref writer, value.EarlyExitColor);
+                MessagePackSerializer.Serialize(ref writer, value.ExitKey);
+                MessagePackSerializer.Serialize(ref writer, value.ExitColor);
+                MessagePackSerializer.Serialize(ref writer, value.Mode);
+                MessagePackSerializer.Serialize(ref writer, value.RecordingColorPrimary);
+                MessagePackSerializer.Serialize(ref writer, value.RecordingColorSecondary);
+                MessagePackSerializer.Typeless.Serialize(ref writer, value.tree as KeyNode);
+                //MessagePackSerializer.Serialize<KeyNode>(ref writer, value.Tree);
+            }
+
+            HotKeyManager IMessagePackFormatter<HotKeyManager>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+            {
+                var hkm = new HotKeyManager(TypeContainer.Get<VulcanKeyboard>(), TypeContainer.Get<LightService>());
+                hkm.HotKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
+                hkm.HotKeyColor = MessagePackSerializer.Deserialize<Color>(ref reader);
+                hkm.EarlyExitKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
+                hkm.EarlyExitColor = MessagePackSerializer.Deserialize<Color>(ref reader);
+                hkm.ExitKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
+                hkm.ExitColor = MessagePackSerializer.Deserialize<Color>(ref reader);
+                hkm.Mode = MessagePackSerializer.Deserialize<HotKeyMode>(ref reader);
+                hkm.RecordingColorPrimary = MessagePackSerializer.Deserialize < Color > (ref reader);
+                hkm.RecordingColorSecondary = MessagePackSerializer.Deserialize<Color>(ref reader);
+                hkm.tree = (Tree)MessagePackSerializer.Typeless.Deserialize(ref reader);
+                hkm.currentNode = hkm.tree;
+                return hkm;
+            }
         }
 
     }

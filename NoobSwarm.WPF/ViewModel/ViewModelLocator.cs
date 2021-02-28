@@ -1,11 +1,16 @@
 ﻿
 using GalaSoft.MvvmLight.Ioc;
 
+using MessagePack;
+
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
 using NoobSwarm.Makros;
+using NoobSwarm.MessagePackFormatters;
 using NoobSwarm.VirtualHID;
+
+using System;
 
 using Vulcan.NET;
 
@@ -21,7 +26,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         public ViewModelLocator()
         {
-
+            InitializeMessagePack();
             //ServiceLocator.SetLocatorProvider(() => typeContainer);
 
             TypeContainer.Register<MainViewModel>(InstanceBehaviour.Singleton);
@@ -34,10 +39,24 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register(VulcanKeyboard.Initialize());
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
-            TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
+            var hkm = HotKeyManager.Deserialize();
+            TypeContainer.Register(hkm);
+
           
+
         }
 
-     
+        private void InitializeMessagePack()
+        {
+            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
+         new SystemDrawingColorFormatter());
+
+            var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
+                MessagePack.Resolvers.StandardResolver.Instance,
+                MessagePack.Resolvers.StaticCompositeResolver.Instance);
+            var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
+
+            MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
+        }
     }
 }

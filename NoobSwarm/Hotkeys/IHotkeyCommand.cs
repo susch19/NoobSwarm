@@ -11,7 +11,5 @@ namespace NoobSwarm.Hotkeys
         HotKeyType HotKeyType { get; set; }
         
         void Execute();
-        void Serialize();
-        void Deserialize();
     }
 }
