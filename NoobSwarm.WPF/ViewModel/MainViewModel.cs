@@ -6,7 +6,6 @@ using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
-using NoobSwarm.Windows;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
 using Serilog;
@@ -38,7 +37,7 @@ namespace NoobSwarm.WPF.ViewModel
         public ICommand MenuItemExitCommand { get; set; }
 
         public ICommand KeyDownCommand { get; set; }
-        
+
         public ISnackbarMessageQueue SnackbarMessageQueue { get; set; }
         public object CurrentView { get; set; }
         public string Title { get; set; }
@@ -47,7 +46,10 @@ namespace NoobSwarm.WPF.ViewModel
         private readonly ObservableCollection<Exception> StartupExceptions = new();
         private readonly CockpitControl cockpitControl;
         private readonly CancellationTokenSource cts = new();
-        
+
+        private readonly LightService lightService;
+
+
         public MainViewModel()
         {
             Title = "NoobSwarm";
@@ -86,13 +88,14 @@ namespace NoobSwarm.WPF.ViewModel
                         Items = new ObservableCollection<MenuItem>()
                         {
                             new MenuItem("Theme Designer", PackIconKind.ColorHelper, new ThemeDesignerControl()),
-                            new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
+                            //new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
                             new MenuItem("Toolbar", PackIconKind.PlayBox, new ToolbarControl()),
+                            new MenuItem("TeamSpeak", PackIconKind.VoiceChat, new TsControl()),
                         }
                     }
                 };
 
-                var lightService = TypeContainer.Get<LightService>();
+                lightService = TypeContainer.Get<LightService>();
                 lightService.AddToEnd(new HSVColorWanderEffect());
                 lightService.Speed = 5;
                 _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
@@ -102,12 +105,11 @@ namespace NoobSwarm.WPF.ViewModel
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
 
-                var kb = TypeContainer.Get<VirtualHID.Keyboard>();
-                LowLevelKeyboardHook hook = null;
+                //var kb = TypeContainer.Get<VirtualHID.Keyboard>();
+                //LowLevelKeyboardHook hook = null;
 
-                manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
-                manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
-
+                //manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
+                //manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
             }
         }
 

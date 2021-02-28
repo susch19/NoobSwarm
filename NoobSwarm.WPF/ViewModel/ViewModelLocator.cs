@@ -1,7 +1,4 @@
-﻿
-using GalaSoft.MvvmLight.Ioc;
-
-using MessagePack;
+﻿using MessagePack;
 
 using NonSucking.Framework.Extension.IoC;
 
@@ -9,9 +6,7 @@ using NoobSwarm.Lights;
 using NoobSwarm.Makros;
 using NoobSwarm.MessagePackFormatters;
 using NoobSwarm.VirtualHID;
-
-using System;
-
+using NoobSwarm.WPF.MessagePackFormatters;
 using Vulcan.NET;
 
 namespace NoobSwarm.WPF.ViewModel
@@ -23,8 +18,9 @@ namespace NoobSwarm.WPF.ViewModel
         public ThemeDesignerViewModel ThemeDesignerViewModel => TypeContainer.Get<ThemeDesignerViewModel>();
         public RecordingViewModel RecordingViewModel => TypeContainer.Get<RecordingViewModel>();
         public ToolbarViewModel ToolbarViewModel => TypeContainer.Get<ToolbarViewModel>();
+        public TsViewModel TsViewModel => TypeContainer.Get<TsViewModel>();
 
-        public ViewModelLocator()
+        static ViewModelLocator()
         {
             InitializeMessagePack();
             //ServiceLocator.SetLocatorProvider(() => typeContainer);
@@ -41,15 +37,14 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             var hkm = HotKeyManager.Deserialize();
             TypeContainer.Register(hkm);
-
-          
-
+            TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
         }
 
-        private void InitializeMessagePack()
+        private static void InitializeMessagePack()
         {
             MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
-         new SystemDrawingColorFormatter());
+                new SystemDrawingColorFormatter(),
+                new SystemWindowsMediaColorFormatter());
 
             var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
                 MessagePack.Resolvers.StandardResolver.Instance,

@@ -46,7 +46,6 @@
             </StackPanel>
             <ToggleButton Grid.Column="1"
             Style="{StaticResource MaterialDesignActionToggleButton}"
-            ToolTip="MaterialDesignActionLightToggleButton"
             Content="{materialDesign:PackIcon Kind=Record,Size=36}"
             Width="48" Height="48"
             Margin="10"

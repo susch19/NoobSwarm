@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Vulcan.NET;
 
@@ -15,11 +12,18 @@ namespace NoobSwarm.Lights.LightEffects
 
         public Color? NonSetKeyColor { get; set; }
 
+        public SingleKeysColorEffect(Color color, IEnumerable<LedKey> keys)
+        {
+            KeyColors = keys.ToDictionary(x => x, _ => color);
+            Initialized = true;
+        }
+
         public SingleKeysColorEffect(Dictionary<LedKey, Color> keyColors)
         {
             KeyColors = keyColors;
             Initialized = true;
         }
+
         public SingleKeysColorEffect(Dictionary<LedKey, Color> keyColors, Color nonSetKeyColor)
         {
             KeyColors = keyColors;
@@ -47,8 +51,6 @@ namespace NoobSwarm.Lights.LightEffects
                         currentColors[keyColor.Key] = Color.FromArgb(keyColor.Value.A, (byte)(keyColor.Value.R * BrightnessPercent), (byte)(keyColor.Value.G * BrightnessPercent), (byte)(keyColor.Value.B * BrightnessPercent));
                 }
             }
-
-
         }
     }
 }
