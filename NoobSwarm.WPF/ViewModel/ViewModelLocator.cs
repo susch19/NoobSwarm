@@ -22,17 +22,18 @@ namespace NoobSwarm.WPF.ViewModel
         public CockpitViewModel CockpitViewModel => TypeContainer.Get<CockpitViewModel>();
         public ThemeDesignerViewModel ThemeDesignerViewModel => TypeContainer.Get<ThemeDesignerViewModel>();
         public RecordingViewModel RecordingViewModel => TypeContainer.Get<RecordingViewModel>();
+        public PlaybackViewModel PlaybackViewModel => TypeContainer.Get<PlaybackViewModel>();
         public ToolbarViewModel ToolbarViewModel => TypeContainer.Get<ToolbarViewModel>();
 
         public ViewModelLocator()
         {
             InitializeMessagePack();
-            //ServiceLocator.SetLocatorProvider(() => typeContainer);
 
             TypeContainer.Register<MainViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<CockpitViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ThemeDesignerViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<RecordingViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<PlaybackViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<MakroManager>(InstanceBehaviour.Singleton);
             TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
