@@ -53,5 +53,25 @@ namespace NoobSwarm
                 }
             }
         }
+
+        internal bool RemoveNode(Span<LedKey> hotkeys)
+        {
+            if (hotkeys.Length == 1)
+            {
+                if (Children.ContainsKey(hotkeys[0]))
+                    Children.Remove(hotkeys[0]);
+                return Children.Count == 0;
+            }
+
+            if (Children.TryGetValue(hotkeys[0], out var child))
+            {
+                if (child.RemoveNode(hotkeys[1..]))
+                {
+                    Children.Remove(hotkeys[0]);
+                    return Children.Count == 0;
+                }
+            }
+            return false;
+        }
     }
 }

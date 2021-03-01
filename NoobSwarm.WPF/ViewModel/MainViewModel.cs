@@ -94,6 +94,7 @@ namespace NoobSwarm.WPF.ViewModel
                             new MenuItem("Playback", PackIconKind.PlayBox, new PlaybackControl()),
                             new MenuItem("Toolbar", PackIconKind.PlayBox, new ToolbarControl()),
                             new MenuItem("TeamSpeak", PackIconKind.VoiceChat, new TsControl()),
+                            new MenuItem("Makro Overview", PackIconKind.Delete, new MakroOverview()),
                         }
                     }
                 };
