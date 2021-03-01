@@ -23,6 +23,8 @@ namespace NoobSwarm.WPF.ViewModel
         private SingleKeysColorEffect effect;
         private const string save = "tssettings.save";
 
+        private bool isTalking;
+
         public TsViewModel()
         {
             if (IsInDesignMode)
@@ -68,7 +70,13 @@ namespace NoobSwarm.WPF.ViewModel
             if (!e.IsMe)
                 return;
 
-            if (e.IsTalking)
+            isTalking = e.IsTalking;
+            UpdateTalkingEffect();
+        }
+
+        private void UpdateTalkingEffect()
+        {
+            if (isTalking)
                 lightService.AddToEnd(effect);
             else
                 lightService.RemoveLightEffect(effect);
@@ -99,7 +107,10 @@ namespace NoobSwarm.WPF.ViewModel
 
                 case nameof(Settings.Color):
                 case nameof(Settings.Keys):
+                    var oldEffect = effect;
                     effect = new SingleKeysColorEffect(System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
+                    lightService.RemoveLightEffect(oldEffect);
+                    UpdateTalkingEffect();
                     break;
             }
 
