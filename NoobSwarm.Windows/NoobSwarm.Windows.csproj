@@ -4,6 +4,7 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>warnings</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PInvoke.User32" Version="0.7.78" />
+    <ProjectReference Include="..\NoobSwarm.VirtualHID\NoobSwarm.VirtualHID.csproj" />
+    <ProjectReference Include="..\NoobSwarm\NoobSwarm.csproj" />
   </ItemGroup>
 
   <ItemGroup>

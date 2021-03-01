@@ -10,24 +10,12 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid >
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBox
-            Margin="10"
-            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-            Grid.Row="0"
-            VerticalAlignment="Stretch"
-            FontFamily="Consolas"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
-            VerticalScrollBarVisibility="Auto"
-            Text="Control for input testing of Makros"
-            CaretBrush="Transparent"
-            materialDesign:HintAssist.Hint="Playback Makros"/>
-
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -40,7 +28,64 @@
                            Style="{StaticResource MaterialDesignTextBlock}"/>
                 <ToggleButton  VerticalAlignment="Center" IsChecked="{Binding UseWinApi}"/>
             </StackPanel>
-    
+
+            <Button Grid.Column="2"
+            Style="{StaticResource MaterialDesignFloatingActionButton}"
+            Content="{materialDesign:PackIcon Kind=Refresh,Size=36}"
+            Width="48" Height="48"
+            Margin="10"
+            Grid.Row="1"
+            Command="{Binding RefreshCommand}"
+            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
+
         </Grid>
+
+        <ListView ItemsSource="{Binding Commands}"  Grid.Row="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Hotkey" Width="350">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ListView ItemsSource="{Binding Keys}" >
+                                    <ListView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListView.ItemsPanel>
+                                </ListView>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Keys">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ListView ItemsSource="{Binding Command.Makro}" >
+                                    <ListView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListView.ItemsPanel>
+                                </ListView>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <TextBox
+            Margin="10"
+            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+            Grid.Row="2"
+            VerticalAlignment="Stretch"
+            FontFamily="Consolas"
+            AcceptsReturn="True"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto"
+            Text="Control for input testing of Makros"
+            CaretBrush="Transparent"
+            materialDesign:HintAssist.Hint="Playback Makros"/>
+
+
     </Grid>
 </UserControl>

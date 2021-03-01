@@ -6,6 +6,7 @@ using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Windows;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
 using Serilog;
@@ -107,11 +108,11 @@ namespace NoobSwarm.WPF.ViewModel
                 manager.Mode = HotKeyMode.Active;
                 manager.HotKey = LedKey.FN_Key;
 
-                //var kb = TypeContainer.Get<VirtualHID.Keyboard>();
-                //LowLevelKeyboardHook hook = null;
+                var kb = TypeContainer.Get<VirtualHID.Keyboard>();
+                LowLevelKeyboardHook hook = null;
 
-                //manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
-                //manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
+                manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
+                manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
             }
         }
 

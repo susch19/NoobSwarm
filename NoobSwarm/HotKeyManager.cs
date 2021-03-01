@@ -123,7 +123,7 @@ namespace NoobSwarm
         public Color RecordingColorPrimary { get; set; } = Color.DarkGreen;
         public Color RecordingColorSecondary { get; set; } = Color.Yellow;
 
-        private Tree tree  = new();
+        private Tree tree = new();
         private readonly VulcanKeyboard keyboard;
         private bool isExecuting;
         private LedKey hotKey;
@@ -175,7 +175,7 @@ namespace NoobSwarm
             if (!File.Exists("Makros.save"))
                 return TypeContainer.CreateObject<HotKeyManager>();
             using var fs = File.OpenRead("Makros.save");
-            return MessagePackSerializer.Deserialize< HotKeyManager>(fs);
+            return MessagePackSerializer.Deserialize<HotKeyManager>(fs);
         }
 
         private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
@@ -280,6 +280,9 @@ namespace NoobSwarm
                 RemoveHotKeyEffect();
             }
         }
+
+        public IEnumerable<(List<LedKey> keys, IHotkeyCommand command)> GetHotkeys() => tree.GetCommands();
+
 
         private void Keyboard_KeyPressedReceived(object? sender, KeyPressedArgs e)
         {
@@ -436,7 +439,7 @@ namespace NoobSwarm
                 hkm.ExitKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
                 hkm.ExitColor = MessagePackSerializer.Deserialize<Color>(ref reader);
                 hkm.Mode = MessagePackSerializer.Deserialize<HotKeyMode>(ref reader);
-                hkm.RecordingColorPrimary = MessagePackSerializer.Deserialize < Color > (ref reader);
+                hkm.RecordingColorPrimary = MessagePackSerializer.Deserialize<Color>(ref reader);
                 hkm.RecordingColorSecondary = MessagePackSerializer.Deserialize<Color>(ref reader);
                 hkm.tree = (Tree)MessagePackSerializer.Typeless.Deserialize(ref reader);
                 hkm.currentNode = hkm.tree;

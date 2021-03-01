@@ -5,6 +5,7 @@ using NoobSwarm.Makros;
 using PInvoke;
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -54,7 +55,7 @@ namespace NoobSwarm.VirtualHID
         public Keyboard()
         {
             keyboardLayout = GetKeyboardLayout(0);
-
+            return;
             try
             {
                 var devices = DeviceList.Local.GetHidDevices(0xAFFE).Where(x => x.ProductID == 0xCAFE).ToList();
@@ -228,7 +229,8 @@ namespace NoobSwarm.VirtualHID
             for (int i = 0; i < charsToTest.Length; i++)
                 if (useWinAPI)
                 {
-                    SendKeyWinApi((KeyModifier)modifier[i], winScanCode[i]);
+                    SendKeysWinApi(modifier, winScanCode);
+                    break;
                 }
                 else if (ScanCodeMapping.WinToUSB.TryGetValue(winScanCode[i], out var val))
                 {
@@ -391,7 +393,63 @@ namespace NoobSwarm.VirtualHID
             }
         }
 
+        [DebuggerStepThrough]
+        private void SendKeysWinApi(Span<byte> addmodifiers, Span<ushort> winScanCodes)
+        {
+            int i = 0;
+            var input = new PInvoke.User32.INPUT();
+            var localInputs = ArrayPool<User32.INPUT>.Shared.Rent(winScanCodes.Length * 10); //*10 ist worst case, if all modifiers are pressed and therefore release (4*2) plus the winScanCode 1*2 => 10x
+
+            for (int o = 0; o < winScanCodes.Length; o++)
+            {
+                var addmodifier = (KeyModifier)addmodifiers[o];
+                var winScanCode = winScanCodes[o];
+
+
+                if ((addmodifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LMENU, 0, localInputs);
+
+                if ((addmodifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LCONTROL, 0, localInputs);
+
+                if ((addmodifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, 0, localInputs);
+
+                if ((addmodifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_SHIFT, 0, localInputs);
+
+                if (winScanCode > 0)
+                {
+
+                    AddInput(ref i, ref input, (User32.ScanCode)winScanCode, User32.KEYEVENTF.KEYEVENTF_SCANCODE, localInputs);
+                    AddInput(ref i, ref input, (User32.ScanCode)winScanCode,
+                        User32.KEYEVENTF.KEYEVENTF_SCANCODE | User32.KEYEVENTF.KEYEVENTF_KEYUP, localInputs);
+                }
+
+                if ((addmodifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LMENU, User32.KEYEVENTF.KEYEVENTF_KEYUP, localInputs);
+                if ((addmodifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LCONTROL, User32.KEYEVENTF.KEYEVENTF_KEYUP, localInputs);
+
+                if ((addmodifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_LWIN, User32.KEYEVENTF.KEYEVENTF_KEYUP, localInputs);
+
+                if ((addmodifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > 0)
+                    AddInput(ref i, ref input, User32.VirtualKey.VK_SHIFT, User32.KEYEVENTF.KEYEVENTF_KEYUP, localInputs);
+
+            }
+            unsafe
+            {
+                User32.SendInput(i, localInputs, sizeof(User32.INPUT));
+            }
+            ArrayPool<User32.INPUT>.Shared.Return(localInputs);
+
+        }
+
         private void AddInput(ref int i, ref User32.INPUT input, User32.ScanCode code, User32.KEYEVENTF flags)
+            => AddInput(ref i, ref input, code, flags, inputs);
+
+        private void AddInput(ref int i, ref User32.INPUT input, User32.ScanCode code, User32.KEYEVENTF flags, User32.INPUT[] inputs)
         {
             input.type = PInvoke.User32.InputType.INPUT_KEYBOARD; // 1 = Keyboard Input
             input.Inputs.ki.wScan = code;
@@ -401,7 +459,11 @@ namespace NoobSwarm.VirtualHID
             i++;
         }
 
+
         private void AddInput(ref int i, ref User32.INPUT input, User32.VirtualKey code, User32.KEYEVENTF flags)
+            => AddInput(ref i, ref input, code, flags, inputs);
+
+        private void AddInput(ref int i, ref User32.INPUT input, User32.VirtualKey code, User32.KEYEVENTF flags, User32.INPUT[] inputs)
         {
             input.type = PInvoke.User32.InputType.INPUT_KEYBOARD; // 1 = Keyboard Input
             input.Inputs.ki.wVk = code;

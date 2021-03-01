@@ -24,9 +24,9 @@ namespace NoobSwarm
 
         [IgnoreMember]
         public bool HasSinglePath => (
-            Children.Count == 0 
-                && Command != null 
-            || (Children.Count == 1 
+            Children.Count == 0
+                && Command != null
+            || (Children.Count == 1
                 && Command == null
                 && Children.First().Value.HasSinglePath));
 
@@ -38,6 +38,20 @@ namespace NoobSwarm
         [IgnoreMember]
         public KeyNode? SinglePathChild => HasSinglePath ? (Children.Count == 0 ? this : Children.First().Value.SinglePathChild) : null;
 
+        internal IEnumerable<(List<LedKey> keys, IHotkeyCommand command)> GetCommands(List<LedKey> keys)
+        {
+            var localKeys = keys.ToList();
+            localKeys.Add(Key);
+            if (Command is not null)
+                yield return (localKeys, Command);
 
+            foreach (var item in Children)
+            {
+                foreach (var command in item.Value.GetCommands(localKeys))
+                {
+                    yield return command;
+                }
+            }
+        }
     }
 }

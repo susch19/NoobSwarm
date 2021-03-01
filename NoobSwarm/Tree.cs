@@ -37,5 +37,19 @@ namespace NoobSwarm
                 }
             }
         }
+
+        public IEnumerable<(List<LedKey> keys, IHotkeyCommand command)> GetCommands()
+        {
+            var keys = new List<LedKey> {  };
+
+            foreach (var item in Children)
+            {
+                foreach (var command in item.Value.GetCommands(keys))
+                {
+                    yield return command;
+                }
+            }
+        }
+
     }
 }

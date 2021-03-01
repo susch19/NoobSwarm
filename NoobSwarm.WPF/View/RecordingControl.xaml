@@ -52,6 +52,15 @@
             Grid.Row="1"
             IsChecked="{Binding IsRecording}"
             materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
+
+            <Button Grid.Column="2"
+            Style="{StaticResource MaterialDesignRaisedButton}"
+            Content="{materialDesign:PackIcon Kind=Clipboard,Size=36}"
+            Width="80" Height="48"
+            Margin="10"
+            Command="{Binding AddHotkeyAsClipboardCommand}"
+                IsEnabled="{Binding AddHotkeyAsClipboardEnabled}"
+            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
         </Grid>
     </Grid>
 </UserControl>

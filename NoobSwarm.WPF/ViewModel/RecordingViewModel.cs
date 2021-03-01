@@ -1,17 +1,23 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.Windows;
+using NoobSwarm.Windows.Commands;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Vulcan.NET;
+//using System.Windows.Input;
 
 using static NoobSwarm.MakroManager;
 
@@ -23,6 +29,11 @@ namespace NoobSwarm.WPF.ViewModel
         public bool BlockInput { get; set; }
 
         public string RecordingText { get; set; }
+
+        private ReadOnlyCollection<LedKey> hkKeys;
+
+        public System.Windows.Input.ICommand AddHotkeyAsClipboardCommand { get; set; }
+        public bool AddHotkeyAsClipboardEnabled { get; set; }
 
         private CancellationTokenSource recordingCts;
         private readonly MakroManager makroManager;
@@ -44,7 +55,17 @@ namespace NoobSwarm.WPF.ViewModel
                 keyboard = TypeContainer.Get<Keyboard>();
                 makroManager.RecordAdded += HotKey_RecordAdded;
                 makroManager.RecordingFinished += (s, e) => { IsRecording = false; };
+                AddHotkeyAsClipboardCommand = new RelayCommand(SaveAsClipboard);
             }
+        }
+
+        private void SaveAsClipboard()
+        {
+            var command = new ClipboardTextSaveTypeCommand();
+            command.GetDataFromClipboard();
+            hotKey.AddHotKey(hkKeys, command);
+            AddHotkeyAsClipboardEnabled = false;
+            recordingCts?.Cancel();
         }
 
         private void RecordingViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -70,8 +91,8 @@ namespace NoobSwarm.WPF.ViewModel
             RecordingText = "Press the Keys for the Hotkey";
 
 
-            var hkKeys = await hotKey.RecordKeys(token);
-
+            hkKeys = await hotKey.RecordKeys(token);
+            AddHotkeyAsClipboardEnabled = true;
 
             using (var hook = new LowLevelKeyboardHook())
             {
@@ -85,8 +106,10 @@ namespace NoobSwarm.WPF.ViewModel
                 hook.OnKeyUnpressed += (s, e) => { makroManager.KeyReceived((Makros.Key)e, false); };
                 RecordingText = "Press the Makro Keys\r\n";
                 var recKeys = await makroManager.StartRecording(token);
-                hotKey.AddHotKey(hkKeys,new MakroHotkeyCommand(recKeys));
+                if (AddHotkeyAsClipboardEnabled)
+                    hotKey.AddHotKey(hkKeys, new MakroHotkeyCommand(recKeys));
                 hotKey.Serialize();
+                AddHotkeyAsClipboardEnabled = false;
             }
             IsRecording = false;
         }
