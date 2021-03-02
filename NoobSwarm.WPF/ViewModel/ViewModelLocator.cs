@@ -20,6 +20,7 @@ namespace NoobSwarm.WPF.ViewModel
         public PlaybackViewModel PlaybackViewModel => TypeContainer.Get<PlaybackViewModel>();
         public ToolbarViewModel ToolbarViewModel => TypeContainer.Get<ToolbarViewModel>();
         public TsViewModel TsViewModel => TypeContainer.Get<TsViewModel>();
+        public MakroOverviewModel MakroOverviewModel => TypeContainer.Get<MakroOverviewModel>();
 
         static ViewModelLocator()
         {
@@ -30,6 +31,7 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<ThemeDesignerViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<RecordingViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<PlaybackViewModel>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<MakroOverviewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<MakroManager>(InstanceBehaviour.Singleton);
             TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);

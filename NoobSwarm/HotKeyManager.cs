@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,6 +64,8 @@ namespace NoobSwarm
         /// The color of the <see cref="HotKey"/>
         /// </summary>
         public Color HotKeyColor { get; set; } = Color.Green;
+
+
 
         /// <summary>
         /// The key to execute a available hotkey when multiple hotkeys are available
@@ -196,6 +199,14 @@ namespace NoobSwarm
                 return;
 
             tree.CreateNode(hotkeys, command);
+        }
+        public bool DeleteHotKey(List<LedKey> hotkeys)
+        {
+            if (hotkeys.Count < 1)
+                return false;
+
+
+            return !tree.RemoveNode(CollectionsMarshal.AsSpan(hotkeys));
         }
 
 
