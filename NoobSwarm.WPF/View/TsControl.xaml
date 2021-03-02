@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:converter="clr-namespace:NoobSwarm.WPF.Converter"
+             xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:local="clr-namespace:NoobSwarm.WPF.View"
              mc:Ignorable="d"
              DataContext="{Binding Source={StaticResource Locator}, Path=TsViewModel}"
@@ -40,6 +41,30 @@
             <TextBox Text="{Binding Settings.ApiKey, UpdateSourceTrigger=LostFocus}"
                      Style="{StaticResource MaterialDesignOutlinedTextBox}"
                      materialDesign:HintAssist.Hint="Api Key" />
+
+            <ToggleButton x:Name="blockInputToggle"/>
+            <local:RecordKeysControl Margin="0 50 0 0"
+                                     BlockInput="{Binding ElementName=blockInputToggle, Path=IsChecked}" 
+                                     StartRecordingText="Click to record LED Keys" StopRecordingText="Recording LED Keys.."
+                                     RecordedKeys="{Binding RecordedKeys}">
+                <behaviors:Interaction.Triggers>
+                    <behaviors:EventTrigger EventName="RecordingCleared">
+                        <behaviors:InvokeCommandAction Command="{Binding RecordingClearedCommand}"/>
+                    </behaviors:EventTrigger>
+
+                    <behaviors:EventTrigger EventName="RecordingStarted">
+                        <behaviors:InvokeCommandAction Command="{Binding RecordingStartedCommand}"/>
+                    </behaviors:EventTrigger>
+
+                    <behaviors:EventTrigger EventName="RecordingStopped">
+                        <behaviors:InvokeCommandAction Command="{Binding RecordingStoppedCommand}" PassEventArgsToCommand="True"/>
+                    </behaviors:EventTrigger>
+                    
+                    <behaviors:EventTrigger EventName="KeyRecorded">
+                        <behaviors:InvokeCommandAction Command="{Binding KeyRecordedCommand}" PassEventArgsToCommand="True"/>
+                    </behaviors:EventTrigger>
+                </behaviors:Interaction.Triggers>
+            </local:RecordKeysControl>
         </StackPanel>
         
         <Grid Grid.Row="1" Margin="0 50 0 0">

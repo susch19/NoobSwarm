@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Diagnostics;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,8 +33,8 @@ namespace NoobSwarm.Windows
         private static extern void SetDispatchKeyPress(bool dispatch);
 
 
-        public event EventHandler<PInvoke.User32.VirtualKey> OnKeyPressed;
-        public event EventHandler<PInvoke.User32.VirtualKey> OnKeyUnpressed;
+        public event EventHandler<Makros.Key> OnKeyPressed;
+        public event EventHandler<Makros.Key> OnKeyUnpressed;
 
         private Task hookWithMessageLoop;
         private CancellationTokenSource source;
@@ -84,11 +82,11 @@ namespace NoobSwarm.Windows
         {
             if (nCode >= 0 && wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
-                OnKeyPressed?.Invoke(this, (PInvoke.User32.VirtualKey)vkCode);
+                OnKeyPressed?.Invoke(this, (Makros.Key)vkCode);
             }
             else if (nCode >= 0 && wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                OnKeyUnpressed?.Invoke(this, ((PInvoke.User32.VirtualKey)vkCode));
+                OnKeyUnpressed?.Invoke(this, (Makros.Key)vkCode);
             }
         }
 

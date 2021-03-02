@@ -16,7 +16,7 @@ namespace NoobSwarm.Makros
             {LedKey.TILDE ,Key.OEM_5},
             {LedKey.TAB ,Key.TAB},
             {LedKey.CAPS_LOCK ,Key.CAPITAL},
-            {LedKey.EASY_SHIFT ,Key.NO_KEY},
+            //{LedKey.EASY_SHIFT ,Key.NO_KEY},
             {LedKey.LEFT_SHIFT ,Key.LSHIFT},
             {LedKey.LEFT_CONTROL ,Key.LCONTROL},
             {LedKey.D1 ,Key.KEY_1},
@@ -127,9 +127,10 @@ namespace NoobSwarm.Makros
             var keyToLedKey = new Dictionary<Key, LedKey>();
             foreach (var item in LedKeyToKey)
             {
-                if (item.Value == Key.NO_KEY || KeyToLedKey.ContainsKey(item.Value))
+                if (item.Value == Key.NO_KEY)
                     continue;
-                keyToLedKey.Add(item.Value, item.Key);
+
+                keyToLedKey.TryAdd(item.Value, item.Key);
             }
             KeyToLedKey = keyToLedKey;
 

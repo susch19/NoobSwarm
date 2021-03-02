@@ -1,14 +1,21 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using MessagePack;
 using NonSucking.Framework.Extension.IoC;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Makros;
 using NoobSwarm.Plugin.Ts;
 using NoobSwarm.WPF.Model;
+using NoobSwarm.WPF.View;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 using Vulcan.NET;
 
@@ -16,6 +23,12 @@ namespace NoobSwarm.WPF.ViewModel
 {
     public class TsViewModel : ViewModelBase
     {
+        public ICommand RecordingClearedCommand { get; set; }
+        public ICommand RecordingStartedCommand { get; set; }
+        public ICommand RecordingStoppedCommand { get; set; }
+        public ICommand KeyRecordedCommand { get; set; }
+        public List<Makros.Key> RecordedKeys { get; set; }
+
         public TsSettings Settings { get; set; }
 
         private readonly LightService lightService;
@@ -35,6 +48,11 @@ namespace NoobSwarm.WPF.ViewModel
             {
                 lightService = TypeContainer.Get<LightService>();
 
+                RecordingClearedCommand = new RelayCommand(() => Settings.Keys = new ObservableCollection<LedKey>());
+                RecordingStartedCommand = new RelayCommand(() => Debug.WriteLine("recording started"));
+                RecordingStoppedCommand = new RelayCommand<RecordKeysControl.RecordingStoppedEventArgs>(RecordingStopped);
+                KeyRecordedCommand = new RelayCommand<RecordKeysControl.KeyRecordedEventArgs>(x => Debug.WriteLine("recorded key: " + x.RecordedKey));
+
                 if (File.Exists(save))
                 {
                     using var fs = File.OpenRead(save);
@@ -50,7 +68,7 @@ namespace NoobSwarm.WPF.ViewModel
                         Keys = new(Enum.GetValues<LedKey>().Where(x => x >= LedKey.NUM_LOCK && x <= LedKey.NUM_ENTER))
                     };
                 }
-
+                RecordedKeys = Settings.Keys.Select(x => LedKeyToKeyMapper.LedKeyToKey[x]).ToList();
                 effect = new SingleKeysColorEffect(
                     System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
 
@@ -63,6 +81,15 @@ namespace NoobSwarm.WPF.ViewModel
                 // Attach after we set all properties
                 Settings.PropertyChanged += Settings_PropertyChanged;
             }
+        }
+
+        private void RecordingStopped(RecordKeysControl.RecordingStoppedEventArgs args)
+        {
+            Debug.WriteLine("recording stopped: " + string.Join(" ", args.RecordedKeys));
+            var newKeys = args.RecordedKeys.Select(x => LedKeyToKeyMapper.KeyToLedKey[x]).Distinct();
+
+            if (!Settings.Keys.SequenceEqual(newKeys))
+                Settings.Keys = new(newKeys);
         }
 
         private void TsInfo_TalkStatus(object sender, TalkStatusEventArgs e)
