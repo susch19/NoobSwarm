@@ -122,10 +122,10 @@ namespace NoobSwarm.WPF.ViewModel
                 hook.SetSupressKeyPress(BlockInput);
                 hook.OnKeyPressed += (s, e) =>
                 {
-                    makroManager.KeyReceived((Makros.Key)e, true);
+                    makroManager.KeyReceived(e, true);
 
                 };
-                hook.OnKeyUnpressed += (s, e) => { makroManager.KeyReceived((Makros.Key)e, false); };
+                hook.OnKeyUnpressed += (s, e) => { makroManager.KeyReceived(e, false); };
                 RecordingText = "Press the Makro Keys\r\n";
                 var recKeys = await makroManager.StartRecording(token);
                 if (AddHotkeyAsClipboardEnabled)
