@@ -1,5 +1,7 @@
 ﻿using MessagePack;
 
+using Microsoft.Win32;
+
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
@@ -7,12 +9,17 @@ using NoobSwarm.Makros;
 using NoobSwarm.MessagePackFormatters;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.WPF.MessagePackFormatters;
+
+using System.Configuration;
+
 using Vulcan.NET;
 
 namespace NoobSwarm.WPF.ViewModel
 {
     public sealed class ViewModelLocator
     {
+        private static VulcanKeyboard vulcanKeyboard;
+
         public MainViewModel Main => TypeContainer.Get<MainViewModel>();
         public CockpitViewModel CockpitViewModel => TypeContainer.Get<CockpitViewModel>();
         public ThemeDesignerViewModel ThemeDesignerViewModel => TypeContainer.Get<ThemeDesignerViewModel>();
@@ -41,6 +48,18 @@ namespace NoobSwarm.WPF.ViewModel
             var hkm = HotKeyManager.Deserialize();
             TypeContainer.Register(hkm);
             TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            vulcanKeyboard = TypeContainer.Get<VulcanKeyboard>();
+        }
+
+        private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                vulcanKeyboard.Connect();
+            }
+            else if (e.Mode == PowerModes.Suspend)
+                vulcanKeyboard.Disconnect();
         }
 
         private static void InitializeMessagePack()

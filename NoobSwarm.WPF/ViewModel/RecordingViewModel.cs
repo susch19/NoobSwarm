@@ -1,8 +1,11 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 
+using Microsoft.Win32;
+
 using NonSucking.Framework.Extension.IoC;
 
+using NoobSwarm.Commands;
 using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.Windows;
@@ -33,6 +36,7 @@ namespace NoobSwarm.WPF.ViewModel
         private ReadOnlyCollection<LedKey> hkKeys;
 
         public System.Windows.Input.ICommand AddHotkeyAsClipboardCommand { get; set; }
+        public System.Windows.Input.ICommand AddHotkeyAsOpenProgrammCommand { get; set; }
         public bool AddHotkeyAsClipboardEnabled { get; set; }
 
         private CancellationTokenSource recordingCts;
@@ -56,6 +60,24 @@ namespace NoobSwarm.WPF.ViewModel
                 makroManager.RecordAdded += HotKey_RecordAdded;
                 makroManager.RecordingFinished += (s, e) => { IsRecording = false; };
                 AddHotkeyAsClipboardCommand = new RelayCommand(SaveAsClipboard);
+                AddHotkeyAsOpenProgrammCommand = new RelayCommand(SaveAsOpenProgram);
+            }
+        }
+
+        private async void SaveAsOpenProgram()
+        {
+
+            var ofd = new OpenFileDialog();
+
+            if (ofd.ShowDialog() == true)
+            {
+                var command = new OpenProgramCommand()
+                {
+                    Path = ofd.FileName
+                };
+                hotKey.AddHotKey(hkKeys, command);
+                AddHotkeyAsClipboardEnabled = false;
+                recordingCts?.Cancel();
             }
         }
 

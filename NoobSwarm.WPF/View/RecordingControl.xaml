@@ -52,15 +52,25 @@
             Grid.Row="1"
             IsChecked="{Binding IsRecording}"
             materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
+            
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
 
-            <Button Grid.Column="2"
-            Style="{StaticResource MaterialDesignRaisedButton}"
-            Content="{materialDesign:PackIcon Kind=Clipboard,Size=36}"
-            Width="80" Height="48"
-            Margin="10"
-            Command="{Binding AddHotkeyAsClipboardCommand}"
-                IsEnabled="{Binding AddHotkeyAsClipboardEnabled}"
-            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
+                <Button 
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="{materialDesign:PackIcon Kind=Clipboard,Size=36}"
+                    Width="80" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsClipboardCommand}"
+                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
+
+                <Button 
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="{materialDesign:PackIcon Kind=OpenInApp,Size=36}"
+                    Width="80" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsOpenProgrammCommand}"
+                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />   
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>
