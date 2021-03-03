@@ -58,7 +58,7 @@
                 <Button 
                     Style="{StaticResource MaterialDesignRaisedButton}"
                     Content="{materialDesign:PackIcon Kind=Clipboard,Size=36}"
-                    Width="80" Height="48"
+                    Width="64" Height="48"
                     Margin="10"
                     Command="{Binding AddHotkeyAsClipboardCommand}"
                     IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
@@ -66,10 +66,18 @@
                 <Button 
                     Style="{StaticResource MaterialDesignRaisedButton}"
                     Content="{materialDesign:PackIcon Kind=OpenInApp,Size=36}"
-                    Width="80" Height="48"
+                    Width="64" Height="48"
                     Margin="10"
                     Command="{Binding AddHotkeyAsOpenProgrammCommand}"
-                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />   
+                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
+
+                <Button 
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="{materialDesign:PackIcon Kind=MicrosoftInternetExplorer,Size=36}"
+                    Width="64" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsURLCommand}"
+                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
             </StackPanel>
         </Grid>
     </Grid>

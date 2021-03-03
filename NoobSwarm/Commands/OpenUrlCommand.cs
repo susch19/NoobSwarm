@@ -14,22 +14,20 @@ using System.Text;
 namespace NoobSwarm.Commands
 {
     [MessagePackObject]
-    public class OpenProgramCommand : IHotkeyCommand
+    public class OpenUrlCommand : IHotkeyCommand
     {
         [IgnoreMember]
         public HotKeyType HotKeyType { get; set; }
 
         [Key(0)]
-        public string Path { get; set; }
-
-        [Key(2)]
-        public string Args { get; set; }
+        public string Url { get; set; }
 
         public void Execute()
         {
-            var startInfo = new ProcessStartInfo(Path);
-            startInfo.Arguments = Args ?? string.Empty;
-            startInfo.UseShellExecute = Path.EndsWith(".lnk") ? false : true;
+            ProcessStartInfo? startInfo = new (Url)
+            {
+                UseShellExecute = true
+            };
             Process.Start(startInfo);
         }
     }

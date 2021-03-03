@@ -10,10 +10,12 @@ using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.Windows;
 using NoobSwarm.Windows.Commands;
+using NoobSwarm.WPF.Dialog;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -37,6 +39,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         public System.Windows.Input.ICommand AddHotkeyAsClipboardCommand { get; set; }
         public System.Windows.Input.ICommand AddHotkeyAsOpenProgrammCommand { get; set; }
+        public System.Windows.Input.ICommand AddHotkeyAsURLCommand { get; set; }
         public bool AddHotkeyAsClipboardEnabled { get; set; }
 
         private CancellationTokenSource recordingCts;
@@ -61,6 +64,26 @@ namespace NoobSwarm.WPF.ViewModel
                 makroManager.RecordingFinished += (s, e) => { IsRecording = false; };
                 AddHotkeyAsClipboardCommand = new RelayCommand(SaveAsClipboard);
                 AddHotkeyAsOpenProgrammCommand = new RelayCommand(SaveAsOpenProgram);
+                AddHotkeyAsURLCommand = new RelayCommand(SaveAsOpenUrl);
+            }
+        }
+
+        private void SaveAsOpenUrl()
+        {
+            var inputDialog = new InputDialog("What URL should be opened with this hotkey?");
+            if (inputDialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(inputDialog.Answer))
+            {
+                var url= inputDialog.Answer;
+                if (!url[1..8].Contains("://"))
+                    url = "https://" + inputDialog.Answer;
+
+                var command = new OpenUrlCommand()
+                {
+                    Url = url
+                };
+                hotKey.AddHotKey(hkKeys, command);
+                AddHotkeyAsClipboardEnabled = false;
+                recordingCts?.Cancel();
             }
         }
 
@@ -71,9 +94,15 @@ namespace NoobSwarm.WPF.ViewModel
 
             if (ofd.ShowDialog() == true)
             {
+                var inputDialog = new InputDialog("What arguments should be passed to the application for starting?\r\nCan be left empty of press cancel if an empty argumentlist is sufficent.");
+                var args = string.Empty;
+                if (inputDialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(inputDialog.Answer))
+                    args = inputDialog.Answer;
+
                 var command = new OpenProgramCommand()
                 {
-                    Path = ofd.FileName
+                    Path = ofd.FileName,
+                    Args = args
                 };
                 hotKey.AddHotKey(hkKeys, command);
                 AddHotkeyAsClipboardEnabled = false;

@@ -1,0 +1,20 @@
+﻿<Window x:Class="NoobSwarm.WPF.Dialog.InputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NoobSwarm.WPF.Dialog"
+        mc:Ignorable="d"
+        Title="InputDialog"  
+        SizeToContent="WidthAndHeight">
+    <StackPanel>
+
+        <TextBlock Margin="10,10,10,0"  Name="lblInstruction"></TextBlock>
+        <TextBox Margin="10" Name="txtAnswer"  MinWidth="250" BorderBrush="{StaticResource MaterialDesignShadowBrush}"></TextBox>
+
+        <WrapPanel  HorizontalAlignment="Right" Margin="0,15,10,15" VerticalAlignment="Bottom">
+            <Button IsDefault="True" Name="btnDialogOk" Click="btnDialogOk_Click" MinWidth="60" Margin="0,0,10,0">_Ok</Button>
+            <Button IsCancel="True" MinWidth="60">_Cancel</Button>
+        </WrapPanel>
+    </StackPanel>
+</Window>

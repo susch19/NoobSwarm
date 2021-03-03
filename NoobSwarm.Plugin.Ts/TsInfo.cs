@@ -25,7 +25,7 @@ namespace NoobSwarm.Plugin.Ts
 
         public TsInfo(string ip = "localhost", ushort port = 25639)
         {
-            c = new QueryClient(ip, port, Hub.Instance);
+            c = new QueryClient(ip, port, Hub.Instance, TimeSpan.FromMinutes(1));
 
             talkStatus = c.Notification(ClientNotifications.NotifyTalkStatusChange);
             talkStatus.On += TalkStatus_On;
