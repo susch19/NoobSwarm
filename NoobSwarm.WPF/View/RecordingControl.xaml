@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:local="clr-namespace:NoobSwarm.WPF.View"
              mc:Ignorable="d" 
              DataContext="{Binding Source={StaticResource Locator}, Path=RecordingViewModel}"
@@ -13,25 +14,69 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
 
-        <TextBox
-            Margin="10"
-            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-            Grid.Row="0"
-            IsReadOnly="True"
-            VerticalAlignment="Stretch"
-            FontFamily="Consolas"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
-            VerticalScrollBarVisibility="Auto"
-            PreviewKeyDown="TextBox_PreviewKeyDown"
-            Text="{Binding RecordingText}"
-            CaretBrush="Transparent"
-            TextChanged="Textbox_ScrollToEnd"
-            IsEnabledChanged="TextBox_IsEnabledChanged"
-            materialDesign:HintAssist.Hint="Recorded Keys"/>
+        <local:RecordKeysControl Grid.Column="0"
+                                 Grid.Row="0"
+                                 Margin="10"
+                                 BlockInput="{Binding BlockInput}" 
+                                 StartRecordingText="Click to record HotKeys" 
+                                 StopRecordingText="Recording HotKeys.."
+                                 RecordedKeys="{Binding HotkeyRecordedKeys}"
+                                 ClearCommand="{Binding HotkeyClearCommand, Mode=TwoWay}">
+            <behaviors:Interaction.Triggers>
+                <behaviors:EventTrigger EventName="RecordingCleared">
+                    <behaviors:InvokeCommandAction Command="{Binding HotkeyRecordingClearedCommand}"/>
+                </behaviors:EventTrigger>
 
-        <Grid Grid.Row="1">
+                <behaviors:EventTrigger EventName="RecordingStarted">
+                    <behaviors:InvokeCommandAction Command="{Binding HotkeyRecordingStartedCommand}"/>
+                </behaviors:EventTrigger>
+
+                <behaviors:EventTrigger EventName="RecordingStopped">
+                    <behaviors:InvokeCommandAction Command="{Binding HotkeyRecordingStoppedCommand}" PassEventArgsToCommand="True"/>
+                </behaviors:EventTrigger>
+
+                <behaviors:EventTrigger EventName="KeyRecorded">
+                    <behaviors:InvokeCommandAction Command="{Binding HotkeyKeyRecordedCommand}" PassEventArgsToCommand="True"/>
+                </behaviors:EventTrigger>
+            </behaviors:Interaction.Triggers>
+        </local:RecordKeysControl>
+
+
+        <local:RecordKeysControl Grid.Column="1"
+                                 Grid.Row="0"
+                                 Margin="10"
+                                 BlockInput="{Binding BlockInput}" 
+                                 StartRecordingText="Click to record Makro Keys" 
+                                 StopRecordingText="Recording makro Keys.."
+                                 RecordedKeys="{Binding MakroRecordedKeys}"
+                                 IsEnabled="{Binding HotkeyCommandEnabled}"
+                                 ClearCommand="{Binding MakroClearCommand, Mode=TwoWay}"
+                                 PrintMode="Full">
+            <behaviors:Interaction.Triggers>
+                <behaviors:EventTrigger EventName="RecordingCleared">
+                    <behaviors:InvokeCommandAction Command="{Binding MakroRecordingClearedCommand}"/>
+                </behaviors:EventTrigger>
+
+                <behaviors:EventTrigger EventName="RecordingStarted">
+                    <behaviors:InvokeCommandAction Command="{Binding MakroRecordingStartedCommand}"/>
+                </behaviors:EventTrigger>
+
+                <behaviors:EventTrigger EventName="RecordingStopped">
+                    <behaviors:InvokeCommandAction Command="{Binding MakroRecordingStoppedCommand}" PassEventArgsToCommand="True"/>
+                </behaviors:EventTrigger>
+
+                <behaviors:EventTrigger EventName="KeyRecorded">
+                    <behaviors:InvokeCommandAction Command="{Binding MakroKeyRecordedCommand}" PassEventArgsToCommand="True"/>
+                </behaviors:EventTrigger>
+            </behaviors:Interaction.Triggers>
+        </local:RecordKeysControl>
+
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="99">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -44,16 +89,11 @@
                            Style="{StaticResource MaterialDesignTextBlock}"/>
                 <ToggleButton  VerticalAlignment="Center" IsChecked="{Binding BlockInput}"/>
             </StackPanel>
-            <ToggleButton Grid.Column="1"
-            Style="{StaticResource MaterialDesignActionToggleButton}"
-            Content="{materialDesign:PackIcon Kind=Record,Size=36}"
-            Width="48" Height="48"
-            Margin="10"
-            Grid.Row="1"
-            IsChecked="{Binding IsRecording}"
-            materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=RecordRec,Size=36}" />
-            
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
+
+
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="99" HorizontalAlignment="Center"  Orientation="Horizontal">
+
+                <Button />
 
                 <Button 
                     Style="{StaticResource MaterialDesignRaisedButton}"
@@ -61,7 +101,7 @@
                     Width="64" Height="48"
                     Margin="10"
                     Command="{Binding AddHotkeyAsClipboardCommand}"
-                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
+                    IsEnabled="{Binding HotkeyCommandEnabled}" />
 
                 <Button 
                     Style="{StaticResource MaterialDesignRaisedButton}"
@@ -69,7 +109,7 @@
                     Width="64" Height="48"
                     Margin="10"
                     Command="{Binding AddHotkeyAsOpenProgrammCommand}"
-                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
+                    IsEnabled="{Binding HotkeyCommandEnabled}" />
 
                 <Button 
                     Style="{StaticResource MaterialDesignRaisedButton}"
@@ -77,8 +117,17 @@
                     Width="64" Height="48"
                     Margin="10"
                     Command="{Binding AddHotkeyAsURLCommand}"
-                    IsEnabled="{Binding AddHotkeyAsClipboardEnabled}" />
+                    IsEnabled="{Binding HotkeyCommandEnabled}" />
+
+                <Button Content="{materialDesign:PackIcon Kind=TrashCan}" Command="{Binding ClearCommand}"/>
             </StackPanel>
+
+            <Button
+                Grid.Column="2"
+                Style="{StaticResource MaterialDesignFloatingActionAccentButton}"
+                ToolTip="Save"
+                Command="{Binding SaveCommand}"
+                Content="{materialDesign:PackIcon Kind=Plus, Size=36}" HorizontalAlignment="Right"  Margin="0 -10 20 0"/>
         </Grid>
     </Grid>
 </UserControl>

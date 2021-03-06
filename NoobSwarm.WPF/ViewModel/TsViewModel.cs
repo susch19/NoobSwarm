@@ -27,7 +27,7 @@ namespace NoobSwarm.WPF.ViewModel
         public ICommand RecordingStartedCommand { get; set; }
         public ICommand RecordingStoppedCommand { get; set; }
         public ICommand KeyRecordedCommand { get; set; }
-        public List<Makros.Key> RecordedKeys { get; set; }
+        public ObservableCollection<MakroManager.RecordKey> RecordedKeys { get; set; }
 
         public TsSettings Settings { get; set; }
 
@@ -68,7 +68,7 @@ namespace NoobSwarm.WPF.ViewModel
                         Keys = new(Enum.GetValues<LedKey>().Where(x => x >= LedKey.NUM_LOCK && x <= LedKey.NUM_ENTER))
                     };
                 }
-                RecordedKeys = Settings.Keys.Select(x => LedKeyToKeyMapper.LedKeyToKey[x]).ToList();
+                RecordedKeys = new ObservableCollection<MakroManager.RecordKey>(Settings.Keys.Select(x => new MakroManager.RecordKey(LedKeyToKeyMapper.LedKeyToKey[x], 0, true)));
                 effect = new SingleKeysColorEffect(
                     System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
                 effect = new InverseKeysColorEffect(Settings.Keys);
@@ -86,7 +86,7 @@ namespace NoobSwarm.WPF.ViewModel
         private void RecordingStopped(RecordKeysControl.RecordingStoppedEventArgs args)
         {
             Debug.WriteLine("recording stopped: " + string.Join(" ", args.RecordedKeys));
-            var newKeys = args.RecordedKeys.Select(x => LedKeyToKeyMapper.KeyToLedKey[x]).Distinct();
+            var newKeys = args.RecordedKeys.Select(x => LedKeyToKeyMapper.KeyToLedKey[x.Key]).Distinct();
 
             if (!Settings.Keys.SequenceEqual(newKeys))
                 Settings.Keys = new(newKeys);

@@ -20,35 +20,38 @@ using Vulcan.NET;
 
 namespace NoobSwarm
 {
-    public class MakroManager
+    public class MakroManager : IDisposable
     {
-
-        public event EventHandler RecordingStarted;
-        public event EventHandler<RecordKey> RecordAdded;
-        public event EventHandler<IReadOnlyCollection<RecordKey>> RecordingFinished;
+        public event EventHandler? RecordingStarted;
+        public event EventHandler<RecordKey>? RecordAdded;
+        public event EventHandler<IReadOnlyCollection<RecordKey>>? RecordingFinished;
 
         [MessagePackObject()]
         public record RecordKey(
-            [property: Key(0)] Makros.Key Key, 
-            [property: Key(1)] int TimeBeforePress, 
+            [property: Key(0)] Makros.Key Key,
+            [property: Key(1)] int TimeBeforePress,
             [property: Key(2)] bool Pressed);
 
         public Makros.Key StopRecordKey { get; set; } = Makros.Key.PAUSE;
 
-        // Synchron recording variables
         private bool isSynchronRecording;
-        //private AutoResetEvent synchronRecordingResetEvent = new(false);
-        private List<RecordKey> records = new();
-
+        private readonly List<RecordKey> records = new();
+        private bool isRecording;
         private bool isAsyncRecording;
         private TaskCompletionSource<Makros.Key>? asyncTaskCompletionSource;
         private CancellationTokenSource? asyncToken;
         private readonly Stopwatch stopWatch = new();
-        private SemaphoreSlim slim = new SemaphoreSlim(0);
-        private Queue<Makros.Key> keyQueue = new();
-        private AutoResetEvent resetEvent = new(false);
+        private readonly SemaphoreSlim slim = new SemaphoreSlim(0);
+        private readonly Queue<Makros.Key> keyQueue = new();
+        private readonly AutoResetEvent resetEvent = new(false);
 
-
+        public void BeginRecording(List<RecordKey> recordedKeys)
+        {
+            stopWatch.Reset();
+            records.AddRange(recordedKeys);
+            isRecording = true;
+            RecordingStarted?.Invoke(this, EventArgs.Empty);
+        }
 
         public void FinishRecording()
         {
@@ -57,9 +60,19 @@ namespace NoobSwarm
             else if (isAsyncRecording)
                 asyncToken?.Cancel();
 
+            isRecording = false;
             RecordingFinished?.Invoke(this, records);
         }
 
+        public void Clear(ICollection<RecordKey>? keys = null)
+        {
+            stopWatch.Reset();
+
+            if (keys is null || keys.Count == 0)
+                records.Clear();
+            else
+                records.AddRange(keys);
+        }
 
         /// <summary>
         /// Records all <see cref="LedKey"/> pressed till <see cref="VulcanKeyboard.VolumeKnobTurnedReceived"/> is received
@@ -116,15 +129,13 @@ namespace NoobSwarm
             }
         }
 
-
-
         public void KeyReceived(Makros.Key key, bool down)
         {
             if (StopRecordKey == key)
             {
                 FinishRecording();
             }
-            else if (isSynchronRecording || isAsyncRecording)
+            else if (isSynchronRecording || isAsyncRecording || isRecording)
             {
                 var rec = new RecordKey(key, (int)stopWatch.Elapsed.TotalMilliseconds, down);
                 records.Add(rec);
@@ -139,6 +150,16 @@ namespace NoobSwarm
             }
         }
 
+        public void Dispose()
+        {
+            asyncTaskCompletionSource?.TrySetCanceled();
+            asyncToken?.Cancel();
+            stopWatch.Stop();
+
+            slim.Dispose();
+            resetEvent?.Close();
+            resetEvent?.Dispose();
+        }
     }
 }
 

@@ -1,51 +1,74 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-
 using Microsoft.Win32;
-
 using NonSucking.Framework.Extension.IoC;
-
 using NoobSwarm.Commands;
+using NoobSwarm.Hotkeys;
 using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 using NoobSwarm.Windows;
 using NoobSwarm.Windows.Commands;
 using NoobSwarm.WPF.Dialog;
-
+using NoobSwarm.WPF.View;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-
+using System.Windows.Input;
 using Vulcan.NET;
-//using System.Windows.Input;
-
 using static NoobSwarm.MakroManager;
+using Keyboard = NoobSwarm.VirtualHID.Keyboard;
 
 namespace NoobSwarm.WPF.ViewModel
 {
     public class RecordingViewModel : ViewModelBase
     {
-        public bool IsRecording { get; set; }
+        #region HotKey
+        public ICommand HotkeyRecordingClearedCommand { get; set; }
+        public ICommand HotkeyRecordingStartedCommand { get; set; }
+        public ICommand HotkeyRecordingStoppedCommand { get; set; }
+        public ICommand HotkeyKeyRecordedCommand { get; set; }
+        public ICommand HotkeyClearCommand { get; set; }
+        public ObservableCollection<RecordKey> HotkeyRecordedKeys { get; set; }
+        #endregion
+
+        #region Makro
+        public ICommand MakroRecordingClearedCommand { get; set; }
+        public ICommand MakroRecordingStartedCommand { get; set; }
+        public ICommand MakroRecordingStoppedCommand { get; set; }
+        public ICommand MakroKeyRecordedCommand { get; set; }
+        public ICommand MakroClearCommand { get; set; }
+        public ObservableCollection<RecordKey> MakroRecordedKeys { get; set; }
+        #endregion
+
+
+
+        public ICommand SaveCommand { get; set; }
+
         public bool BlockInput { get; set; }
 
-        public string RecordingText { get; set; }
+        public bool HotkeyCommandEnabled { get; set; }
 
-        private ReadOnlyCollection<LedKey> hkKeys;
+        public ICommand AddHotkeyAsClipboardCommand { get; set; }
+        public ICommand AddHotkeyAsOpenProgrammCommand { get; set; }
+        public ICommand AddHotkeyAsURLCommand { get; set; }
+        public ICommand ClearCommand { get; set; }
 
-        public System.Windows.Input.ICommand AddHotkeyAsClipboardCommand { get; set; }
-        public System.Windows.Input.ICommand AddHotkeyAsOpenProgrammCommand { get; set; }
-        public System.Windows.Input.ICommand AddHotkeyAsURLCommand { get; set; }
-        public bool AddHotkeyAsClipboardEnabled { get; set; }
-
-        private CancellationTokenSource recordingCts;
         private readonly MakroManager makroManager;
         private readonly HotKeyManager hotKey;
         private readonly Keyboard keyboard;
+        private IReadOnlyList<RecordKey> hotKeys;
+        private IHotkeyCommand Command
+        {
+            get => command;
+            set
+            {
+                command = value;
+                HotkeyCommandEnabled = command == null;
+            }
+        }
+        private IHotkeyCommand command;
 
         public RecordingViewModel()
         {
@@ -56,40 +79,79 @@ namespace NoobSwarm.WPF.ViewModel
             }
             else
             {
-                PropertyChanged += RecordingViewModel_PropertyChanged;
+                HotkeyCommandEnabled = true;
                 makroManager = TypeContainer.Get<MakroManager>();
                 hotKey = TypeContainer.Get<HotKeyManager>();
                 keyboard = TypeContainer.Get<Keyboard>();
-                makroManager.RecordAdded += HotKey_RecordAdded;
-                makroManager.RecordingFinished += (s, e) => { IsRecording = false; };
+
+                SaveCommand = new RelayCommand(Save);
+                HotkeyRecordingStoppedCommand = new RelayCommand<RecordKeysControl.RecordingStoppedEventArgs>(HotkeyRecordingStopped);
+                MakroRecordingStoppedCommand = new RelayCommand<RecordKeysControl.RecordingStoppedEventArgs>(MakroRecordingStopped);
+
                 AddHotkeyAsClipboardCommand = new RelayCommand(SaveAsClipboard);
                 AddHotkeyAsOpenProgrammCommand = new RelayCommand(SaveAsOpenProgram);
                 AddHotkeyAsURLCommand = new RelayCommand(SaveAsOpenUrl);
+                ClearCommand = new RelayCommand(Clear);
             }
         }
+
+        private void MakroRecordingStopped(RecordKeysControl.RecordingStoppedEventArgs e)
+        {
+            if (e.RecordedKeys.Count == 0)
+                return;
+
+            Command = new MakroHotkeyCommand(e.RecordedKeys.ToList());
+        }
+
+        private void HotkeyRecordingStopped(RecordKeysControl.RecordingStoppedEventArgs e)
+        {
+            if (e.RecordedKeys.Count == 0)
+                return;
+
+            hotKeys = new ReadOnlyCollection<RecordKey>(e.RecordedKeys.ToList());
+        }
+
+        private void Save()
+        {
+            if (hotKeys?.Any() != true || Command is null)
+                return;
+
+            // TODO: Add name
+            hotKey.AddHotKey(new ReadOnlyCollection<LedKey>(hotKeys.Where(x => x.Pressed).Select(x => LedKeyToKeyMapper.KeyToLedKey[x.Key]).ToList()), Command);
+            hotKey.Serialize();
+
+            Clear();
+        }
+
+        private void Clear()
+        {
+            hotKeys = new ReadOnlyCollection<RecordKey>(Array.Empty<RecordKey>());
+            Command = null;
+
+            HotkeyClearCommand?.Execute(null);
+            MakroClearCommand?.Execute(null);
+        }
+
+        #region Commands
 
         private void SaveAsOpenUrl()
         {
             var inputDialog = new InputDialog("What URL should be opened with this hotkey?");
             if (inputDialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(inputDialog.Answer))
             {
-                var url= inputDialog.Answer;
+                var url = inputDialog.Answer;
                 if (!url[1..8].Contains("://"))
                     url = "https://" + inputDialog.Answer;
 
-                var command = new OpenUrlCommand()
+                Command = new OpenUrlCommand()
                 {
                     Url = url
                 };
-                hotKey.AddHotKey(hkKeys, command);
-                AddHotkeyAsClipboardEnabled = false;
-                recordingCts?.Cancel();
             }
         }
 
-        private async void SaveAsOpenProgram()
+        private void SaveAsOpenProgram()
         {
-
             var ofd = new OpenFileDialog();
 
             if (ofd.ShowDialog() == true)
@@ -99,14 +161,11 @@ namespace NoobSwarm.WPF.ViewModel
                 if (inputDialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(inputDialog.Answer))
                     args = inputDialog.Answer;
 
-                var command = new OpenProgramCommand()
+                Command = new OpenProgramCommand()
                 {
                     Path = ofd.FileName,
                     Args = args
                 };
-                hotKey.AddHotKey(hkKeys, command);
-                AddHotkeyAsClipboardEnabled = false;
-                recordingCts?.Cancel();
             }
         }
 
@@ -114,62 +173,9 @@ namespace NoobSwarm.WPF.ViewModel
         {
             var command = new ClipboardTextSaveTypeCommand();
             command.GetDataFromClipboard();
-            hotKey.AddHotKey(hkKeys, command);
-            AddHotkeyAsClipboardEnabled = false;
-            recordingCts?.Cancel();
+            Command = command;
         }
 
-        private void RecordingViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(IsRecording):
-                    if (IsRecording)
-                    {
-                        recordingCts = new CancellationTokenSource();
-                        Record(recordingCts.Token);
-                    }
-                    else
-                    {
-                        recordingCts?.Cancel();
-                    }
-                    break;
-            }
-        }
-
-        private async void Record(CancellationToken token)
-        {
-            RecordingText = "Press the Keys for the Hotkey";
-
-
-            hkKeys = await hotKey.RecordKeys(token);
-            AddHotkeyAsClipboardEnabled = true;
-
-            using (var hook = new LowLevelKeyboardHook())
-            {
-                hook.HookKeyboard();
-                hook.SetSupressKeyPress(BlockInput);
-                hook.OnKeyPressed += (s, e) =>
-                {
-                    makroManager.KeyReceived(e, true);
-
-                };
-                hook.OnKeyUnpressed += (s, e) => { makroManager.KeyReceived(e, false); };
-                RecordingText = "Press the Makro Keys\r\n";
-                var recKeys = await makroManager.StartRecording(token);
-                if (AddHotkeyAsClipboardEnabled)
-                    hotKey.AddHotKey(hkKeys, new MakroHotkeyCommand(recKeys));
-                hotKey.Serialize();
-                AddHotkeyAsClipboardEnabled = false;
-            }
-            IsRecording = false;
-        }
-
-        private void HotKey_RecordAdded(object sender, RecordKey e)
-        {
-            RecordingText += $"{e.Key,-10}\t\tPressed: {e.Pressed}\t\tTimeDelay: {e.TimeBeforePress}\r\n";
-        }
-
-
+        #endregion
     }
 }
