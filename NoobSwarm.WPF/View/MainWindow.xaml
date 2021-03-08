@@ -127,9 +127,20 @@
 
                                 <Separator/>
 
+                                <MenuItem Header="Reload Keyboard" InputGestureText="Ctrl+R" Command="{Binding MenuItemReloadKeyboardCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Opacity="0.5" Kind="Reload"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                
                                 <MenuItem Header="Settings" InputGestureText="Ctrl+S" Command="{Binding MenuItemSettingsCommand}">
                                     <MenuItem.Icon>
                                         <wpf:PackIcon Opacity=".5" Kind="Settings" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Save Lighteffect"  Command="{Binding MenuItemLightEffectCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Opacity=".5" Kind="ContentSave" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <MenuItem Header="Info" InputGestureText="Ctrl+I" Command="{Binding MenuItemInfoCommand}">

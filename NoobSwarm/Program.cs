@@ -1,6 +1,4 @@
-﻿using MessagePack;
-
-using NonSucking.Framework.Extension.IoC;
+﻿using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
@@ -55,6 +53,8 @@ namespace NoobSwarm
             TypeContainer.Register(VulcanKeyboard.Initialize());
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
+
+            
             //start_message_loop();
 
             //var t = Task.Run(MessageLoopCpp);
@@ -120,24 +120,24 @@ namespace NoobSwarm
             manager.Mode = HotKeyMode.Active;
             manager.HotKey = LedKey.FN_Key;
             manager.AddHotKey(new List<LedKey> {LedKey.A }, asdhotkey);
-            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
-                new SystemDrawingColorFormatter());
+            //MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
+            //    new SystemDrawingColorFormatter());
 
-            var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
-                MessagePack.Resolvers.StandardResolver.Instance, 
-                MessagePack.Resolvers.StaticCompositeResolver.Instance);
-            var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
+            //var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
+            //    MessagePack.Resolvers.StandardResolver.Instance, 
+            //    MessagePack.Resolvers.StaticCompositeResolver.Instance);
+            //var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
             
-            MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
+            //MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
 
-            var ser = MessagePack.MessagePackSerializer.Serialize<HotKeyManager>(manager);
-            //manager.Serialize();
-            var set2 = File.ReadAllBytes("Makros.save");
-            var kn2 = MessagePack.MessagePackSerializer.Deserialize<HotKeyManager>(ser);
-            var kn3 = HotKeyManager.Deserialize();
+            //var ser = MessagePack.MessagePackSerializer.Serialize<HotKeyManager>(manager);
+            ////manager.Serialize();
+            //var set2 = File.ReadAllBytes("Makros.save");
+            //var kn2 = MessagePack.MessagePackSerializer.Deserialize<HotKeyManager>(ser);
+            //var kn3 = HotKeyManager.Deserialize();
 
-            ser = MessagePack.MessagePackSerializer.Typeless.Serialize(manager);
-            var manager2 = (HotKeyManager)MessagePack.MessagePackSerializer.Typeless.Deserialize(ser);
+            //ser = MessagePack.MessagePackSerializer.Typeless.Serialize(manager);
+            //var manager2 = (HotKeyManager)MessagePack.MessagePackSerializer.Typeless.Deserialize(ser);
 
             var ls = TypeContainer.Get<LightService>();
             var keyboard = TypeContainer.Get<VulcanKeyboard>();

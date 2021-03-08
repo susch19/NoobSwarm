@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿
+
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -10,10 +12,9 @@ namespace NoobSwarm.Lights.LightEffects
     {
         public List<LedKey> Keys { get; set; }
 
-
-        public InverseKeysColorEffect(IEnumerable<LedKey> keys)
+        public InverseKeysColorEffect(List<LedKey> keys)
         {
-            Keys = keys.ToList();
+            Keys = keys;
             Initialized = true;
         }
 

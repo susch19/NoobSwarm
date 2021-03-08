@@ -1,5 +1,4 @@
-﻿using MessagePack;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
@@ -9,17 +8,13 @@ using static NoobSwarm.MakroManager;
 
 namespace NoobSwarm.Makros
 {
-    [MessagePackObject]
     public class MakroHotkeyCommand : IHotkeyCommand
     {
-        [IgnoreMember]
         [JsonIgnore]
         private IKeyboard? keyboard;
 
-        [IgnoreMember]
         [JsonIgnore]
         public HotKeyType HotKeyType { get; set; }
-        [Key(0)]
         public List<RecordKey>? Makro { get; set; }
 
         public MakroHotkeyCommand()

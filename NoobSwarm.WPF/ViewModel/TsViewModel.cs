@@ -1,6 +1,8 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using MessagePack;
+
+using Newtonsoft.Json;
+
 using NonSucking.Framework.Extension.IoC;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
@@ -9,6 +11,7 @@ using NoobSwarm.Plugin.Ts;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -34,7 +37,7 @@ namespace NoobSwarm.WPF.ViewModel
         private readonly LightService lightService;
         private readonly TsInfo tsInfo;
         private LightEffect effect;
-        private const string save = "tssettings.save";
+        private const string save = "tssettings.json";
 
         private bool isTalking;
 
@@ -55,23 +58,25 @@ namespace NoobSwarm.WPF.ViewModel
 
                 if (File.Exists(save))
                 {
-                    using var fs = File.OpenRead(save);
-                    Settings = MessagePackSerializer.Deserialize<TsSettings>(fs);
+                    try
+                    {
+                        Settings = JsonConvert.DeserializeObject<TsSettings>(File.ReadAllText(save));
+
+                    }
+                    catch (Exception)
+                    {
+                        CreateNewSettings();
+                    }
+      
                 }
                 else
                 {
-                    Settings = new TsSettings
-                    {
-                        Enabled = false,
-                        ApiKey = "",
-                        Color = Colors.Blue,
-                        Keys = new(Enum.GetValues<LedKey>().Where(x => x >= LedKey.NUM_LOCK && x <= LedKey.NUM_ENTER))
-                    };
+                    CreateNewSettings();
                 }
                 RecordedKeys = new ObservableCollection<MakroManager.RecordKey>(Settings.Keys.Select(x => new MakroManager.RecordKey(LedKeyToKeyMapper.LedKeyToKey[x], 0, true)));
                 effect = new SingleKeysColorEffect(
                     System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
-                effect = new InverseKeysColorEffect(Settings.Keys);
+                effect = new InverseKeysColorEffect(Settings.Keys.ToList());
                 tsInfo = new TsInfo();
                 tsInfo.TalkStatus += TsInfo_TalkStatus;
 
@@ -81,8 +86,19 @@ namespace NoobSwarm.WPF.ViewModel
                 // Attach after we set all properties
                 Settings.PropertyChanged += Settings_PropertyChanged;
             }
+
         }
 
+        private void CreateNewSettings()
+        {
+            Settings = new TsSettings
+            {
+                Enabled = false,
+                ApiKey = "",
+                Color = Colors.Blue,
+                Keys = new(Enum.GetValues<LedKey>().Where(x => x >= LedKey.NUM_LOCK && x <= LedKey.NUM_ENTER))
+            };
+        }
         private void RecordingStopped(RecordKeysControl.RecordingStoppedEventArgs args)
         {
             Debug.WriteLine("recording stopped: " + string.Join(" ", args.RecordedKeys));
@@ -150,8 +166,8 @@ namespace NoobSwarm.WPF.ViewModel
                 case nameof(Settings.ApiKey):
                 case nameof(Settings.Color):
                 case nameof(Settings.Keys):
-                    using (var fs = File.OpenWrite(save))
-                        MessagePackSerializer.Serialize(fs, Settings);
+
+                    File.WriteAllText(save, JsonConvert.SerializeObject(Settings));
                     break;
             }
         }

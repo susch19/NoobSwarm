@@ -1,5 +1,4 @@
-﻿using MessagePack;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
@@ -10,15 +9,12 @@ using System.Windows.Forms;
 namespace NoobSwarm.Windows.Commands
 {
 
-    [MessagePackObject]
     public class ClipboardTextSaveTypeCommand : IHotkeyCommand
     {
-        [IgnoreMember]
         [JsonIgnore]
         public HotKeyType HotKeyType { get; set; }
 
-        [Key(0)]
-        public string ClipboardText { get; set; }
+        public string? ClipboardText { get; set; }
 
         private Keyboard? keyboard;
 
