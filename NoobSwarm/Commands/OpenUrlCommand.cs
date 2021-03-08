@@ -1,15 +1,9 @@
 ﻿using MessagePack;
-
-using NonSucking.Framework.Extension.IoC;
+using Newtonsoft.Json;
 
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Makros;
-
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace NoobSwarm.Commands
 {
@@ -17,6 +11,7 @@ namespace NoobSwarm.Commands
     public class OpenUrlCommand : IHotkeyCommand
     {
         [IgnoreMember]
+        [JsonIgnore]
         public HotKeyType HotKeyType { get; set; }
 
         [Key(0)]

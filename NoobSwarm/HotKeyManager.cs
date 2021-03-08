@@ -1,14 +1,12 @@
-﻿
-using MessagePack;
+﻿using MessagePack;
 using MessagePack.Formatters;
-using MessagePack.Resolvers;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
-using NoobSwarm.MessagePackFormatters;
 
 using System;
 using System.Collections.Generic;
@@ -16,8 +14,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -65,8 +61,6 @@ namespace NoobSwarm
         /// </summary>
         public Color HotKeyColor { get; set; } = Color.Green;
 
-
-
         /// <summary>
         /// The key to execute a available hotkey when multiple hotkeys are available
         /// </summary>
@@ -87,6 +81,7 @@ namespace NoobSwarm
         /// </summary>
         public Color ExitColor { get; set; } = Color.Red;
 
+        [JsonIgnore]
         /// <summary>
         /// Are we curently in the hotkey mode and processing keys
         /// </summary>
@@ -126,7 +121,7 @@ namespace NoobSwarm
         public Color RecordingColorPrimary { get; set; } = Color.DarkGreen;
         public Color RecordingColorSecondary { get; set; } = Color.Yellow;
 
-        private Tree tree = new();
+        public Tree tree = new();
         private readonly VulcanKeyboard keyboard;
         private bool isExecuting;
         private LedKey hotKey;
@@ -142,6 +137,13 @@ namespace NoobSwarm
         private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
         private CancellationTokenSource? asyncToken;
         private LedKey? lastAsyncRecordingKey;
+
+        [JsonIgnore]
+        public static readonly JsonSerializer Serializer = new()
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
+        };
 
         public HotKeyManager(VulcanKeyboard keyboard, LightService lightService)
         {
@@ -171,14 +173,24 @@ namespace NoobSwarm
         public void Serialize()
         {
             using var fs = File.OpenWrite("Makros.save");
-            MessagePackSerializer.Serialize(fs, this);
+            using var writer = new BsonDataWriter(fs);
+            Serializer.Serialize(writer, this);
         }
         public static HotKeyManager Deserialize()
         {
             if (!File.Exists("Makros.save"))
                 return TypeContainer.CreateObject<HotKeyManager>();
+
             using var fs = File.OpenRead("Makros.save");
-            return MessagePackSerializer.Deserialize<HotKeyManager>(fs);
+            using var reader = new BsonDataReader(fs);
+            try
+            {
+                return Serializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();
+            }
+            catch (Exception ex)
+            {
+                return MessagePackSerializer.Deserialize<HotKeyManager>(fs);
+            }
         }
 
         private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
@@ -366,8 +378,6 @@ namespace NoobSwarm
                 TestSinglePath(currentNode);
             }
         }
-
-
 
         private bool TestSinglePath(KeyNode node)
         {

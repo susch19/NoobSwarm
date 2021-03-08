@@ -1,12 +1,10 @@
 ﻿using MessagePack;
-
+using Newtonsoft.Json;
 using NoobSwarm.Hotkeys;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Vulcan.NET;
 
@@ -23,6 +21,7 @@ namespace NoobSwarm
         public Dictionary<LedKey, KeyNode> Children { get; set; } = new Dictionary<LedKey, KeyNode>();
 
         [IgnoreMember]
+        [JsonIgnore]
         public bool HasSinglePath => (
             Children.Count == 0
                 && Command != null
@@ -36,6 +35,7 @@ namespace NoobSwarm
 
 
         [IgnoreMember]
+        [JsonIgnore]
         public KeyNode? SinglePathChild => HasSinglePath ? (Children.Count == 0 ? this : Children.First().Value.SinglePathChild) : null;
 
         internal IEnumerable<(List<LedKey> keys, IHotkeyCommand command)> GetCommands(List<LedKey> keys)
