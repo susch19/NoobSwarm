@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+using Newtonsoft.Json;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -14,9 +17,18 @@ namespace NoobSwarm.Lights.LightEffects
     {
 
         private Dictionary<LedKey, short> keyFades = new();
+        [JsonProperty]
         private Color color;
+        [JsonProperty]
         private PerKeyLightEffect? effect;
+        [JsonProperty]
         private byte biggest;
+
+
+        private PressedFadeInEffect()
+        {
+
+        }
 
         public PressedFadeInEffect(Color c)
         {
@@ -103,5 +115,26 @@ namespace NoobSwarm.Lights.LightEffects
                 keyFades[press] = 0;
             }
         }
+
+        //public class PressedFadeInEffectFormatter : IMessagePackFormatter<PressedFadeInEffect>
+        //{
+        //    public void Serialize(ref MessagePackWriter writer, PressedFadeInEffect value, MessagePackSerializerOptions options)
+        //    {
+        //        MessagePackSerializer.Serialize(ref writer, value as PerKeyLightEffect);
+        //        MessagePackSerializer.Serialize(ref writer, value.color);
+        //        MessagePackSerializer.Serialize(ref writer, value.biggest);
+        //        MessagePackSerializer.Serialize(ref writer, value.effect);
+        //    }
+
+        //    PressedFadeInEffect IMessagePackFormatter<PressedFadeInEffect>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        //    {
+        //        PressedFadeInEffect effect = MessagePackSerializer.Deserialize< PerKeyLightEffect>(ref reader);
+        //        var effect = new PressedFadeInEffect();
+        //        effect.color =  MessagePackSerializer.Deserialize<Color>(ref reader);
+        //        effect.biggest =MessagePackSerializer.Deserialize<byte>(ref reader);
+        //        effect.effect = MessagePackSerializer.Deserialize<PerKeyLightEffect>(ref reader);
+        //        return ;
+        //    }
+        //}
     }
 }

@@ -1,6 +1,4 @@
-﻿using MessagePack;
-
-using NoobSwarm.Lights;
+﻿using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
 
@@ -26,11 +24,7 @@ namespace NoobSwarm
         public event EventHandler<RecordKey>? RecordAdded;
         public event EventHandler<IReadOnlyCollection<RecordKey>>? RecordingFinished;
 
-        [MessagePackObject()]
-        public record RecordKey(
-            [property: Key(0)] Makros.Key Key,
-            [property: Key(1)] int TimeBeforePress,
-            [property: Key(2)] bool Pressed);
+        public record RecordKey(Makros.Key Key,int TimeBeforePress,bool Pressed);
 
         public Makros.Key StopRecordKey { get; set; } = Makros.Key.PAUSE;
 

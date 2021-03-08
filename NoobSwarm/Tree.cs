@@ -1,10 +1,5 @@
-﻿using MessagePack;
-
-using NoobSwarm.Hotkeys;
-
-using System;
+﻿using NoobSwarm.Hotkeys;
 using System.Collections.Generic;
-
 using Vulcan.NET;
 
 namespace NoobSwarm
@@ -19,6 +14,7 @@ namespace NoobSwarm
             parent.Children.Add(key, node);
             return node;
         }
+
         public void CreateNode(IReadOnlyList<LedKey> hotkey, IHotkeyCommand action)
         {
             KeyNode curNode = this;
@@ -50,7 +46,5 @@ namespace NoobSwarm
                 }
             }
         }
-
-  
     }
 }

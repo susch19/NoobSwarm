@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -6,10 +7,13 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
+
     public class SingleKeysColorEffect : LightEffect
     {
+     
         public Dictionary<LedKey, Color> KeyColors { get; set; }
 
+      
         public Color? NonSetKeyColor { get; set; }
 
         public SingleKeysColorEffect(Color color, IEnumerable<LedKey> keys)

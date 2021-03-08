@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -9,10 +10,9 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights
 {
+
     public struct LedKeyPoint
     {
-
-
         public LedKeyPoint(int x, int y, LedKey ledKey)
         {
             X = x;

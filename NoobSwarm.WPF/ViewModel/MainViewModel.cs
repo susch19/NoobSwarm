@@ -34,6 +34,8 @@ namespace NoobSwarm.WPF.ViewModel
         public ICommand UnloadedCommand { get; set; }
 
         public ICommand MenuItemSettingsCommand { get; set; }
+        public ICommand MenuItemReloadKeyboardCommand { get; set; }
+        public ICommand MenuItemLightEffectCommand { get; set; }
         public ICommand MenuItemInfoCommand { get; set; }
         public ICommand MenuItemExitCommand { get; set; }
 
@@ -75,6 +77,7 @@ namespace NoobSwarm.WPF.ViewModel
                 TitleClickedCommand = new RelayCommand(TitleClicked);
 
                 MenuItemSettingsCommand = new RelayCommand(() => { });
+              
                 MenuItemInfoCommand = new RelayCommand(() => { /* TODO: Show dialog with version number of ui and packages dynamically */ });
                 MenuItemExitCommand = new RelayCommand(Application.Current.Shutdown);
 
@@ -110,6 +113,9 @@ namespace NoobSwarm.WPF.ViewModel
                 manager.HotKey = LedKey.FN_Key;
 
                 var kb = TypeContainer.Get<VirtualHID.Keyboard>();
+                var vkb = TypeContainer.Get<VulcanKeyboard>();
+                MenuItemReloadKeyboardCommand = new RelayCommand(() => { vkb.Disconnect(); vkb.Connect(); });
+                MenuItemLightEffectCommand = new RelayCommand(() => { lightService.Serialize(); });
                 LowLevelKeyboardHook hook = null;
 
                 manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };

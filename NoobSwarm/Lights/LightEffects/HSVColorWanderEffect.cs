@@ -1,4 +1,5 @@
-﻿using NoobSwarm.Brushes;
+﻿
+using NoobSwarm.Brushes;
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,6 @@ namespace NoobSwarm.Lights.LightEffects
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
-
 
         public HSVColorWanderEffect()
         {

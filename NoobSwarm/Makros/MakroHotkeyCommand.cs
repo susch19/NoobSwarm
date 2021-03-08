@@ -1,28 +1,20 @@
-﻿using MessagePack;
-
+﻿using Newtonsoft.Json;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
-
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using static NoobSwarm.MakroManager;
 
 namespace NoobSwarm.Makros
 {
-    [MessagePackObject]
     public class MakroHotkeyCommand : IHotkeyCommand
     {
-        [IgnoreMember]
+        [JsonIgnore]
         private IKeyboard? keyboard;
 
-        [IgnoreMember]
+        [JsonIgnore]
         public HotKeyType HotKeyType { get; set; }
-        [Key(0)]
         public List<RecordKey>? Makro { get; set; }
 
         public MakroHotkeyCommand()

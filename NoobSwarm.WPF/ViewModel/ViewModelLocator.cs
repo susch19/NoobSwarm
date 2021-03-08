@@ -1,4 +1,4 @@
-﻿using MessagePack;
+﻿//using MessagePack;
 
 using Microsoft.Win32;
 
@@ -6,11 +6,10 @@ using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
 using NoobSwarm.Makros;
-using NoobSwarm.MessagePackFormatters;
 using NoobSwarm.VirtualHID;
-using NoobSwarm.WPF.MessagePackFormatters;
 
 using System.Configuration;
+using System.Threading.Tasks;
 
 using Vulcan.NET;
 
@@ -31,7 +30,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         static ViewModelLocator()
         {
-            InitializeMessagePack();
+            //InitializeMessagePack();
 
             TypeContainer.Register<MainViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<CockpitViewModel>(InstanceBehaviour.Singleton);
@@ -44,36 +43,38 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register(VulcanKeyboard.Initialize());
-            TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
-            var hkm = HotKeyManager.Deserialize();
-            TypeContainer.Register(hkm);
+            var service = LightService.Deserialize();
+            TypeContainer.Register(service);
+        
+                var hkm =  HotKeyManager.Deserialize();
+                TypeContainer.Register(hkm);
             TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
-            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            //SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
             vulcanKeyboard = TypeContainer.Get<VulcanKeyboard>();
         }
 
-        private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        private static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
-            if (e.Mode == PowerModes.Resume)
-            {
+            if (e.Reason == SessionSwitchReason.SessionUnlock)
                 vulcanKeyboard.Connect();
-            }
-            else if (e.Mode == PowerModes.Suspend)
+            else if (e.Reason == SessionSwitchReason.SessionLock)
                 vulcanKeyboard.Disconnect();
         }
 
-        private static void InitializeMessagePack()
-        {
-            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
-                new SystemDrawingColorFormatter(),
-                new SystemWindowsMediaColorFormatter());
+        //private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        //{
+        //    if (e.Mode == PowerModes.Resume)
+        //    {
+        //        vulcanKeyboard.Connect();
+        //    }
+        //    else if (e.Mode == PowerModes.Suspend)
+        //        vulcanKeyboard.Disconnect();
+        //}
 
-            var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
-                MessagePack.Resolvers.StandardResolver.Instance,
-                MessagePack.Resolvers.StaticCompositeResolver.Instance);
-            var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
-
-            MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
-        }
+        //private static void InitializeMessagePack()
+        //{
+        //    Serializations.SerializationHelper.RegisterAllFormatters();
+        //}
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -14,8 +16,11 @@ namespace NoobSwarm.Lights.LightEffects
         public bool FasterPreKeyPress { get; set; }
 
         private Dictionary<LedKey, (short value, byte multiplier)> keyFades = new();
+        [JsonProperty]
         private Color color;
+        [JsonProperty]
         private PerKeyLightEffect? effect;
+        [JsonProperty]
         private byte biggest;
 
         public PressedFadeOutEffect(Color c, bool fasterPreKeyPress = false)

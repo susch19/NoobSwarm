@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+using Newtonsoft.Json;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -9,15 +12,16 @@ namespace NoobSwarm.Lights.LightEffects
 {
     public abstract class LightEffect
     {
-
+        [JsonIgnore]
         public bool Initialized { get; internal set; }
         public bool Active { get; set; } = true;
+
         public float Speed { get => speed; set { if (value == speed) return; speed = Math.Max(value, 0f); } }
+
         public byte Brightness { get; set; } = 255;
         protected IReadOnlyList<LedKeyPoint>? LedKeyPoints { get; set; }
 
         protected float BrightnessPercent => Brightness / 255f;
-
 
         private float speed = 1f;
 

@@ -17,7 +17,6 @@ namespace NoobSwarm.Lights.LightEffects
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
-
         public HSVColorGradientCycleEffect()
         {
             LedKeys = null;

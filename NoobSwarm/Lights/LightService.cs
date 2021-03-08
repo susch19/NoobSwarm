@@ -1,4 +1,12 @@
-﻿using NoobSwarm.Lights.LightEffects;
+﻿
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+
+using NonSucking.Framework.Extension.IoC;
+
+using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Serializations;
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +14,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,11 +26,12 @@ namespace NoobSwarm.Lights
 {
     public class LightService
     {
-
         public IReadOnlyList<LightEffect> LightLayers => lightLayers;
 
-        public long ElapsedMilliseconds { get; private set; }
-        public int Counter { get; private set; }
+        [JsonIgnore]
+        public long ElapsedMilliseconds { get => elapsedMilliseconds; private set => elapsedMilliseconds = value; }
+        [JsonIgnore]
+        public int Counter { get => counter; private set => counter = value; }
         public bool Reversed { get; set; }
         public ushort Speed { get; set; }
 
@@ -36,7 +47,6 @@ namespace NoobSwarm.Lights
                 updateWithBrightness = true;
             }
         }
-
 
         public int TargetUpdateRate
         {
@@ -55,22 +65,33 @@ namespace NoobSwarm.Lights
         private int msSleep;
         private int targetUpdateRate;
         private byte brightness;
-        private bool updateWithBrightness;
-        private readonly VulcanKeyboard keyboard;
+        private bool updateWithBrightness = true;
+        private VulcanKeyboard? keyboard;
+        [JsonProperty]
+        private long elapsedMilliseconds;
+        [JsonProperty]
+        private int counter;
         private readonly List<LedKeyPoint> ledKeyPoints = new();
+        [JsonProperty]
         private readonly List<LightEffect> lightLayers = new();
+        [JsonProperty]
         private readonly List<LightEffect> overrideLightEffects = new();
         private readonly List<LedKey> pressedKeys = new();
         private readonly List<LedKey> pressedKeysToRemove = new();
+        [JsonProperty]
+        private readonly Dictionary<LedKey, Color> currentColors = new();
 
-
-        private readonly Dictionary<LedKey, Color> currentColors;
+        public LightService()
+        {
+            keyboard = TypeContainer.Get<VulcanKeyboard>();
+            keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
+            ledKeyPoints.AddRange(LedKeyPoint.LedKeyPoints);
+        }
 
         public LightService(VulcanKeyboard keyboard)
         {
             this.keyboard = keyboard;
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
-            currentColors = new Dictionary<LedKey, Color>() { };
             foreach (var ledKey in Enum.GetValues<LedKey>().Distinct())
             {
                 if (!currentColors.ContainsKey((LedKey)(int)ledKey))
@@ -82,6 +103,39 @@ namespace NoobSwarm.Lights
             ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
             Speed = 1;
         }
+
+        //public void Serialize()
+        //{
+        //    //using var fs = File.OpenWrite("LightConfig.save");
+        //    //MessagePackSerializer.Serialize(fs, this);
+        //}
+        //public static LightService Deserialize()
+        //{
+        //    if (!File.Exists("LightConfig.save"))
+        //        return TypeContainer.CreateObject<LightService>();
+        //    using var fs = File.OpenRead("LightConfig.save");
+        //    return MessagePackSerializer.Deserialize<LightService>(fs);
+        //}
+
+        public void Serialize()
+        {
+            using var fs = File.OpenWrite("LightConfig.save");
+            using var writer = new BsonDataWriter(fs);
+            SerializationHelper.TypeSafeSerializer.Serialize(writer, this);
+        }
+        public static LightService Deserialize()
+        {
+            if (!File.Exists("LightConfig.save"))
+                return TypeContainer.CreateObject<LightService>();
+
+            using var fs = File.OpenRead("LightConfig.save");
+            using var reader = new BsonDataReader(fs);
+            var service = SerializationHelper.TypeSafeSerializer.Deserialize<LightService>(reader);
+            if (service is null)
+                service = TypeContainer.CreateObject<LightService>();
+            return service;
+        }
+
 
         public void AddToEnd(LightEffect lightEffect)
         {
@@ -129,7 +183,7 @@ namespace NoobSwarm.Lights
         }
 
         public bool Contains(LightEffect effect) => lightLayers.Contains(effect);
-        
+
 
         public void ClearOverrideEffects()
         {
@@ -146,6 +200,12 @@ namespace NoobSwarm.Lights
             List<LightEffect> lightLayersCopy = new();
             while (!token.IsCancellationRequested)
             {
+                if (keyboard is null || currentColors is null)
+                {
+                    Thread.Sleep(16);
+                    continue;
+                }
+
                 sw.Restart();
                 pressedCopy.AddRange(pressedKeys);
                 foreach (var copy in currentColors)
@@ -174,7 +234,7 @@ namespace NoobSwarm.Lights
                             catch
                             {
                             }
-                           
+
                         }
                     }
                 }
@@ -188,7 +248,7 @@ namespace NoobSwarm.Lights
                             {
                                 lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
                             }
-                            catch 
+                            catch
                             {
                             }
                         }
@@ -207,6 +267,7 @@ namespace NoobSwarm.Lights
                         }
                     }
                 }
+
                 keyboard.SetColors(currentColorsCopy);
                 if (updateWithBrightness)
                 {
@@ -254,5 +315,114 @@ namespace NoobSwarm.Lights
             else
                 pressedKeysToRemove.Add(e.Key);
         }
+
+        /*
+
+        public long ElapsedMilliseconds { get; private set; }
+        public int Counter { get; private set; }
+        public bool Reversed { get; set; }
+        public ushort Speed { get; set; }
+
+        public byte Brightness
+
+        public int TargetUpdateRate
+        
+         * public IReadOnlyList<LightEffect> LightLayers => lightLayers;
+        public IReadOnlyList<LightEffect> OverrideLightEffects => overrideLightEffects;
+        public IReadOnlyList<LedKeyPoint> LedKeyPoints => ledKeyPoints;*/
+
+        //public class LightServiceFormatter : IMessagePackFormatter<LightService>
+        //{
+        //    public void Serialize(ref MessagePackWriter writer, LightService value, MessagePackSerializerOptions options)
+        //    {
+        //        //is not registered in resolver: MessagePack.Resolvers.StandardResolver
+
+        //        MessagePackSerializer.Serialize(ref writer, value.ElapsedMilliseconds);
+        //        MessagePackSerializer.Serialize(ref writer, value.Counter);
+        //        MessagePackSerializer.Serialize(ref writer, value.Reversed);
+        //        MessagePackSerializer.Serialize(ref writer, value.Speed);
+        //        MessagePackSerializer.Serialize(ref writer, value.Brightness);
+        //        MessagePackSerializer.Serialize(ref writer, value.TargetUpdateRate);
+        //        if (value.currentColors is null)
+        //            MessagePackSerializer.Serialize(ref writer, 0);
+        //        else
+        //        {
+        //            MessagePackSerializer.Serialize(ref writer, value.currentColors.Count);
+        //            foreach (var layer in value.currentColors)
+        //            {
+        //                MessagePackSerializer.Serialize(ref writer, layer.Key);
+        //                MessagePackSerializer.Serialize(ref writer, layer.Value);
+        //            }
+        //        }
+        //        MessagePackSerializer.Serialize(ref writer, value.lightLayers.Count);
+        //        foreach (var layer in value.lightLayers)
+        //        {
+        //            MessagePackSerializer.Serialize(ref writer, layer.GetType().FullName);
+        //            MessagePackSerializer.Serialize(ref writer, layer);
+        //        }
+        //        MessagePackSerializer.Serialize(ref writer, value.overrideLightEffects.Count);
+        //        foreach (var layer in value.overrideLightEffects)
+        //        {
+        //            MessagePackSerializer.Serialize(ref writer, layer.GetType().FullName);
+        //            MessagePackSerializer.Typeless.Serialize(ref writer, layer);
+        //        }
+        //        //MessagePackSerializer.Serialize<KeyNode>(ref writer, value.Tree);
+        //    }
+
+
+
+        //    LightService IMessagePackFormatter<LightService>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        //    {
+        //        var ls = new LightService();
+
+        //        ls.ElapsedMilliseconds = MessagePackSerializer.Deserialize<long>(ref reader);
+        //        ls.Counter = MessagePackSerializer.Deserialize<int>(ref reader);
+        //        ls.Reversed = MessagePackSerializer.Deserialize<bool>(ref reader);
+        //        ls.Speed = MessagePackSerializer.Deserialize<ushort>(ref reader);
+        //        ls.Brightness = MessagePackSerializer.Deserialize<byte>(ref reader);
+        //        ls.TargetUpdateRate = MessagePackSerializer.Deserialize<int>(ref reader);
+
+        //        var count = MessagePackSerializer.Deserialize<int>(ref reader);
+        //        //var method = typeof(MessagePackSerializer).GetMethod(nameof(MessagePackSerializer.Deserialize), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+
+        //        //var parameter = Expression.Parameter(typeof(MessagePackReader), "reader");
+        //        //var call = Expression.Call(method, parameter);
+
+
+        //        for (int i = 0; i < count; i++)
+        //            ls.currentColors.Add(MessagePackSerializer.Deserialize<LedKey>(ref reader), MessagePackSerializer.Deserialize<Color>(ref reader));
+
+        //        count = MessagePackSerializer.Deserialize<int>(ref reader);
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            var lightName = MessagePackSerializer.Deserialize<string>(ref reader);
+        //            var lt = Type.GetType(lightName);
+        //            try
+        //            {
+        //                //var genericMethod = method.MakeGenericMethod(lt);
+        //                //var expression = Expression.Lambda<deserialize>(call, parameter);
+        //                //var func = expression.Compile();
+        //                //var result = func();
+        //                //genericMethod.Invoke(null, new object[] { ref reader });
+        //                //Activator.CreateInstance()
+        //                //var read = new ReadHelper();
+        //                var effect = (LightEffect)MessagePackSerializer.Deserialize(lt, ref reader);
+        //                ls.AddToEnd(effect);
+        //            }
+        //            catch (Exception e)
+        //            {
+        //                ls.AddToEnd((LightEffect)Activator.CreateInstance(lt));
+        //                return ls;
+        //            }
+        //        }
+
+        //        count = MessagePackSerializer.Deserialize<int>(ref reader);
+        //        for (int i = 0; i < count; i++)
+        //            ls.overrideLightEffects.Add((LightEffect)MessagePackSerializer.Typeless.Deserialize(ref reader));
+
+
+        //        return ls;
+        //    }
+        //}
     }
 }

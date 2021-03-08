@@ -1,26 +1,17 @@
-﻿using MessagePack;
-
-using NonSucking.Framework.Extension.IoC;
+﻿using Newtonsoft.Json;
 
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Makros;
-
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace NoobSwarm.Commands
 {
-    [MessagePackObject]
     public class OpenUrlCommand : IHotkeyCommand
     {
-        [IgnoreMember]
+        [JsonIgnore]
         public HotKeyType HotKeyType { get; set; }
 
-        [Key(0)]
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         public void Execute()
         {
