@@ -29,21 +29,7 @@ namespace NoobSwarm
                 UseShellExecute = true
             });
         }
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void KeyboardTestCallback(int a, int b, int down);
-
-        //[DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
-        //public static extern void StartHook();
-
-        //[DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.StdCall)]
-        //public static extern void SetCallback(IntPtr aCallback);
-        //[DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
-
-        //public static extern void start_message_loop();
-        //[DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
-
-        //public static extern void StopHook();
-
+      
         private static readonly CancellationTokenSource cts = new();
 
         [STAThread]
@@ -57,56 +43,10 @@ namespace NoobSwarm
             
             //start_message_loop();
 
-            //var t = Task.Run(MessageLoopCpp);
-            //    .ContinueWith((a)=>StopHook());
-
-            //SetCallback(Marshal.GetFunctionPointerForDelegate(del));
-
-            //StartHook();
-
-            //using var kb = new Keyboard();
-            //kb.SendChar('h');
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
             bool b = false;
-            //while (true)
-            //{
-            //    var kc = Console.ReadKey().KeyChar;
-            //    if (kc == 'w')
-            //    {
-            //        kb.SendVirtualKey((ushort)PInvoke.User32.VirtualKey.VK_TAB, Keyboard.KeyModifier.left_alt);
-            //        Thread.Sleep(100);
-            //        kb.SendVirtualKey((ushort)PInvoke.User32.VirtualKey.VK_LWIN);
-            //        Thread.Sleep(100);
-            //        kb.SendCharsSequene("Hallo, das hier ist ein kleiner Test :)");
-            //        continue;
-            //    }
-
-            //    if (!b)
-            //        kb.SendChar(kc);
-            //    b = !b;
-            //}
-            //Func<ReportDescriptor, HidDeviceInputReceiver> generateHIDInputReceiver = (desc) =>
-            //{
-            //    return new HidDeviceInputReceiver(100, desc);
-            //};
-            //foreach (var device in devices)
-            //{
-            //    if (device.TryOpen(out var devStream))
-            //    {
-            //        var desc = device.GetReportDescriptor();
-            //        var rec = generateHIDInputReceiver(desc);
-            //        rec.Received += (s, e) =>
-            //        {
-            //            Console.WriteLine($"Received: Count: {e.Count}, Bytes: {string.Join(' ', e.Bytes.Skip(e.Offset).Take(e.Count).Select(x => x.ToString("X2")))}");
-
-            //        };
-            //        rec.Start(devStream);
-
-            //    }
-            //}
-            //while (true)
-            //    Console.ReadLine();
+          
 
 
             var asdhotkey = new MakroHotkeyCommand(new List<MakroManager.RecordKey> {
@@ -120,46 +60,19 @@ namespace NoobSwarm
             manager.Mode = HotKeyMode.Active;
             manager.HotKey = LedKey.FN_Key;
             manager.AddHotKey(new List<LedKey> {LedKey.A }, asdhotkey);
-            //MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
-            //    new SystemDrawingColorFormatter());
-
-            //var compResolver = MessagePack.Resolvers.CompositeResolver.Create(
-            //    MessagePack.Resolvers.StandardResolver.Instance, 
-            //    MessagePack.Resolvers.StaticCompositeResolver.Instance);
-            //var defaultOptions = MessagePackSerializerOptions.Standard.WithResolver(compResolver);
-            
-            //MessagePack.MessagePackSerializer.DefaultOptions = defaultOptions;
-
-            //var ser = MessagePack.MessagePackSerializer.Serialize<HotKeyManager>(manager);
-            ////manager.Serialize();
-            //var set2 = File.ReadAllBytes("Makros.save");
-            //var kn2 = MessagePack.MessagePackSerializer.Deserialize<HotKeyManager>(ser);
-            //var kn3 = HotKeyManager.Deserialize();
-
-            //ser = MessagePack.MessagePackSerializer.Typeless.Serialize(manager);
-            //var manager2 = (HotKeyManager)MessagePack.MessagePackSerializer.Typeless.Deserialize(ser);
+        
 
             var ls = TypeContainer.Get<LightService>();
             var keyboard = TypeContainer.Get<VulcanKeyboard>();
             ls.AddToEnd(new HSVColorWanderEffect());
-            //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString().Length == 1).ToList(), new List<Color> { Color.Orange, Color.Green, Color.Red }) { Direction = Direction.Up, Speed = 1 });
-            //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'F' && x.ToString().Length is <= 3 and > 1).ToList()) { Direction = Direction.Right });
-            //ls.AddToEnd(new HSVColorWanderEffect(Enum.GetValues<LedKey>().Where(x => x.ToString()[0] == 'D' && x.ToString().Length == 2).ToList()) { Direction = Direction.Left });
-            //ls.AddToEnd(new BreathingColorPerKeyEffect(Enum.GetValues<LedKey>().Where(x => (byte)x >= 113).ToList(), new HSVColorWanderEffect()) { Speed = .1f });
-            //ls.AddToEnd(new SingleKeysColorEffect(new() { { LedKey.ESC, Color.White } }));
+          
             ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
-            //ls.AddToEnd(new PressedFadeOutEffect(new HSVColorWanderEffect() { Direction = Direction.Right, Speed = 5 }));
-            //ls.AddToEnd(new RandomColorPerKeyEffect() { Brightness=10});
-            //ls.AddToEnd(new BreathingColorEffect(new() { LedKey.B, LedKey.R, LedKey.E, LedKey.A, LedKey.T, LedKey.H, LedKey.I, LedKey.N, LedKey.G, }, Color.FromArgb(100,255,30)));
+          
             ls.Speed = 5;
 
             _ = Task.Run(() => ls.UpdateLoop(cts.Token));
 
-            // manager.AddHotKey(new[] { LedKey.P }, x => Console.WriteLine("Toggle"));
-            // manager.AddHotKey(new[] { LedKey.P, LedKey.L }, x => Console.WriteLine("Play"));
-            // manager.AddHotKey(new[] { LedKey.P, LedKey.P }, x => Console.WriteLine("Pause"));
-            // manager.AddHotKey(new[] { LedKey.T, LedKey.W }, x => OpenUrl("https://www.twitch.tv/"));
-            // manager.AddHotKey(new[] { LedKey.T, LedKey.W, LedKey.N }, x => OpenUrl("https://www.twitch.tv/noobdevtv"));
+          
 
             foreach (var color in typeof(Color)
                 .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
@@ -180,13 +93,6 @@ namespace NoobSwarm
                     });
             }
 
-            // manager.AddHotKey(new[] { LedKey.C, LedKey.O, LedKey.L, LedKey.E, LedKey.M, LedKey.P, LedKey.T, LedKey.Y }, (vk) =>
-            // {
-            //     var solid = ls.LightLayers.FirstOrDefault(x => x.GetType() == typeof(SolidColorEffect));
-            //     if (solid == default)
-            //         return;
-            //     ((SolidColorEffect)solid).SolidColor = null;
-            // });
 
             keyboard.VolumeKnobFxPressedReceived += (s, e) => { ls.Brightness = (byte)(e.Data - 1); };
 

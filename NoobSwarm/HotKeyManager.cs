@@ -423,42 +423,5 @@ namespace NoobSwarm
         }
 
 
-        //class HotKeyManagerFormatter : IMessagePackFormatter<HotKeyManager>
-        //{
-        //    public void Serialize(ref MessagePackWriter writer, HotKeyManager value, MessagePackSerializerOptions options)
-        //    {
-        //        //is not registered in resolver: MessagePack.Resolvers.StandardResolver
-
-        //        MessagePackSerializer.Serialize(ref writer, value.HotKey);
-        //        MessagePackSerializer.Serialize(ref writer, value.HotKeyColor);
-        //        MessagePackSerializer.Serialize(ref writer, value.EarlyExitKey);
-        //        MessagePackSerializer.Serialize(ref writer, value.EarlyExitColor);
-        //        MessagePackSerializer.Serialize(ref writer, value.ExitKey);
-        //        MessagePackSerializer.Serialize(ref writer, value.ExitColor);
-        //        MessagePackSerializer.Serialize(ref writer, value.Mode);
-        //        MessagePackSerializer.Serialize(ref writer, value.RecordingColorPrimary);
-        //        MessagePackSerializer.Serialize(ref writer, value.RecordingColorSecondary);
-        //        MessagePackSerializer.Typeless.Serialize(ref writer, value.tree as KeyNode);
-        //        //MessagePackSerializer.Serialize<KeyNode>(ref writer, value.Tree);
-        //    }
-
-        //    HotKeyManager IMessagePackFormatter<HotKeyManager>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
-        //    {
-        //        var hkm = new HotKeyManager(TypeContainer.Get<VulcanKeyboard>(), TypeContainer.Get<LightService>());
-        //        hkm.HotKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
-        //        hkm.HotKeyColor = MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        hkm.EarlyExitKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
-        //        hkm.EarlyExitColor = MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        hkm.ExitKey = MessagePackSerializer.Deserialize<LedKey>(ref reader);
-        //        hkm.ExitColor = MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        hkm.Mode = MessagePackSerializer.Deserialize<HotKeyMode>(ref reader);
-        //        hkm.RecordingColorPrimary = MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        hkm.RecordingColorSecondary = MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        hkm.tree = (Tree)MessagePackSerializer.Typeless.Deserialize(ref reader);
-        //        hkm.currentNode = hkm.tree;
-        //        return hkm;
-        //    }
-        //}
-
     }
 }

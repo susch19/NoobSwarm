@@ -30,8 +30,6 @@ namespace NoobSwarm.WPF.ViewModel
 
         static ViewModelLocator()
         {
-            //InitializeMessagePack();
-
             TypeContainer.Register<MainViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<CockpitViewModel>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ThemeDesignerViewModel>(InstanceBehaviour.Singleton);
@@ -45,11 +43,9 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register(VulcanKeyboard.Initialize());
             var service = LightService.Deserialize();
             TypeContainer.Register(service);
-        
-                var hkm =  HotKeyManager.Deserialize();
-                TypeContainer.Register(hkm);
+            var hkm = HotKeyManager.Deserialize();
+            TypeContainer.Register(hkm);
             TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
-            //SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
             vulcanKeyboard = TypeContainer.Get<VulcanKeyboard>();
         }
@@ -62,19 +58,5 @@ namespace NoobSwarm.WPF.ViewModel
                 vulcanKeyboard.Disconnect();
         }
 
-        //private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        //{
-        //    if (e.Mode == PowerModes.Resume)
-        //    {
-        //        vulcanKeyboard.Connect();
-        //    }
-        //    else if (e.Mode == PowerModes.Suspend)
-        //        vulcanKeyboard.Disconnect();
-        //}
-
-        //private static void InitializeMessagePack()
-        //{
-        //    Serializations.SerializationHelper.RegisterAllFormatters();
-        //}
     }
 }
