@@ -118,8 +118,8 @@ namespace NoobSwarm.WPF.ViewModel
                 MenuItemLightEffectCommand = new RelayCommand(() => { lightService.Serialize(); });
                 LowLevelKeyboardHook hook = null;
 
-                manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
-                manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
+                //manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
+                //manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
             }
         }
 

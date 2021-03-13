@@ -167,18 +167,22 @@ namespace NoobSwarm
             Mode = HotKeyMode.Active;
         }
 
-        public void Serialize()
+        public void Serialize(string? file = null)
         {
-            using var fs = File.OpenWrite("Makros.save");
+            file ??= "Makros.save";
+
+            using var fs = File.OpenWrite(file);
             using var writer = new BsonDataWriter(fs);
             SerializationHelper.TypeSafeSerializer.Serialize(writer, this);
         }
-        public static HotKeyManager Deserialize()
+        public static HotKeyManager Deserialize(string? file = null)
         {
-            if (!File.Exists("Makros.save"))
+            file ??= "Makros.save";
+
+            if (!File.Exists(file))
                 return TypeContainer.CreateObject<HotKeyManager>();
 
-            using var fs = File.OpenRead("Makros.save");
+            using var fs = File.OpenRead(file);
             using var reader = new BsonDataReader(fs);
 
             return SerializationHelper.TypeSafeSerializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();

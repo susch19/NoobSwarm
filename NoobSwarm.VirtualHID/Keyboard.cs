@@ -491,7 +491,7 @@ namespace NoobSwarm.VirtualHID
             {
                 if (disposing)
                 {
-                    vKeyboardStream.Dispose();
+                    vKeyboardStream?.Dispose();
                 }
 
                 disposedValue = true;

@@ -117,18 +117,26 @@ namespace NoobSwarm.Lights
         //    return MessagePackSerializer.Deserialize<LightService>(fs);
         //}
 
-        public void Serialize()
+        public void Serialize(string? file = null)
         {
-            using var fs = File.OpenWrite("LightConfig.save");
+            file ??= "LightConfig.save";
+
+            using var fs = File.OpenWrite(file);
             using var writer = new BsonDataWriter(fs);
             SerializationHelper.TypeSafeSerializer.Serialize(writer, this);
         }
-        public static LightService Deserialize()
+        public static LightService Deserialize(string? file = null)
         {
-            if (!File.Exists("LightConfig.save"))
-                return TypeContainer.CreateObject<LightService>();
+            file ??= "LightConfig.save";
 
-            using var fs = File.OpenRead("LightConfig.save");
+            if (!File.Exists(file))
+            {
+                var s = TypeContainer.CreateObject<LightService>();
+                s.Brightness = 255;
+                return s;
+            }
+
+            using var fs = File.OpenRead(file);
             using var reader = new BsonDataReader(fs);
             var service = SerializationHelper.TypeSafeSerializer.Deserialize<LightService>(reader);
             if (service is null)
