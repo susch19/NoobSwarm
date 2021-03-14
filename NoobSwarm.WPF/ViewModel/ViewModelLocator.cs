@@ -5,10 +5,12 @@ using Microsoft.Win32;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;
+using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
 
 using System.Configuration;
+using System.Drawing;
 using System.Threading.Tasks;
 
 using Vulcan.NET;

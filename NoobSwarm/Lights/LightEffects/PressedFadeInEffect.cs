@@ -57,11 +57,11 @@ namespace NoobSwarm.Lights.LightEffects
         }
 
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = 0;
+                keyFades[press.Item1] = 0;
             }
             if (keyFades.Count > 0)
             {
@@ -108,11 +108,12 @@ namespace NoobSwarm.Lights.LightEffects
             }
         }
 
-        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed)
+        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = 0;
+                if (press.state == KeyChangeState.Pressed)
+                    keyFades[press.key] = 0;
             }
         }
 

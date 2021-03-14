@@ -3,7 +3,6 @@
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
-using NoobSwarm.MessagePackFormatters;
 
 using System;
 using System.Collections.Generic;

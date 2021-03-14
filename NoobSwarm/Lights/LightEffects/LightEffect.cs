@@ -25,7 +25,7 @@ namespace NoobSwarm.Lights.LightEffects
 
         private float speed = 1f;
 
-        public abstract void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed);
+        public abstract void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed);
 
         public virtual void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
@@ -33,7 +33,7 @@ namespace NoobSwarm.Lights.LightEffects
             Initialized = true;
         }
 
-        public virtual void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed) { }
+        public virtual void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed) { }
     }
     public abstract class PerKeyLightEffect : LightEffect
     {

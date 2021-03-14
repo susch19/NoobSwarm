@@ -21,5 +21,7 @@ namespace NoobSwarm.Serializations
             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
 
         };
+
+
     }
 }

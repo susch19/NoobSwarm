@@ -11,7 +11,7 @@ using Vulcan.NET;
 namespace NoobSwarm.Lights
 {
 
-    public struct LedKeyPoint
+    public struct LedKeyPoint : IEquatable<LedKeyPoint>
     {
         public LedKeyPoint(int x, int y, LedKey ledKey)
         {
@@ -80,7 +80,7 @@ namespace NoobSwarm.Lights
             new LedKeyPoint(826, 100, LedKey.NUMPAD7),
             new LedKeyPoint(870, 100, LedKey.NUMPAD8),
             new LedKeyPoint(914, 100, LedKey.NUMPAD9),
-            new LedKeyPoint(14, 103, LedKey.TAB),
+            new LedKeyPoint(14, 100, LedKey.TAB),
             new LedKeyPoint(618, 115, LedKey.ENTER),
             new LedKeyPoint(958, 115, LedKey.ADD),
             new LedKeyPoint(79, 146, LedKey.A),
@@ -98,7 +98,7 @@ namespace NoobSwarm.Lights
             new LedKeyPoint(826, 146, LedKey.NUMPAD4),
             new LedKeyPoint(870, 146, LedKey.NUMPAD5),
             new LedKeyPoint(914, 146, LedKey.NUMPAD6),
-            new LedKeyPoint(19, 148, LedKey.CAPS_LOCK),
+            new LedKeyPoint(19, 146, LedKey.CAPS_LOCK),
             new LedKeyPoint(0, 192, LedKey.LEFT_SHIFT),
             new LedKeyPoint(56, 192, LedKey.ISO_BACKSLASH),
             new LedKeyPoint(100, 192, LedKey.Y),
@@ -117,7 +117,7 @@ namespace NoobSwarm.Lights
             new LedKeyPoint(870, 192, LedKey.NUMPAD2),
             new LedKeyPoint(914, 192, LedKey.NUMPAD3),
             new LedKeyPoint(958, 206, LedKey.NUM_ENTER),
-            new LedKeyPoint(0, 233, LedKey.LEFT_CONTROL),
+            new LedKeyPoint(0, 234, LedKey.LEFT_CONTROL),
             new LedKeyPoint(64, 234, LedKey.LEFT_WINDOWS),
             new LedKeyPoint(121, 234, LedKey.LEFT_ALT),
             new LedKeyPoint(284, 234, LedKey.SPACE),
@@ -132,5 +132,31 @@ namespace NoobSwarm.Lights
             new LedKeyPoint(914, 234, LedKey.DECIMAL)
         };
 
+        public override bool Equals(object? obj)
+        {
+            return obj is LedKeyPoint point && Equals(point);
+        }
+
+        public bool Equals(LedKeyPoint other)
+        {
+            return X == other.X &&
+                   Y == other.Y &&
+                   LedKey == other.LedKey;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y, LedKey);
+        }
+
+        public static bool operator ==(LedKeyPoint left, LedKeyPoint right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LedKeyPoint left, LedKeyPoint right)
+        {
+            return !(left == right);
+        }
     }
 }

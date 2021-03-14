@@ -107,6 +107,7 @@ namespace NoobSwarm
                     RemoveHotKeyEffect();
                     currentNode = tree;
                     StoppedHotkeyMode?.Invoke(this, new());
+                    Debug.WriteLine("Stop execution");
                 }
 
                 //Console.Title = value.ToString();
@@ -157,7 +158,10 @@ namespace NoobSwarm
 
         public HotKeyManager()
         {
-
+            keyboard = TypeContainer.Get<VulcanKeyboard>();
+            keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
+            keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
+            lightService = TypeContainer.Get<LightService>();
         }
 
 
@@ -181,8 +185,12 @@ namespace NoobSwarm
             using var fs = File.OpenRead("Makros.save");
             using var reader = new BsonDataReader(fs);
 
-            return SerializationHelper.TypeSafeSerializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();
+            var hkm = SerializationHelper.TypeSafeSerializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();
+            hkm.hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
+            hkm.breathingHotKeyEffect = new BreathingColorPerKeyEffect(hkm.ledColors) { Speed = 20 };
+            hkm.currentNode = hkm.tree;
 
+            return hkm;
         }
 
         private void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
