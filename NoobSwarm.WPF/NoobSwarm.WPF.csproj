@@ -26,12 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="NoobSwarm.Vulcan">
-      <HintPath>..\..\NoobSwarm.Vulcan\NoobSwarm.Vulcan\bin\Debug\NoobSwarm.Vulcan.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="View\MakroOverview.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
