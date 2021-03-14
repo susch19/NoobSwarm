@@ -79,6 +79,7 @@ namespace NoobSwarm.Service.Windows
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
+                webBuilder.UseUrls("http://localhost:5010", "https://localhost:5011");
             })
             .UseSerilog();
     }
