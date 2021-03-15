@@ -8,10 +8,11 @@ namespace NoobSwarm.Lights
 {
     public enum Direction
     {
-        Left = 0,
-        Right = 1,
-        Up = 2,
-        Down = 3,
+        None = 0,
+        Left = 1 << 0,
+        Right = 1 << 1,
+        Up = 1 << 2,
+        Down = 1 << 3,
         //UpLeft,
         //UpRight,
         //DownLeft,

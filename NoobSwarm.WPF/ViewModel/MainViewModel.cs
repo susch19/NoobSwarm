@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+
 using MaterialDesignThemes.Wpf;
 
 using NonSucking.Framework.Extension.IoC;
@@ -9,15 +10,20 @@ using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Windows;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
+
 using Serilog;
+
 using System;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Vulcan.NET;
+
 using Key = System.Windows.Input.Key;
 
 namespace NoobSwarm.WPF.ViewModel
@@ -77,7 +83,7 @@ namespace NoobSwarm.WPF.ViewModel
                 TitleClickedCommand = new RelayCommand(TitleClicked);
 
                 MenuItemSettingsCommand = new RelayCommand(() => { });
-              
+
                 MenuItemInfoCommand = new RelayCommand(() => { /* TODO: Show dialog with version number of ui and packages dynamically */ });
                 MenuItemExitCommand = new RelayCommand(Application.Current.Shutdown);
 
@@ -103,7 +109,19 @@ namespace NoobSwarm.WPF.ViewModel
                 };
 
                 lightService = TypeContainer.Get<LightService>();
-                lightService.AddToEnd(new HSVColorWanderEffect());
+
+                if (lightService.LightLayers.Count == 0)
+                {
+                    lightService.AddToEnd(new HSVColorWanderEffect());
+                    //lightService.AddToEnd(new SolidColorEffect(Color.Black));
+                    lightService.AddToEnd(new PressedCircleEffect(
+                        //new BreathingEffectEffect(
+                            new InverseKeysColorEffect()
+                            //)
+                        )
+                    { TriggerOnState = KeyChangeState.Pressed });
+
+                }
                 lightService.Speed = 5;
                 _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
 
