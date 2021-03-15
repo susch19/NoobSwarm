@@ -23,9 +23,14 @@ namespace NoobSwarm.Service.Windows
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Needed otherwise application hangs
-            await Task.Delay(1);
+            await Task.Delay(1, stoppingToken);
 
             lightService.AddToEnd(new HSVColorWanderEffect());
+            lightService.AddToEnd(new PressedCircleEffect(
+                new InverseKeysColorEffect())
+            {
+                TriggerOnState = KeyChangeState.Pressed
+            });
 
             while (!stoppingToken.IsCancellationRequested)
             {
