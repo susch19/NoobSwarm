@@ -26,6 +26,7 @@ namespace NoobSwarm.Lights
 {
     public class LightService
     {
+        [JsonIgnore]
         public IReadOnlyList<LightEffect> LightLayers => lightLayers;
 
         [JsonIgnore]
@@ -35,6 +36,7 @@ namespace NoobSwarm.Lights
         public bool Reversed { get; set; }
         public ushort Speed { get; set; }
 
+        [JsonIgnore]
         public IReadOnlyList<LightEffect> OverrideLightEffects => overrideLightEffects;
 
         public byte Brightness
@@ -60,6 +62,7 @@ namespace NoobSwarm.Lights
             }
         }
 
+        [JsonIgnore]
         public IReadOnlyList<LedKeyPoint> LedKeyPoints => ledKeyPoints;
 
         private int msSleep;
@@ -86,6 +89,7 @@ namespace NoobSwarm.Lights
             keyboard = TypeContainer.Get<VulcanKeyboard>();
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             ledKeyPoints.AddRange(LedKeyPoint.LedKeyPoints);
+            Brightness = 255;
         }
 
         public LightService(VulcanKeyboard keyboard)
@@ -99,6 +103,7 @@ namespace NoobSwarm.Lights
 
             }
             TargetUpdateRate = 30;
+            Brightness = 255;
 
             ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
             Speed = 1;
@@ -133,6 +138,7 @@ namespace NoobSwarm.Lights
             var service = SerializationHelper.TypeSafeSerializer.Deserialize<LightService>(reader);
             if (service is null)
                 service = TypeContainer.CreateObject<LightService>();
+
             return service;
         }
 
@@ -194,10 +200,16 @@ namespace NoobSwarm.Lights
         {
             Stopwatch sw = new Stopwatch();
             Thread.CurrentThread.Name = "LightService_UpdateLoop";
-            List<LedKey> pressedCopy = new();
+            List<(LedKey key, KeyChangeState state)> pressedCopy = new();
             Dictionary<LedKey, Color> currentColorsCopy = new();
             List<LightEffect> overrideLayersCopy = new();
             List<LightEffect> lightLayersCopy = new();
+
+            foreach (var eff in LightLayers.Union(OverrideLightEffects))
+            {
+                if (!eff.Initialized)
+                    eff.Init(ledKeyPoints);
+            }
             while (!token.IsCancellationRequested)
             {
                 if (keyboard is null || currentColors is null)
@@ -207,13 +219,39 @@ namespace NoobSwarm.Lights
                 }
 
                 sw.Restart();
-                pressedCopy.AddRange(pressedKeys);
+
+                for (int i = pressedCopy.Count - 1; i >= 0; i--)
+                {
+                    var item = pressedCopy[i];
+                    if (item.state == KeyChangeState.Release)
+                    {
+                        pressedCopy.RemoveAt(i);
+                        continue;
+                    }
+
+                    if (pressedKeysToRemove.Contains(item.key))
+                        pressedCopy[i] = (item.key, KeyChangeState.Release);
+                    else if (pressedKeys.Contains(item.key))
+                        pressedCopy[i] = (item.key, KeyChangeState.Hold);
+                }
+
+                foreach (var toRemove in pressedKeysToRemove)
+                {
+                    pressedKeys.Remove(toRemove);
+                }
+                pressedKeysToRemove.Clear();
+                foreach (var item in pressedKeys)
+                {
+                    if (pressedCopy.Any(x => x.key == item))
+                        continue;
+                    pressedCopy.Add((item, KeyChangeState.Pressed));
+                }
+
                 foreach (var copy in currentColors)
                     currentColorsCopy[copy.Key] = copy.Value;
                 overrideLayersCopy.AddRange(OverrideLightEffects);
                 lightLayersCopy.AddRange(LightLayers);
 
-                var pressed = pressedKeys.AsReadOnly();
                 if (overrideLayersCopy.Count == 0)
                 {
                     foreach (var lightEffect in lightLayersCopy)
@@ -224,14 +262,14 @@ namespace NoobSwarm.Lights
                             {
                                 lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
                             }
-                            catch
+                            catch (Exception ex)
                             {
                             }
                             try
                             {
                                 lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
                             }
-                            catch
+                            catch (Exception ex)
                             {
                             }
 
@@ -248,7 +286,7 @@ namespace NoobSwarm.Lights
                             {
                                 lightEffect.Next(currentColorsCopy, Counter, ElapsedMilliseconds, Speed, pressedCopy);
                             }
-                            catch
+                            catch (Exception ex)
                             {
                             }
                         }
@@ -282,13 +320,8 @@ namespace NoobSwarm.Lights
                 foreach (var copy in currentColorsCopy)
                     currentColors[copy.Key] = copy.Value;
 
-                pressedCopy.Clear();
                 currentColorsCopy.Clear();
-                foreach (var toRemove in pressedKeysToRemove)
-                {
-                    pressedKeys.Remove(toRemove);
-                }
-                pressedKeysToRemove.Clear();
+
                 overrideLayersCopy.Clear();
                 lightLayersCopy.Clear();
 
@@ -315,114 +348,5 @@ namespace NoobSwarm.Lights
             else
                 pressedKeysToRemove.Add(e.Key);
         }
-
-        /*
-
-        public long ElapsedMilliseconds { get; private set; }
-        public int Counter { get; private set; }
-        public bool Reversed { get; set; }
-        public ushort Speed { get; set; }
-
-        public byte Brightness
-
-        public int TargetUpdateRate
-        
-         * public IReadOnlyList<LightEffect> LightLayers => lightLayers;
-        public IReadOnlyList<LightEffect> OverrideLightEffects => overrideLightEffects;
-        public IReadOnlyList<LedKeyPoint> LedKeyPoints => ledKeyPoints;*/
-
-        //public class LightServiceFormatter : IMessagePackFormatter<LightService>
-        //{
-        //    public void Serialize(ref MessagePackWriter writer, LightService value, MessagePackSerializerOptions options)
-        //    {
-        //        //is not registered in resolver: MessagePack.Resolvers.StandardResolver
-
-        //        MessagePackSerializer.Serialize(ref writer, value.ElapsedMilliseconds);
-        //        MessagePackSerializer.Serialize(ref writer, value.Counter);
-        //        MessagePackSerializer.Serialize(ref writer, value.Reversed);
-        //        MessagePackSerializer.Serialize(ref writer, value.Speed);
-        //        MessagePackSerializer.Serialize(ref writer, value.Brightness);
-        //        MessagePackSerializer.Serialize(ref writer, value.TargetUpdateRate);
-        //        if (value.currentColors is null)
-        //            MessagePackSerializer.Serialize(ref writer, 0);
-        //        else
-        //        {
-        //            MessagePackSerializer.Serialize(ref writer, value.currentColors.Count);
-        //            foreach (var layer in value.currentColors)
-        //            {
-        //                MessagePackSerializer.Serialize(ref writer, layer.Key);
-        //                MessagePackSerializer.Serialize(ref writer, layer.Value);
-        //            }
-        //        }
-        //        MessagePackSerializer.Serialize(ref writer, value.lightLayers.Count);
-        //        foreach (var layer in value.lightLayers)
-        //        {
-        //            MessagePackSerializer.Serialize(ref writer, layer.GetType().FullName);
-        //            MessagePackSerializer.Serialize(ref writer, layer);
-        //        }
-        //        MessagePackSerializer.Serialize(ref writer, value.overrideLightEffects.Count);
-        //        foreach (var layer in value.overrideLightEffects)
-        //        {
-        //            MessagePackSerializer.Serialize(ref writer, layer.GetType().FullName);
-        //            MessagePackSerializer.Typeless.Serialize(ref writer, layer);
-        //        }
-        //        //MessagePackSerializer.Serialize<KeyNode>(ref writer, value.Tree);
-        //    }
-
-
-
-        //    LightService IMessagePackFormatter<LightService>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
-        //    {
-        //        var ls = new LightService();
-
-        //        ls.ElapsedMilliseconds = MessagePackSerializer.Deserialize<long>(ref reader);
-        //        ls.Counter = MessagePackSerializer.Deserialize<int>(ref reader);
-        //        ls.Reversed = MessagePackSerializer.Deserialize<bool>(ref reader);
-        //        ls.Speed = MessagePackSerializer.Deserialize<ushort>(ref reader);
-        //        ls.Brightness = MessagePackSerializer.Deserialize<byte>(ref reader);
-        //        ls.TargetUpdateRate = MessagePackSerializer.Deserialize<int>(ref reader);
-
-        //        var count = MessagePackSerializer.Deserialize<int>(ref reader);
-        //        //var method = typeof(MessagePackSerializer).GetMethod(nameof(MessagePackSerializer.Deserialize), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-
-        //        //var parameter = Expression.Parameter(typeof(MessagePackReader), "reader");
-        //        //var call = Expression.Call(method, parameter);
-
-
-        //        for (int i = 0; i < count; i++)
-        //            ls.currentColors.Add(MessagePackSerializer.Deserialize<LedKey>(ref reader), MessagePackSerializer.Deserialize<Color>(ref reader));
-
-        //        count = MessagePackSerializer.Deserialize<int>(ref reader);
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            var lightName = MessagePackSerializer.Deserialize<string>(ref reader);
-        //            var lt = Type.GetType(lightName);
-        //            try
-        //            {
-        //                //var genericMethod = method.MakeGenericMethod(lt);
-        //                //var expression = Expression.Lambda<deserialize>(call, parameter);
-        //                //var func = expression.Compile();
-        //                //var result = func();
-        //                //genericMethod.Invoke(null, new object[] { ref reader });
-        //                //Activator.CreateInstance()
-        //                //var read = new ReadHelper();
-        //                var effect = (LightEffect)MessagePackSerializer.Deserialize(lt, ref reader);
-        //                ls.AddToEnd(effect);
-        //            }
-        //            catch (Exception e)
-        //            {
-        //                ls.AddToEnd((LightEffect)Activator.CreateInstance(lt));
-        //                return ls;
-        //            }
-        //        }
-
-        //        count = MessagePackSerializer.Deserialize<int>(ref reader);
-        //        for (int i = 0; i < count; i++)
-        //            ls.overrideLightEffects.Add((LightEffect)MessagePackSerializer.Typeless.Deserialize(ref reader));
-
-
-        //        return ls;
-        //    }
-        //}
     }
 }

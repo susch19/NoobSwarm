@@ -10,26 +10,15 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class BreathingColorPerKeyEffect : PerKeyLightEffect
+    public class BreathingEffectEffect : LightEffect
     {
 
-        public Dictionary<LedKey, Color> KeysForBreathing { get; private set; }
-        public PerKeyLightEffect? Effect { get; set; }
+        public LightEffect? Effect { get; set; }
 
-        public BreathingColorPerKeyEffect(Dictionary<LedKey, Color> keysForBreathing)
+  
+        public BreathingEffectEffect(LightEffect effect)
         {
-            KeysForBreathing = keysForBreathing;
-            LedKeys = KeysForBreathing.Keys.ToList();
-        }
-
-        public BreathingColorPerKeyEffect(List<LedKey> breathingKeys, PerKeyLightEffect effect)
-        {
-            LedKeys = breathingKeys;
-            KeysForBreathing = new(breathingKeys.Count);
-            foreach (var key in breathingKeys)
-            {
-                KeysForBreathing[key] = Color.White;
-            }
+          
             Effect = effect;
         }
 
@@ -44,14 +33,14 @@ namespace NoobSwarm.Lights.LightEffects
                 if (!Effect.Initialized && LedKeyPoints is not null)
                     Effect.Init(LedKeyPoints);
                 else if (Effect.Initialized)
-                    Effect.Next(KeysForBreathing, counter, elapsedMilliseconds, stepInrease, KeyChangeState);
+                    Effect.Next(currentColors, counter, elapsedMilliseconds, stepInrease, KeyChangeState);
             }
 
             if (bigger)
             {
                 step -= 255;
 
-                foreach (var keyCol in KeysForBreathing)
+                foreach (var keyCol in currentColors)
                 {
                     if (!currentColors.ContainsKey(keyCol.Key))
                         continue;
@@ -63,7 +52,7 @@ namespace NoobSwarm.Lights.LightEffects
             }
             else
             {
-                foreach (var keyCol in KeysForBreathing)
+                foreach (var keyCol in currentColors)
                 {
                     if (!currentColors.ContainsKey(keyCol.Key))
                         continue;

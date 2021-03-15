@@ -42,7 +42,16 @@ namespace NoobSwarm.Lights.LightEffects
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
-            ledBitmap = new Bitmap((ledKeyPoints.Max(x => x.X) + 1) * 3, 1, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            try
+            {
+                ledBitmap = new Bitmap((ledKeyPoints.Max(x => x.X) + 1) * 3, 1, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
 
             bmpRect = new Rectangle(0, 0, ledBitmap.Width, ledBitmap.Height);
 
@@ -53,7 +62,7 @@ namespace NoobSwarm.Lights.LightEffects
             base.Init(ledKeyPoints);
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             if (LedKeyPoints is not null && ledBitmap is not null)
             {

@@ -57,11 +57,11 @@ namespace NoobSwarm.Lights.LightEffects
         }
 
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = 0;
+                keyFades[press.Item1] = 0;
             }
             if (keyFades.Count > 0)
             {
@@ -108,33 +108,14 @@ namespace NoobSwarm.Lights.LightEffects
             }
         }
 
-        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed)
+        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             foreach (var press in pressed)
             {
-                keyFades[press] = 0;
+                if (press.state == KeyChangeState.Pressed)
+                    keyFades[press.key] = 0;
             }
         }
 
-        //public class PressedFadeInEffectFormatter : IMessagePackFormatter<PressedFadeInEffect>
-        //{
-        //    public void Serialize(ref MessagePackWriter writer, PressedFadeInEffect value, MessagePackSerializerOptions options)
-        //    {
-        //        MessagePackSerializer.Serialize(ref writer, value as PerKeyLightEffect);
-        //        MessagePackSerializer.Serialize(ref writer, value.color);
-        //        MessagePackSerializer.Serialize(ref writer, value.biggest);
-        //        MessagePackSerializer.Serialize(ref writer, value.effect);
-        //    }
-
-        //    PressedFadeInEffect IMessagePackFormatter<PressedFadeInEffect>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
-        //    {
-        //        PressedFadeInEffect effect = MessagePackSerializer.Deserialize< PerKeyLightEffect>(ref reader);
-        //        var effect = new PressedFadeInEffect();
-        //        effect.color =  MessagePackSerializer.Deserialize<Color>(ref reader);
-        //        effect.biggest =MessagePackSerializer.Deserialize<byte>(ref reader);
-        //        effect.effect = MessagePackSerializer.Deserialize<PerKeyLightEffect>(ref reader);
-        //        return ;
-        //    }
-        //}
     }
 }

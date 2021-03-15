@@ -54,7 +54,7 @@ namespace NoobSwarm.Lights.LightEffects
         }
 
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<LedKey> pressed)
+        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             UpdateKeyPressed(pressed);
 
@@ -105,25 +105,25 @@ namespace NoobSwarm.Lights.LightEffects
                 }
             }
         }
-        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyCollection<LedKey> pressed)
+        public override void Info(int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             UpdateKeyPressed(pressed);
         }
 
-        private void UpdateKeyPressed(IReadOnlyCollection<LedKey> pressed)
+        private void UpdateKeyPressed(IReadOnlyList<(LedKey key, KeyChangeState state)> keyStates)
         {
-            foreach (var press in pressed)
+            foreach (var press in keyStates)
             {
-                if (LedKeys is not null && !LedKeys.Contains(press))
+                if (LedKeys is  null || LedKeys.Contains(press.key) || press.state != KeyChangeState.Pressed)
                     continue;
 
-                keyFades[press] = (biggest, 0);
+                keyFades[press.key] = (biggest, 0);
                 if (FasterPreKeyPress)
                 {
                     for (int i = 0; i < keyFades.Count; i++)
                     {
                         var other = keyFades.ElementAt(i);
-                        if (other.Key == press)
+                        if (other.Key == press.key)
                             continue;
 
                         keyFades[other.Key] = (other.Value.value, (byte)Math.Min(255, other.Value.multiplier + 10));
