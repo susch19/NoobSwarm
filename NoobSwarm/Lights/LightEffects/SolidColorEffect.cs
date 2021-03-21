@@ -21,14 +21,12 @@ namespace NoobSwarm.Lights.LightEffects
             SolidColor = color;
         }
 
-
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
         {
-            if (SolidColor.HasValue)
-                foreach (var key in currentColors.Keys)
-                {
-                    currentColors[key] = Color.FromArgb(SolidColor.Value.A, (byte)(SolidColor.Value.R * BrightnessPercent), (byte)(SolidColor.Value.G * BrightnessPercent), (byte)(SolidColor.Value.B * BrightnessPercent)); ;
-                }
+            if (!SolidColor.HasValue)
+                return null;
+
+            return GetColorWithBrightness(SolidColor.Value);
         }
     }
 }

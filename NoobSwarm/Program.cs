@@ -28,7 +28,7 @@ namespace NoobSwarm
                 UseShellExecute = true
             });
         }
-      
+
         private static readonly CancellationTokenSource cts = new();
 
         [STAThread]
@@ -39,13 +39,13 @@ namespace NoobSwarm
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
 
-            
+
             //start_message_loop();
 
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
             bool b = false;
-          
+
 
 
             var asdhotkey = new MakroHotkeyCommand(new List<MakroManager.RecordKey> {
@@ -53,25 +53,24 @@ namespace NoobSwarm
                 new MakroManager.RecordKey(Makros.Key.A, 50,false)
             });
 
-         
+
 
             var manager = TypeContainer.Get<HotKeyManager>();
             manager.Mode = HotKeyMode.Active;
-            manager.HotKey = LedKey.FN_Key;
-            manager.AddHotKey(new List<LedKey> {LedKey.A }, asdhotkey);
-        
+            manager.AddHotKey(new List<LedKey> { LedKey.A }, asdhotkey);
+
 
             var ls = TypeContainer.Get<LightService>();
             var keyboard = TypeContainer.Get<VulcanKeyboard>();
-            ls.AddToEnd(new HSVColorWanderEffect());
-          
-            ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
-          
+            //ls.AddToEnd(new HSVColorWanderEffect());
+
+            //ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
+
             ls.Speed = 5;
 
             _ = Task.Run(() => ls.UpdateLoop(cts.Token));
 
-          
+
 
             foreach (var color in typeof(Color)
                 .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
@@ -86,10 +85,8 @@ namespace NoobSwarm
 
                 manager.AddHotKey(hotkey,
                     new AddRemoveLightCommand(
-                        new SolidColorEffect((Color)(color.GetValue(null) ?? Color.Black)))
-                    {
-                        InsertAtEnd = true
-                    });
+                        new Lights.LightEffects.Wrapper.LightEffectWrapper(
+                        new SolidColorEffect((Color)(color.GetValue(null) ?? Color.Black)))));
             }
 
 

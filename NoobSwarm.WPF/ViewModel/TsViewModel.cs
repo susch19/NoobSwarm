@@ -4,12 +4,15 @@ using GalaSoft.MvvmLight.Command;
 using Newtonsoft.Json;
 
 using NonSucking.Framework.Extension.IoC;
+
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Lights.LightEffects.Wrapper;
 using NoobSwarm.Makros;
 using NoobSwarm.Plugin.Ts;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -20,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using Vulcan.NET;
 
 namespace NoobSwarm.WPF.ViewModel
@@ -36,7 +40,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         private readonly LightService lightService;
         private readonly TsInfo tsInfo;
-        private LightEffect effect;
+        private LightEffectWrapper effect;
         private const string save = "tssettings.json";
 
         private bool isTalking;
@@ -67,16 +71,18 @@ namespace NoobSwarm.WPF.ViewModel
                     {
                         CreateNewSettings();
                     }
-      
+
                 }
                 else
                 {
                     CreateNewSettings();
                 }
                 RecordedKeys = new ObservableCollection<MakroManager.RecordKey>(Settings.Keys.Select(x => new MakroManager.RecordKey(LedKeyToKeyMapper.LedKeyToKey[x], 0, true)));
-                effect = new SingleKeysColorEffect(
-                    System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
-                effect = new InverseKeysColorEffect(Settings.Keys.ToList());
+                //effect = new SingleKeysColorEffect(
+                //    System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B), Settings.Keys);
+                effect = new PerKeyLightEffectWrapper(Settings.Keys.Distinct().ToHashSet(), new InverseKeysColorEffect());
+                effect.Active = false;
+                lightService.AddToEnd(effect);
                 tsInfo = new TsInfo();
                 tsInfo.TalkStatus += TsInfo_TalkStatus;
 
@@ -119,10 +125,7 @@ namespace NoobSwarm.WPF.ViewModel
 
         private void UpdateTalkingEffect()
         {
-            if (isTalking)
-                lightService.AddToEnd(effect);
-            else
-                lightService.RemoveLightEffect(effect);
+            effect.Active = isTalking;
         }
 
         private async Task Start()
@@ -150,13 +153,13 @@ namespace NoobSwarm.WPF.ViewModel
 
                 case nameof(Settings.Color):
                 case nameof(Settings.Keys):
-                    if (effect is SingleKeysColorEffect singleEffect)
-                    {
-                        var col = System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B);
-                        singleEffect.KeyColors = Settings.Keys.ToDictionary(x => x, _ => col);
-                    }
-                    else if (effect is InverseKeysColorEffect inverseEffect)
-                        inverseEffect.Keys = Settings.Keys.ToList();
+                    //if (effect is SingleKeysColorEffect singleEffect)
+                    //{
+                    //    var col = System.Drawing.Color.FromArgb(Settings.Color.A, Settings.Color.R, Settings.Color.G, Settings.Color.B);
+                    //    singleEffect.KeyColors = Settings.Keys.ToDictionary(x => x, _ => col);
+                    //}
+                    //else if (effect is InverseKeysColorEffect inverseEffect)
+                    //    inverseEffect.Keys = Settings.Keys.ToList();
                     break;
             }
 
