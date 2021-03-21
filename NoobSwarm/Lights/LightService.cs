@@ -6,6 +6,7 @@ using Newtonsoft.Json.Bson;
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Lights.LightEffects.Wrapper;
 using NoobSwarm.Serializations;
 
 using System;
@@ -27,17 +28,17 @@ namespace NoobSwarm.Lights
     public class LightService
     {
         [JsonIgnore]
-        public IReadOnlyList<LightEffect> LightLayers => lightLayers;
+        public IReadOnlyList<LightEffectWrapper> LightLayers => lightLayers;
 
         [JsonIgnore]
         public long ElapsedMilliseconds { get => elapsedMilliseconds; private set => elapsedMilliseconds = value; }
         [JsonIgnore]
         public int Counter { get => counter; private set => counter = value; }
         public bool Reversed { get; set; }
-        public ushort Speed { get; set; }
+        public short Speed { get; set; }
 
         [JsonIgnore]
-        public IReadOnlyList<LightEffect> OverrideLightEffects => overrideLightEffects;
+        public IReadOnlyList<LightEffectWrapper> OverrideLightEffects => overrideLightEffects;
 
         public byte Brightness
         {
@@ -76,9 +77,9 @@ namespace NoobSwarm.Lights
         private int counter;
         private readonly List<LedKeyPoint> ledKeyPoints = new();
         [JsonProperty]
-        private readonly List<LightEffect> lightLayers = new();
+        private readonly List<LightEffectWrapper> lightLayers = new();
         [JsonProperty]
-        private readonly List<LightEffect> overrideLightEffects = new();
+        private readonly List<LightEffectWrapper> overrideLightEffects = new();
         private readonly List<LedKey> pressedKeys = new();
         private readonly List<LedKey> pressedKeysToRemove = new();
         [JsonProperty]
@@ -143,52 +144,55 @@ namespace NoobSwarm.Lights
         }
 
 
-        public void AddToEnd(LightEffect lightEffect)
+        public void AddToEnd(LightEffectWrapper lightEffect)
         {
             lightLayers.Add(lightEffect);
             lightEffect.Init(LedKeyPoints);
 
         }
-        public void AddToStart(LightEffect lightEffect)
+        public void AddToStart(LightEffectWrapper lightEffect)
         {
-            lightLayers.Insert(0, lightEffect);
+            if (lightLayers.Count > 0)
+                lightLayers.Insert(0, lightEffect);
+            else
+                lightLayers.Add(lightEffect);
             lightEffect.Init(LedKeyPoints);
         }
 
-        public void AddAtPosition(LightEffect lightEffect, int position)
+        public void AddAtPosition(LightEffectWrapper lightEffect, int position)
         {
             lightLayers.Insert(position, lightEffect);
             lightEffect.Init(LedKeyPoints);
         }
 
-        public void AddOverrideToEnd(LightEffect lightEffect)
+        public void AddOverrideToEnd(LightEffectWrapper lightEffect)
         {
             overrideLightEffects.Add(lightEffect);
             lightEffect.Init(LedKeyPoints);
 
         }
-        public void AddOverrideToStart(LightEffect lightEffect)
+        public void AddOverrideToStart(LightEffectWrapper lightEffect)
         {
             overrideLightEffects.Insert(0, lightEffect);
             lightEffect.Init(LedKeyPoints);
         }
 
-        public void AddOverrideAtPosition(LightEffect lightEffect, int position)
+        public void AddOverrideAtPosition(LightEffectWrapper lightEffect, int position)
         {
             overrideLightEffects.Insert(position, lightEffect);
             lightEffect.Init(LedKeyPoints);
         }
 
-        public void RemoveLightEffect(LightEffect lightEffect)
+        public void RemoveLightEffect(LightEffectWrapper lightEffect)
         {
             lightLayers.Remove(lightEffect);
         }
-        public void RemoveOverrideEffect(LightEffect lightEffect)
+        public void RemoveOverrideEffect(LightEffectWrapper lightEffect)
         {
             overrideLightEffects.Remove(lightEffect);
         }
 
-        public bool Contains(LightEffect effect) => lightLayers.Contains(effect);
+        public bool Contains(LightEffectWrapper effect) => lightLayers.Contains(effect);
 
 
         public void ClearOverrideEffects()
@@ -202,8 +206,8 @@ namespace NoobSwarm.Lights
             Thread.CurrentThread.Name = "LightService_UpdateLoop";
             List<(LedKey key, KeyChangeState state)> pressedCopy = new();
             Dictionary<LedKey, Color> currentColorsCopy = new();
-            List<LightEffect> overrideLayersCopy = new();
-            List<LightEffect> lightLayersCopy = new();
+            List<LightEffectWrapper> overrideLayersCopy = new();
+            List<LightEffectWrapper> lightLayersCopy = new();
 
             foreach (var eff in LightLayers.Union(OverrideLightEffects))
             {
@@ -265,13 +269,13 @@ namespace NoobSwarm.Lights
                             catch (Exception ex)
                             {
                             }
-                            try
-                            {
-                                lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
-                            }
-                            catch (Exception ex)
-                            {
-                            }
+                            //try
+                            //{
+                            //    lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //}
 
                         }
                     }
@@ -291,19 +295,19 @@ namespace NoobSwarm.Lights
                             }
                         }
                     }
-                    foreach (var lightEffect in lightLayersCopy)
-                    {
-                        if (lightEffect.Initialized && lightEffect.Active)
-                        {
-                            try
-                            {
-                                lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
-                            }
-                            catch
-                            {
-                            }
-                        }
-                    }
+                    //foreach (var lightEffect in lightLayersCopy)
+                    //{
+                    //    if (lightEffect.Initialized && lightEffect.Active)
+                    //    {
+                    //        try
+                    //        {
+                    //            lightEffect.Info(Counter, ElapsedMilliseconds, Speed, pressedCopy);
+                    //        }
+                    //        catch
+                    //        {
+                    //        }
+                    //    }
+                    //}
                 }
 
                 keyboard.SetColors(currentColorsCopy);

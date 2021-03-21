@@ -6,6 +6,7 @@ using NonSucking.Framework.Extension.IoC;
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Lights.LightEffects.Wrapper;
 using NoobSwarm.Serializations;
 
 using System;
@@ -129,10 +130,15 @@ namespace NoobSwarm
         private bool isExecuting;
         private LedKey hotKey;
         private LightService lightService;
-        private SingleKeysColorEffect hotKeyEffect;
-        private BreathingColorPerKeyEffect breathingHotKeyEffect;
+        //private SingleKeysColorEffect hotKeyEffect;
+        private PerKeyLightEffectWrapper hotKeyEffect;
+        private PerKeyLightEffectWrapper earlyExitEffect;
+        private LightEffectWrapper solidBlackEffect;
+
+        //private BreathingColorPerKeyEffect breathingHotKeyEffect;
         private KeyNode currentNode;
-        private Dictionary<LedKey, Color> ledColors = new();
+        private HashSet<LedKey> ledKeys = new();
+        private HashSet<LedKey> exitKeys = new();
         private bool isSynchronRecording;
         private List<LedKey> synchronRecordingKeys = new();
         private SemaphoreSlim synchronRecordingSemaphore = new(0);
@@ -150,8 +156,19 @@ namespace NoobSwarm
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
 
             this.lightService = lightService;
-            hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
-            breathingHotKeyEffect = new BreathingColorPerKeyEffect(ledColors) { Speed = 20 };
+            hotKeyEffect =
+                new PerKeyLightEffectWrapper(new(), new ColorizeLightEffectWrapper(
+                new BreathingColorEffect(), new SolidColorEffect(HotKeyColor)
+                ));
+            earlyExitEffect =
+                new PerKeyLightEffectWrapper(new(), new ColorizeLightEffectWrapper(
+                new BreathingColorEffect(), new SolidColorEffect(EarlyExitColor)
+                ));
+            solidBlackEffect = new LightEffectWrapper(new SolidColorEffect(Color.Black));
+
+            //hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
+            //breathingHotKeyEffect = new  BreathingColorPerKeyEffect(ledColors) { Speed = 20 };
+
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
@@ -186,8 +203,16 @@ namespace NoobSwarm
             using var reader = new BsonDataReader(fs);
 
             var hkm = SerializationHelper.TypeSafeSerializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();
-            hkm.hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
-            hkm.breathingHotKeyEffect = new BreathingColorPerKeyEffect(hkm.ledColors) { Speed = 20 };
+
+            hkm.hotKeyEffect =
+              new PerKeyLightEffectWrapper(hkm.ledKeys, new ColorizeLightEffectWrapper(
+              new BreathingColorEffect(), new SolidColorEffect(hkm.HotKeyColor)
+              ));
+            hkm.earlyExitEffect =
+                new PerKeyLightEffectWrapper(hkm.exitKeys, new ColorizeLightEffectWrapper(
+                new BreathingColorEffect(), new SolidColorEffect(hkm.EarlyExitColor)
+                ));
+            hkm.solidBlackEffect = new LightEffectWrapper(new SolidColorEffect(Color.Black));
             hkm.currentNode = hkm.tree;
 
             return hkm;
@@ -228,7 +253,7 @@ namespace NoobSwarm
         public async Task<ReadOnlyCollection<LedKey>> RecordKeys(CancellationToken token)
         {
             synchronRecordingKeys.Clear();
-            ledColors.Clear();
+            ledKeys.Clear();
             AddHotKeyEffect();
             isSynchronRecording = true;
             StartedHotkeyMode?.Invoke(this, new());
@@ -264,7 +289,7 @@ namespace NoobSwarm
                 }
             };
             synchronRecordingKeys.Clear();
-            ledColors.Clear();
+            ledKeys.Clear();
             AddHotKeyEffect();
             isSynchronRecording = true;
 
@@ -286,7 +311,7 @@ namespace NoobSwarm
             asyncToken = CancellationTokenSource.CreateLinkedTokenSource(token);
             asyncToken.Token.Register(() => asyncTaskCompletionSource?.TrySetCanceled());
 
-            ledColors.Clear();
+            ledKeys.Clear();
             AddHotKeyEffect();
             isAsyncRecording = true;
             try
@@ -313,25 +338,25 @@ namespace NoobSwarm
             {
                 if (e.IsPressed)
                 {
-                    ledColors.Clear();
+                    ledKeys.Clear();
 
                     if (isSynchronRecording)
                     {
                         if (synchronRecordingKeys.Count > 0)
-                            ledColors[synchronRecordingKeys[^1]] = RecordingColorSecondary;
+                            ledKeys.Add(synchronRecordingKeys[^1]);
 
                         synchronRecordingKeys.Add(e.Key);
                     }
                     else if (isAsyncRecording)
                     {
                         if (lastAsyncRecordingKey is not null)
-                            ledColors[lastAsyncRecordingKey.Value] = RecordingColorSecondary;
+                            ledKeys.Add(lastAsyncRecordingKey.Value);
 
                         lastAsyncRecordingKey = e.Key;
                         asyncTaskCompletionSource?.SetResult(e.Key);
                     }
 
-                    ledColors[e.Key] = RecordingColorPrimary;
+                    ledKeys.Add(e.Key);
                 }
 
                 return;
@@ -393,25 +418,25 @@ namespace NoobSwarm
 
         private void SetHotKeysColoring()
         {
-            ledColors.Clear();
-
+            ledKeys.Clear();
+            exitKeys.Clear();
             if (currentNode is not null)
             {
                 foreach (var item in currentNode.Children)
-                    ledColors[item.Key] = HotKeyColor;
+                    ledKeys.Add(item.Key);
 
                 if (Mode == HotKeyMode.Passive)
-                    ledColors[ExitKey] = ExitColor;
+                    exitKeys.Add(ExitKey);
 
                 if (currentNode.Command is not null)
                 {
                     switch (Mode)
                     {
                         case HotKeyMode.Passive:
-                            ledColors[EarlyExitKey] = EarlyExitColor;
+                            exitKeys.Add(EarlyExitKey);
                             break;
                         case HotKeyMode.Active:
-                            ledColors[HotKey] = EarlyExitColor;
+                            exitKeys.Add(HotKey);
                             break;
                     }
                 }
@@ -421,13 +446,15 @@ namespace NoobSwarm
 
         private void RemoveHotKeyEffect()
         {
+            lightService.RemoveOverrideEffect(solidBlackEffect);
             lightService.RemoveOverrideEffect(hotKeyEffect);
-            lightService.RemoveOverrideEffect(breathingHotKeyEffect);
+            lightService.RemoveOverrideEffect(earlyExitEffect);
         }
         private void AddHotKeyEffect()
         {
-            lightService.AddOverrideToStart(hotKeyEffect);
-            lightService.AddOverrideToEnd(breathingHotKeyEffect);
+            lightService.AddOverrideToEnd(solidBlackEffect);
+            lightService.AddOverrideToEnd(hotKeyEffect);
+            lightService.AddOverrideToEnd(earlyExitEffect);
         }
 
 

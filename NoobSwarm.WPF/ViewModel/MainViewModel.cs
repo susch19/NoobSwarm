@@ -5,8 +5,10 @@ using MaterialDesignThemes.Wpf;
 
 using NonSucking.Framework.Extension.IoC;
 
+using NoobSwarm.Brushes;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
+using NoobSwarm.Lights.LightEffects.Wrapper;
 using NoobSwarm.Windows;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
@@ -112,14 +114,16 @@ namespace NoobSwarm.WPF.ViewModel
 
                 if (lightService.LightLayers.Count == 0)
                 {
-                    lightService.AddToEnd(new HSVColorWanderEffect());
-                    //lightService.AddToEnd(new SolidColorEffect(Color.Black));
-                    lightService.AddToEnd(new PressedCircleEffect(
-                        //new BreathingEffectEffect(
-                            new InverseKeysColorEffect()
-                            //)
-                        )
-                    { TriggerOnState = KeyChangeState.Pressed });
+                    lightService.AddToStart(new LightEffectWrapper(new HSVColorWanderEffect()));
+
+//                    lightService.AddToEnd(new ColorizeLightEffectWrapper(new PressedCircleEffect(),
+//                        new ColorizeLightEffectWrapper(new BreathingColorEffect(), 
+//new HSVColorGradientCycleEffect())));
+
+                }
+                else
+                {
+                    lightService.AddToStart(new LightEffectWrapper(new HSVColorWanderEffect()));
 
                 }
                 lightService.Speed = 5;
@@ -128,7 +132,6 @@ namespace NoobSwarm.WPF.ViewModel
                 var manager = TypeContainer.Get<HotKeyManager>();
 
                 manager.Mode = HotKeyMode.Active;
-                manager.HotKey = LedKey.FN_Key;
 
                 var kb = TypeContainer.Get<VirtualHID.Keyboard>();
                 var vkb = TypeContainer.Get<VulcanKeyboard>();

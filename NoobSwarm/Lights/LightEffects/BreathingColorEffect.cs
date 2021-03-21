@@ -9,73 +9,42 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class BreathingColorEffect : PerKeyLightEffect
+    public class BreathingColorEffect : LightEffect
     {
-        public Color Color
+      
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
         {
-            get => color; set
-            {
-                if (color == value) return;
-                color = value;
-                biggest = Math.Max(Math.Max(Color.R, Color.G), Color.B);
-            }
-        }
+            byte biggest;
+            if (currentColor.R > currentColor.G && currentColor.R > currentColor.B)
+                biggest = currentColor.R;
+            else if (currentColor.G > currentColor.R && currentColor.G > currentColor.B)
+                biggest = currentColor.G;
+            else
+                biggest = currentColor.B;
 
-        private byte biggest;
-        private Color color;
-
-        public BreathingColorEffect(Color color)
-        {
-            LedKeys = null;
-            Color = color;
-        }
-        public BreathingColorEffect(List<LedKey> breathingKeys, Color color)
-        {
-            LedKeys = breathingKeys;
-            Color = color;
-        }
-
-
-
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> KeyChangeState)
-        {
-
-
-            var step = (int)(counter*Speed) % (biggest * 2);
-            bool bigger = step > biggest;
+            var step = (int)(counter * Speed) % (biggest * 2);
+            var bigger = step > biggest;
 
             if (bigger)
             {
                 step -= biggest;
             }
 
-            var r = Color.R * step / biggest;
-            var g = Color.G * step / biggest;
-            var b = Color.B * step / biggest;
-
+            var r = currentColor.R * step / biggest;
+            var g = currentColor.G * step / biggest;
+            var b = currentColor.B * step / biggest;
 
             if (bigger)
             {
-                r = (byte)(r* BrightnessPercent);
-                g = (byte)(g* BrightnessPercent);
-                b = (byte)(b* BrightnessPercent);
-                foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
-                {
-                    currentColors[key] = Color.FromArgb(Color.A, r, g, b);
-                }
+                return GetColorWithBrightness(Color.FromArgb(currentColor.A, r, g, b));
             }
             else
             {
-                var rDown = (byte)((Color.R - r) * BrightnessPercent);
-                var gDown = (byte)((Color.G - g) * BrightnessPercent);
-                var bDown = (byte)((Color.B - b) * BrightnessPercent);
-                foreach (var key in (LedKeys is null ? currentColors.Keys : (IReadOnlyCollection<LedKey>)LedKeys))
-                {
-                    currentColors[key] = Color.FromArgb(Color.A, rDown, gDown, bDown);
-                }
-
+                var rDown = (byte)((currentColor.R - r));
+                var gDown = (byte)((currentColor.G - g));
+                var bDown = (byte)((currentColor.B - b));
+                return GetColorWithBrightness(Color.FromArgb(currentColor.A, rDown, gDown, bDown));
             }
-
         }
     }
 }

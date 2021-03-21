@@ -12,33 +12,27 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class HSVColorWanderEffect : PerKeyLightEffect
+    public class HSVColorWanderEffect : LightEffect
     {
         public Direction Direction { get; set; }
         public IReadOnlyList<Color> GradientColors { get; init; }
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
+        int xMulti;
+        int yMulti;
+
 
         public HSVColorWanderEffect()
         {
-            LedKeys = null;
             GradientColors = new List<Color> { Color.Red, Color.FromArgb(0, 0xff, 0), Color.Blue };
         }
-
-        public HSVColorWanderEffect(List<LedKey> keys) : this()
-        {
-            LedKeys = keys;
-        }
+  
         public HSVColorWanderEffect(IReadOnlyList<Color> gradientColors) : this()
         {
             GradientColors = gradientColors;
         }
-        public HSVColorWanderEffect(List<LedKey> keys, IReadOnlyList<Color> gradientColors)
-        {
-            LedKeys = keys;
-            GradientColors = gradientColors;
-        }
+
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
@@ -62,66 +56,48 @@ namespace NoobSwarm.Lights.LightEffects
             base.Init(ledKeyPoints);
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
+        public override bool InitNextFrame(int counter, long elapsedMilliseconds, short stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
-            if (LedKeyPoints is not null && ledBitmap is not null)
+            if (LedKeyPoints is null || ledBitmap is null)
+                return false;
+
+            switch (Direction)
             {
-                var xMulti = 1;
-                var yMulti = 0;
-                switch (Direction)
-                {
-                    default:
-                    case Direction.Left:
-                        xMulti = 1; yMulti = 0;
-                        break;
-                    case Direction.Right:
-                        xMulti = -1; yMulti = 0;
-                        break;
-                    case Direction.Up:
-                        xMulti = 0; yMulti = 1;
-                        break;
-                    case Direction.Down:
-                        xMulti = 0; yMulti = -1;
-                        break;
-                }
-
-                if (LedKeys is null)
-                {
-                    foreach (var item in LedKeyPoints)
-                    {
-                        if (currentColors.ContainsKey(item.LedKey))
-                            SetKeyColor(currentColors, (int)(counter * Speed), xMulti, yMulti, item);
-                    }
-                }
-                else
-                {
-                    foreach (var item in LedKeyPoints)
-                    {
-                        if (!LedKeys.Contains(item.LedKey))
-                            continue;
-
-                        if (currentColors.ContainsKey(item.LedKey))
-                            SetKeyColor(currentColors, (int)(counter * Speed), xMulti, yMulti, item);
-                    }
-                }
+                default:
+                case Direction.Left:
+                    xMulti = 1; yMulti = 0;
+                    break;
+                case Direction.Right:
+                    xMulti = -1; yMulti = 0;
+                    break;
+                case Direction.Up:
+                    xMulti = 0; yMulti = 1;
+                    break;
+                case Direction.Down:
+                    xMulti = 0; yMulti = -1;
+                    break;
             }
+            return true;
         }
 
-        private void SetKeyColor(Dictionary<LedKey, Color> currentColors, int counter, int xMulti, int yMulti, LedKeyPoint item)
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
         {
+            var item = LedKeyPoints?.FirstOrNull(x => x.LedKey == key);
+            if (item is null)
+                return null;
 
             if (xMulti != 0)
             {
-                var xPos = (((item.X + (counter * xMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
-                var col = ledBitmap.GetPixel(xPos, 0);
-                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
+                var xPos = (((item.Value.X + (counter * xMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
+                return GetColorWithBrightness(ledBitmap.GetPixel(xPos, 0));
+
             }
             else if (yMulti != 0)
             {
-                var yPos = (((item.Y + (counter * yMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
-                var col = ledBitmap.GetPixel(yPos, 0);
-                currentColors[item.LedKey] = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
+                var yPos = (((item.Value.Y + (counter * yMulti)) % ledBitmap!.Width) + ledBitmap.Width) % ledBitmap.Width;
+                return GetColorWithBrightness(ledBitmap.GetPixel(yPos, 0));
             }
+            return null;
         }
     }
 }

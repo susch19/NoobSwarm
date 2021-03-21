@@ -14,41 +14,22 @@ namespace NoobSwarm.Lights.LightEffects
 {
     public class PressedCircleEffect : LightEffect
     {
-
-
-
         private List<int> xPoses;
         private List<int> yPoses;
         private int maxRadius;
         private List<(LedKeyPoint waveKeyStart, int waveRadius)> wavePositions = new();
-        //private Dictionary<(int x, int y), LedKey> pointToKeys = new();
 
-        public Color? WaveColor { get; set; }
         public bool ShouldClearKeys { get; set; }
 
-        private LightEffect? effect;
-        private Dictionary<LedKey, Color> keyColors = new();
         private Dictionary<LedKey, float> keyDistances = new();
+        private short step;
 
         public KeyChangeState TriggerOnState { get; set; }
+        public bool Reverse { get; set; } = false;
 
         public PressedCircleEffect()
         {
-            WaveColor = Color.White;
             TriggerOnState = KeyChangeState.Pressed;
-        }
-
-        public PressedCircleEffect(Color color)
-        {
-            WaveColor = color;
-            TriggerOnState = KeyChangeState.Pressed;
-
-        }
-        public PressedCircleEffect(LightEffect effect)
-        {
-            this.effect = effect;
-            TriggerOnState = KeyChangeState.Pressed;
-
         }
 
 
@@ -63,23 +44,45 @@ namespace NoobSwarm.Lights.LightEffects
 
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
+        public override bool InitNextFrame(int counter, long elapsedMilliseconds, short stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             if (LedKeyPoints is null)
-                return;
-            keyColors.Clear();
-            if (effect is not null)
+                return false;
+            keyDistances.Clear();
+
+            for (int i = wavePositions.Count - 1; i >= 0; i--)
             {
-                if (!effect.Initialized)
-                    effect?.Init(LedKeyPoints);
+                var (waveKeyStart, waveRadius) = wavePositions[i];
+                if ((step < 0 && waveRadius + step < 0)
+                    || waveRadius + step > maxRadius)
+                {
+                    wavePositions.RemoveAt(i);
+                    continue;
+                }
+                wavePositions[i] = (waveKeyStart, waveRadius + stepInrease);
+
             }
+
+            step = stepInrease;
+            if (Reverse)
+                step *= -1;
 
             foreach (var press in pressed)
             {
                 if ((press.Item2 & TriggerOnState) > 0)
                 {
                     var keyPoint = LedKeyPoints.FirstOrDefault(x => x.LedKey == press.Item1);
-                    wavePositions.Add((keyPoint, 1));
+                    if (step < 0)
+                    {
+                        int startRadius = maxRadius - keyPoint.X;
+                        wavePositions.Add((keyPoint, startRadius > keyPoint.X ? startRadius : keyPoint.X));
+                    }
+                    else
+                    {
+                        wavePositions.Add((keyPoint, 1));
+
+                    }
+
                 }
             }
 
@@ -100,44 +103,23 @@ namespace NoobSwarm.Lights.LightEffects
 
                     if (t < 1)
                     {
-                        keyColors[key.LedKey] = currentColors[key.LedKey];
                         keyDistances[key.LedKey] = t;
                     }
                 }
             }
+            return true;
+        }
 
-            if (effect is not null)
-                effect.Next(keyColors, counter, elapsedMilliseconds, stepInrease, pressed);
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
+        {
+            if (!keyDistances.TryGetValue(key, out var t))
+                return null;
 
-            foreach (var keyColor in keyColors)
-            {
-                var prevColor = keyColor.Value;
-                var t = keyDistances[keyColor.Key];
-
-                if (effect is null && WaveColor is not null)
-                {
-                    Color c = Color.FromArgb(prevColor.A,
-                        Math.Clamp((int)(prevColor.R * t + WaveColor.Value.R * (1 - t)), 0, 255),
-                        Math.Clamp((int)(prevColor.G * t + WaveColor.Value.G * (1 - t)), 0, 255),
-                        Math.Clamp((int)(prevColor.B * t + WaveColor.Value.B * (1 - t)), 0, 255));
-                    currentColors[keyColor.Key] = c;
-                }
-                else if (effect is not null)
-                {
-                    currentColors[keyColor.Key] = keyColor.Value;
-                }
-            }
-
-            for (int i = wavePositions.Count - 1; i >= 0; i--)
-            {
-                var (waveKeyStart, waveRadius) = wavePositions[i];
-                if (waveRadius + stepInrease > maxRadius)
-                {
-                    wavePositions.RemoveAt(i);
-                    continue;
-                }
-                wavePositions[i] = (waveKeyStart, waveRadius + stepInrease);
-            }
+            return GetColorWithBrightness(Color.FromArgb(currentColor.A,
+                 Math.Clamp((int)(currentColor.R  * (1 - t)), 0, 255),
+                    Math.Clamp((int)(currentColor.G  * (1 - t)), 0, 255),
+                    Math.Clamp((int)(currentColor.B  * (1 - t)), 0, 255)
+                ));
         }
     }
 }
