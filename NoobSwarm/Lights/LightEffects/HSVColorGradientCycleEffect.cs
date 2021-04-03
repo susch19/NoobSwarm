@@ -50,7 +50,7 @@ namespace NoobSwarm.Lights.LightEffects
                 if (stepInrease == 0)
                     return true;
 
-                nextFrameColor = GetColorWithBrightness(ledBitmap.GetPixel(((int)(counter * Speed) / stepInrease) % 360, 0));
+                nextFrameColor = GetColorWithBrightness(ledBitmap.GetPixel(Math.Abs((counter % 360)), 0));
                 return true;
             }
             return false;

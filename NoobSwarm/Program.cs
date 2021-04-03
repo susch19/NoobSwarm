@@ -35,7 +35,7 @@ namespace NoobSwarm
         static void Main(string[] args)
         {
             Console.CancelKeyPress += (s, e) => cts.Cancel();
-            TypeContainer.Register(VulcanKeyboard.Initialize());
+            TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
 
@@ -61,7 +61,7 @@ namespace NoobSwarm
 
 
             var ls = TypeContainer.Get<LightService>();
-            var keyboard = TypeContainer.Get<VulcanKeyboard>();
+            var keyboard = TypeContainer.Get<IVulcanKeyboard>();
             //ls.AddToEnd(new HSVColorWanderEffect());
 
             //ls.AddToEnd(new SolidColorEffect() { Brightness = 50 });
@@ -224,7 +224,7 @@ namespace NoobSwarm
         //    });
         //}
 
-        private static void CreateNewUrlHotKey(VulcanKeyboard keyboard, HotKeyManager manager,
+        private static void CreateNewUrlHotKey(IVulcanKeyboard keyboard, HotKeyManager manager,
             IReadOnlyList<string> parameters)
         {
             var keys = new List<LedKey>();

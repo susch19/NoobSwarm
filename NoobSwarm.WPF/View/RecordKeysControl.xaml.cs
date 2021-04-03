@@ -178,11 +178,10 @@ namespace NoobSwarm.WPF.View
                 makroManager.RecordAdded += MakroManager_RecordAdded;
                 makroManager.RecordingFinished += MakroManager_RecordingFinished;
 
-                hook = new LowLevelKeyboardHook();
+                hook = TypeContainer.Get<LowLevelKeyboardHook>();
                 hook.OnKeyPressed += Hook_OnKeyPressed;
                 hook.OnKeyUnpressed += Hook_OnKeyUnpressed;
                 hook.SetSupressKeyPress(BlockInput);
-                hook.HookKeyboard();
                 RecordingStarted?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -237,7 +236,6 @@ namespace NoobSwarm.WPF.View
                 {
                     hook.OnKeyPressed -= Hook_OnKeyPressed;
                     hook.OnKeyUnpressed -= Hook_OnKeyUnpressed;
-                    hook.Dispose();
                 }
                 catch (Exception ex)
                 {

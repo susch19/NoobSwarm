@@ -8,6 +8,7 @@ using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
 using NoobSwarm.VirtualHID;
+using NoobSwarm.Windows;
 
 using System.Configuration;
 using System.Drawing;
@@ -19,7 +20,7 @@ namespace NoobSwarm.WPF.ViewModel
 {
     public sealed class ViewModelLocator
     {
-        private static VulcanKeyboard vulcanKeyboard;
+        private static IVulcanKeyboard vulcanKeyboard;
 
         public MainViewModel Main => TypeContainer.Get<MainViewModel>();
         public CockpitViewModel CockpitViewModel => TypeContainer.Get<CockpitViewModel>();
@@ -42,14 +43,26 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
-            TypeContainer.Register(VulcanKeyboard.Initialize());
+            LowLevelKeyboardHook hook = new LowLevelKeyboardHook();
+            TypeContainer.Register(hook);
+
+            //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
+            var key = new GenericWindowsVulcanKeyboard(hook);
+            TypeContainer.Register<IVulcanKeyboard>(key);
+
             var service = LightService.Deserialize();
             TypeContainer.Register(service);
+
+
             var hkm = HotKeyManager.Deserialize();
             TypeContainer.Register(hkm);
+            hook.HookKeyboard();
+            hkm.StartedHotkeyMode += (s, e) => { hook.SetSupressKeyPress();  };
+            hkm.StoppedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(false); };
+
             TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-            vulcanKeyboard = TypeContainer.Get<VulcanKeyboard>();
+            vulcanKeyboard = TypeContainer.Get<IVulcanKeyboard>();
         }
 
         private static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)

@@ -126,7 +126,7 @@ namespace NoobSwarm
 
         [JsonProperty]
         private Tree tree = new();
-        private readonly VulcanKeyboard keyboard;
+        private readonly IVulcanKeyboard keyboard;
         private bool isExecuting;
         private LedKey hotKey;
         private LightService lightService;
@@ -149,7 +149,7 @@ namespace NoobSwarm
 
 
 
-        public HotKeyManager(VulcanKeyboard keyboard, LightService lightService)
+        public HotKeyManager(IVulcanKeyboard keyboard, LightService lightService)
         {
             this.keyboard = keyboard;
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
@@ -175,14 +175,15 @@ namespace NoobSwarm
 
         public HotKeyManager()
         {
-            keyboard = TypeContainer.Get<VulcanKeyboard>();
+            keyboard = TypeContainer.Get<IVulcanKeyboard>();
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
             lightService = TypeContainer.Get<LightService>();
         }
 
 
-        public HotKeyManager(VulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : this(keyboard, lightService)
+        public HotKeyManager(IVulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : 
+            this(keyboard, lightService)
         {
             HotKey = singleHotKey;
             Mode = HotKeyMode.Active;
@@ -205,8 +206,8 @@ namespace NoobSwarm
             var hkm = SerializationHelper.TypeSafeSerializer.Deserialize<HotKeyManager>(reader) ?? TypeContainer.CreateObject<HotKeyManager>();
 
             hkm.hotKeyEffect =
-              new PerKeyLightEffectWrapper(hkm.ledKeys, new ColorizeLightEffectWrapper(
-              new BreathingColorEffect(), new SolidColorEffect(hkm.HotKeyColor)
+              new PerKeyLightEffectWrapper(hkm.ledKeys, new LightEffectWrapper(
+              new HSVColorGradientCycleEffect()
               ));
             hkm.earlyExitEffect =
                 new PerKeyLightEffectWrapper(hkm.exitKeys, new ColorizeLightEffectWrapper(

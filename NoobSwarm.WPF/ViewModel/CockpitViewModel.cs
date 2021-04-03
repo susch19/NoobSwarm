@@ -38,7 +38,7 @@ namespace NoobSwarm.WPF.ViewModel
             else
             {
 
-                var kb = TypeContainer.Get<VulcanKeyboard>();
+                var kb = TypeContainer.Get<IVulcanKeyboard>();
                 kb.VolumeKnobFxPressedReceived += VolumeKnobFxPressedReceived;
                 kb.DPITurnedReceived += Kb_DPITurnedReceived;
                 kb.VolumeKnobPressedReceived += Kb_VolumeKnobPressedReceived;
@@ -55,7 +55,7 @@ namespace NoobSwarm.WPF.ViewModel
                 lightService.Speed++;
             else
                 lightService.Speed--;
-            lightEffect.Active = true;
+            //lightEffect.Active = true;
         }
 
         private void Kb_DPITurnedReceived(object sender, VolumeKnDirectionArgs e)
@@ -64,13 +64,18 @@ namespace NoobSwarm.WPF.ViewModel
                 lightService.Speed++;
             else
                 lightService.Speed--;
-            lightEffect.Active = true;
+            //lightEffect.Active = true;
         }
 
         private void VolumeKnobFxPressedReceived(object sender, VolumeKnobFxArgs e)
         {
             if (VolumeKnobForBrighness)
-                 lightService.Brightness = e.Data < 2 ? (byte)0 : e.Data;
+            {
+                var ll = lightService.LightLayers.FirstOrDefault();
+
+                ll.MainEffect.Brightness = (byte)Math.Min(255, (255 / 68) * ( e.Data < 2 ? (byte)0 : e.Data));
+
+            }
         }
     }
 }

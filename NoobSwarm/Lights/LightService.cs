@@ -70,7 +70,7 @@ namespace NoobSwarm.Lights
         private int targetUpdateRate;
         private byte brightness;
         private bool updateWithBrightness = true;
-        private VulcanKeyboard? keyboard;
+        private IVulcanKeyboard? keyboard;
         [JsonProperty]
         private long elapsedMilliseconds;
         [JsonProperty]
@@ -87,13 +87,13 @@ namespace NoobSwarm.Lights
 
         public LightService()
         {
-            keyboard = TypeContainer.Get<VulcanKeyboard>();
+            keyboard = TypeContainer.Get<IVulcanKeyboard>();
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             ledKeyPoints.AddRange(LedKeyPoint.LedKeyPoints);
             Brightness = 255;
         }
 
-        public LightService(VulcanKeyboard keyboard)
+        public LightService(IVulcanKeyboard keyboard)
         {
             this.keyboard = keyboard;
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;

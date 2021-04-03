@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,10 @@ namespace NoobSwarm.Windows
         [DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void SetDispatchKeyPress(bool dispatch);
 
+        [DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool AddKeyToSuppress(int key);
+        [DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool RemoveKeyToSuppress(int key);
 
         public event EventHandler<Makros.Key> OnKeyPressed;
         public event EventHandler<Makros.Key> OnKeyUnpressed;
@@ -48,6 +53,10 @@ namespace NoobSwarm.Windows
             source = new CancellationTokenSource();
             hookWithMessageLoop = Task.Run(MessageLoopCpp, source.Token).ContinueWith((a) => UnHookKeyboard());
         }
+
+        public bool AddKeyToSuppress(Makros.Key key) => AddKeyToSuppress((int)key);
+        public bool RemoveKeyToSuppress(Makros.Key key) => RemoveKeyToSuppress((int)key);
+        
 
         public void UnHookKeyboard()
         {

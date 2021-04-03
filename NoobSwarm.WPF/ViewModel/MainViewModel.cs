@@ -116,13 +116,16 @@ namespace NoobSwarm.WPF.ViewModel
                 {
                     lightService.AddToStart(new LightEffectWrapper(new HSVColorWanderEffect()));
 
-//                    lightService.AddToEnd(new ColorizeLightEffectWrapper(new PressedCircleEffect(),
-//                        new ColorizeLightEffectWrapper(new BreathingColorEffect(), 
-//new HSVColorGradientCycleEffect())));
+                    //lightService.AddToStart(new LightEffectWrapper(new SolidColorEffect(Color.Black)));
+                    //                    lightService.AddToEnd(new ColorizeLightEffectWrapper(new PressedCircleEffect(),
+                    //                        new ColorizeLightEffectWrapper(new BreathingColorEffect(),
+                    //new HSVColorGradientCycleEffect())));
 
                 }
                 else
                 {
+                    //lightService.AddToStart(new LightEffectWrapper(new SolidColorEffect(Color.Black)));
+
                     lightService.AddToStart(new LightEffectWrapper(new HSVColorWanderEffect()));
 
                 }
@@ -134,13 +137,10 @@ namespace NoobSwarm.WPF.ViewModel
                 manager.Mode = HotKeyMode.Active;
 
                 var kb = TypeContainer.Get<VirtualHID.Keyboard>();
-                var vkb = TypeContainer.Get<VulcanKeyboard>();
+                var vkb = TypeContainer.Get<IVulcanKeyboard>();
                 MenuItemReloadKeyboardCommand = new RelayCommand(() => { vkb.Disconnect(); vkb.Connect(); });
                 MenuItemLightEffectCommand = new RelayCommand(() => { lightService.Serialize(); });
-                LowLevelKeyboardHook hook = null;
-
-                manager.StartedHotkeyMode += (s, e) => { hook = new LowLevelKeyboardHook(); hook.SetSupressKeyPress(); hook.HookKeyboard(); };
-                manager.StoppedHotkeyMode += (s, e) => { hook?.Dispose(); hook = null; };
+                
             }
         }
 
