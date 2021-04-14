@@ -14,7 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using NoobSwarm.Commands;
+using NoobSwarm.GenericKeyboard;
 using Vulcan.NET;
 
 namespace NoobSwarm
@@ -35,15 +36,16 @@ namespace NoobSwarm
         static void Main(string[] args)
         {
             Console.CancelKeyPress += (s, e) => cts.Cancel();
-            TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
+            //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
+            TypeContainer.Register<IVulcanKeyboard>(new GenericVulcanKeyboard());
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
 
 
             //start_message_loop();
 
-            Console.InputEncoding = Encoding.Unicode;
-            Console.OutputEncoding = Encoding.Unicode;
+            Console.InputEncoding = Encoding.UTF8;
+            Console.OutputEncoding = Encoding.UTF8;
             bool b = false;
 
 
@@ -244,7 +246,7 @@ namespace NoobSwarm
                 {
                     keyboard.KeyPressedReceived -= Keyboard_KeyPressedReceived;
                     keyboard.VolumeKnobTurnedReceived -= Keyboard_VolumeKnobTurnedReceived;
-                    // manager.AddHotKey(keys, k => OpenUrl(parameters[0]));
+                    manager.AddHotKey(keys, new OpenUrlCommand() {Url = parameters[0]});
                 }
             }
         }

@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Windows", "NoobSw
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Plugin.Ts", "NoobSwarm.Plugin.Ts\NoobSwarm.Plugin.Ts.csproj", "{457A1CDF-9287-4240-B3C2-49B9D2B372A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoobSwarm.GenericKeyboard", "NoobSwarm.GenericKeyboard\NoobSwarm.GenericKeyboard.csproj", "{A236EEA6-2BE4-4C56-9A2E-9913E9E16D1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoobSwarm.Core", "NoobSwarm.Core\NoobSwarm.Core.csproj", "{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{457A1CDF-9287-4240-B3C2-49B9D2B372A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A236EEA6-2BE4-4C56-9A2E-9913E9E16D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A236EEA6-2BE4-4C56-9A2E-9913E9E16D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A236EEA6-2BE4-4C56-9A2E-9913E9E16D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A236EEA6-2BE4-4C56-9A2E-9913E9E16D1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

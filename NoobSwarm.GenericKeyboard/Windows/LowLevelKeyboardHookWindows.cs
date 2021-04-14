@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using NoobSwarm.Makros;
 
-namespace NoobSwarm.Windows
+namespace NoobSwarm.GenericKeyboard
 {
-    public class LowLevelKeyboardHook : IDisposable
+    public class LowLevelKeyboardHookWindows : KeyboardHook
     {
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
@@ -38,24 +39,30 @@ namespace NoobSwarm.Windows
         [DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool RemoveKeyToSuppress(int key);
 
-        public event EventHandler<Makros.Key> OnKeyPressed;
-        public event EventHandler<Makros.Key> OnKeyUnpressed;
+        public event EventHandler<Key> OnKeyPressed;
+        public event EventHandler<Key> OnKeyUnpressed;
 
         private Task hookWithMessageLoop;
         private CancellationTokenSource source;
 
 
-        public void HookKeyboard()
+        private Key currentStartKey = (Key)(0xFFFF);
+        public override void HookKeyboard(Key startKey)
         {
             if (hookWithMessageLoop is not null || source is not null)
                 return;
 
+            if (currentStartKey == (Key) 0xFFFF)
+            {
+                RemoveKeyToSuppress(currentStartKey);
+            }
+            AddKeyToSuppress(startKey);
             source = new CancellationTokenSource();
             hookWithMessageLoop = Task.Run(MessageLoopCpp, source.Token).ContinueWith((a) => UnHookKeyboard());
         }
 
-        public bool AddKeyToSuppress(Makros.Key key) => AddKeyToSuppress((int)key);
-        public bool RemoveKeyToSuppress(Makros.Key key) => RemoveKeyToSuppress((int)key);
+        public bool AddKeyToSuppress(Key key) => AddKeyToSuppress((int)key);
+        public bool RemoveKeyToSuppress(Key key) => RemoveKeyToSuppress((int)key);
         
 
         public void UnHookKeyboard()
@@ -85,21 +92,19 @@ namespace NoobSwarm.Windows
             start_message_loop();
         }
 
-
-
         private void HookCallback(int nCode, int vkCode, int scanCode, int wParam)
         {
             if (nCode >= 0 && wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
-                OnKeyPressed?.Invoke(this, (Makros.Key)vkCode);
+                OnKeyPressed?.Invoke(this, (Key)vkCode);
             }
             else if (nCode >= 0 && wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                OnKeyUnpressed?.Invoke(this, (Makros.Key)vkCode);
+                OnKeyUnpressed?.Invoke(this, (Key)vkCode);
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (source is not null)
             {

@@ -1,18 +1,19 @@
-﻿using NoobSwarm.Makros;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
+using NoobSwarm.GenericKeyboard.Linux;
 using Vulcan.NET;
+using NoobSwarm.Makros;
+using Key = NoobSwarm.Makros.Key;
 
-namespace NoobSwarm.Windows
+namespace NoobSwarm.GenericKeyboard
 {
-    public class GenericWindowsVulcanKeyboard : IVulcanKeyboard
+    public class GenericVulcanKeyboard : IVulcanKeyboard
     {
         
         public byte Brightness { get; set; }
@@ -31,21 +32,35 @@ namespace NoobSwarm.Windows
         public void InvokeVolumeKnobPressedReceived(VolumeKnobArgs args) => VolumeKnobPressedReceived?.Invoke(this, args);
         public void InvokeVolumeKnobTurnedReceived(VolumeKnDirectionArgs args) => VolumeKnobTurnedReceived?.Invoke(this, args);
 
-        public Makros.Key VolumeKnobTurnedKey { get; } = Makros.Key.NUMLOCK;
-        public Makros.Key FnKey { get; } = Makros.Key.CAPITAL;//Makros.Key.APPS;
+        public Key VolumeKnobTurnedKey { get; } = Key.NUMLOCK;
+        public Key FnKey { get; } = Key.CAPITAL;//Makros.Key.APPS;
 
-        private LowLevelKeyboardHook hook;
+        private KeyboardHook hook;
 
-        public GenericWindowsVulcanKeyboard(LowLevelKeyboardHook hook)
+        private static KeyboardHook CreatePlatformKeyboardHook()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return new LowLevelKeyboardHookLinux();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return new LowLevelKeyboardHookWindows();
+
+            throw new NotSupportedException("Operating system not supported!");
+        }
+        public GenericVulcanKeyboard()
+            : this(CreatePlatformKeyboardHook())
+        {
+            
+        }
+
+        public GenericVulcanKeyboard(KeyboardHook hook)
         {
             this.hook = hook;
             hook.OnKeyPressed += Hook_OnKeyPressed;
             hook.OnKeyUnpressed += Hook_OnKeyUnpressed;
-            hook.AddKeyToSuppress(FnKey);
-
+            hook.HookKeyboard(FnKey);
         }
 
-        private void Hook_OnKeyUnpressed(object sender, Makros.Key e)
+        private void Hook_OnKeyUnpressed(object sender, Key e)
         {
             if (e == VolumeKnobTurnedKey)
                 return;
@@ -61,7 +76,7 @@ namespace NoobSwarm.Windows
             }
         }
 
-        private void Hook_OnKeyPressed(object sender, Makros.Key e)
+        private void Hook_OnKeyPressed(object sender, Key e)
         {
             if (e == VolumeKnobTurnedKey)
             {
