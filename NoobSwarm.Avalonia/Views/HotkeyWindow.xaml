@@ -1,0 +1,52 @@
+﻿<Window x:Class="NoobSwarm.WPF.HotkeyVisualizer.HotkeyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NoobSwarm.WPF.HotkeyVisualizer"
+        AllowsTransparency="True"
+        mc:Ignorable="d"
+        Title="HotkeyWindow" Height="62" Width="650" Topmost="True" ResizeMode="NoResize"
+        Background="Transparent"
+         Foreground="White" WindowStyle="None"
+        d:DataContext="{d:DesignInstance Type=local:HotkeyWindow, IsDesignTimeCreatable=False}">
+    <Window.Resources>
+        <local:CommandNullConverter x:Key="CommandNullConverter"/>
+        
+        <Style x:Key="ConditionalStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FFFFFF00" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Command}" Value="{x:Null}">
+                    <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </DataTrigger>
+               
+                <DataTrigger Binding="{Binding Path=HasSinglePath}" Value="True">
+                    <Setter Property="Foreground" Value="#FF44FF44" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#FF212121" CornerRadius="10" Margin="0,30,0,0">
+        <StackPanel Margin="5">
+            <TextBlock Text="{Binding CurrentNode.Command, Converter={StaticResource CommandNullConverter}}" Foreground="#FFFFFFFF" Margin="0,0,0,5"/>
+            <ItemsControl ItemsSource="{Binding Nodes}">
+
+            <!-- This panel will be used to hold the items -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="10" Columns="6"  />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <!-- Each item will be drawn using this template -->
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Key}" Style="{StaticResource ConditionalStyle}" Height="16" Margin="0,1,0,0"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        </StackPanel>
+
+    </Border>
+</Window>

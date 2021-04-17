@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NoobSwarm.Avalonia.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NoobSwarm.Avalonia.Views.Recording"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:controls="using:NoobSwarm.Avalonia.Controls">
+
+    <Design.DataContext>
+        <vm:RecordingViewModel />
+    </Design.DataContext>
+
+   <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <controls:RecordKeysControl Grid.Column="0"
+                                    Grid.Row="0"
+                                    Margin="10"
+                                    x:Name="RecordingHotkey"
+                                    BlockInput="{Binding BlockInput}" 
+                                    StartRecordingText="Click to record HotKeys" 
+                                    StopRecordingText="Recording HotKeys.."
+                                    RecordedKeys="{Binding HotkeyRecordedKeys}"
+                                    ClearCommand="{Binding HotkeyClearCommand, Mode=TwoWay}">
+        </controls:RecordKeysControl>
+
+
+        <controls:RecordKeysControl Grid.Column="1"
+                                    Grid.Row="0"
+                                    Margin="10"
+                                    x:Name="RecordingMakro"
+                                    BlockInput="{Binding BlockInput}" 
+                                    StartRecordingText="Click to record Makro Keys" 
+                                    StopRecordingText="Recording makro Keys.."
+                                    RecordedKeys="{Binding MakroRecordedKeys}"
+                                    IsEnabled="{Binding HotkeyCommandEnabled}"
+                                    ClearCommand="{Binding MakroClearCommand, Mode=TwoWay}"
+                                    PrintMode="Full">
+        </controls:RecordKeysControl>
+
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="99">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Block Input during Recording" 
+                           VerticalAlignment="Center" 
+                           Margin="10,0,16,0"
+                           />
+                <ToggleButton  VerticalAlignment="Center" IsChecked="{Binding BlockInput}"/>
+            </StackPanel>
+
+
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="99" HorizontalAlignment="Center"  Orientation="Horizontal">
+
+                <Button Height="32" Width="32" Margin="10,18,10,18">
+                    <avalonia:MaterialIcon Kind="GarbageCanEmpty" Width="18" Height="18"
+                                           ></avalonia:MaterialIcon>
+                </Button>
+
+                <!-- Content="{ PackIcon Kind=Clipboard,Size=36}" -->
+                <Button 
+                    Width="64" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsClipboardCommand}"
+                    IsEnabled="{Binding HotkeyCommandEnabled}" >
+                    <avalonia:MaterialIcon Kind="Clipboard" Width="36" Height="36"></avalonia:MaterialIcon>
+                </Button>
+
+                <!-- Content="{materialDesign:PackIcon Kind=OpenInApp,Size=36}" -->
+                <Button 
+                    Width="64" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsOpenProgrammCommand}"
+                    IsEnabled="{Binding HotkeyCommandEnabled}">
+                    <avalonia:MaterialIcon Kind="OpenInApp" Width="36" Height="36"></avalonia:MaterialIcon>
+                </Button>
+
+             
+                <Button 
+                    Width="64" Height="48"
+                    Margin="10"
+                    Command="{Binding AddHotkeyAsURLCommand}"
+                    IsEnabled="{Binding HotkeyCommandEnabled}" >
+                    <avalonia:MaterialIcon Kind="MicrosoftInternetExplorer" Width="36" Height="36"></avalonia:MaterialIcon>
+                </Button>
+                
+                <Button Command="{Binding ClearCommand}"
+                        Width="64" Height="32" Margin="10,18,10,18">
+                    <avalonia:MaterialIcon Kind="TrashCan" Width="18" Height="18"></avalonia:MaterialIcon>
+                </Button>
+            </StackPanel>
+            <Button
+                Grid.Column="2"
+                ToolTip.Tip="Save"
+                Command="{Binding SaveCommand}"
+                
+                 HorizontalAlignment="Right"  Margin="0 -10 20 0">
+                <avalonia:MaterialIcon Kind="Plus" Width="36" Height="36"></avalonia:MaterialIcon>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

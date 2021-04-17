@@ -15,6 +15,7 @@
     <PackageReference Include="NonSucking.Framework.Extension" Version="1.0.0-alpha.45-fa2fc8d" />
     <PackageReference Include="NoobSwarm.Hid" Version="0.1.0.7" />
     <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.5" />
+    <PackageReference Include="TextCopy" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

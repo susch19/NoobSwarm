@@ -3,8 +3,8 @@ using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Hotkeys;
 using NoobSwarm.Makros;
-using NoobSwarm.VirtualHID;
-using System.Windows.Forms;
+
+using TextCopy;
 
 namespace NoobSwarm.Windows.Commands
 {
@@ -16,16 +16,16 @@ namespace NoobSwarm.Windows.Commands
 
         public string? ClipboardText { get; set; }
 
-        private Keyboard? keyboard;
+        private IKeyboard? keyboard;
 
         public void GetDataFromClipboard()
         {
-            ClipboardText = Clipboard.GetText();
+            ClipboardText = ClipboardService.GetText();
         }
 
         public void Execute()
         {
-            keyboard ??= TypeContainer.GetOrNull<Keyboard>();
+            keyboard ??= TypeContainer.GetOrNull<IKeyboard>();
             if (keyboard is null)
                 return;
 

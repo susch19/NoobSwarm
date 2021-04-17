@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "NoobSwarm.Generators": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\NoobSwarm.Avalonia\\NoobSwarm.Avalonia.csproj"
+
+    }
+  }
+}

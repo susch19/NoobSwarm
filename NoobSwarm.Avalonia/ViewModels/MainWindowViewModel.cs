@@ -1,29 +1,76 @@
+using Avalonia.Threading;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using NonSucking.Framework.Extension.IoC;
+
+using NoobSwarm.Avalonia.Views;
+
 using ReactiveUI;
+
 using System;
 using System.Collections.Generic;
+
 using System.Text;
 using System.Windows.Input;
 
 namespace NoobSwarm.Avalonia.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    [ClassPropertyChangedAvalonia(typeof(MainWindowViewModelProps))]
+
+    public partial class MainWindowViewModel : ViewModelBase
     {
-        private int bla;
+        private readonly HotKeyManager manager;
+        private HotkeyWindow? hotkeyWindow;
 
-        public string Greeting => "Welcome to Avalonia!";
-
-        public int Bla
+        private class MainWindowViewModelProps
         {
-            get => bla;
-            set => this.RaiseAndSetIfChanged(ref bla, value);
+            public RecordingViewModel RecordingViewModel { get; set; }
+
         }
 
-        public ICommand ClickCommand { get; set; }
 
         public MainWindowViewModel()
         {
-            ClickCommand = ReactiveCommand.Create(() => Bla++);
+            RecordingViewModel = new();
+            manager = TypeContainer.Get<HotKeyManager>();
+            Startup();
+        }
+
+        private void Startup()
+        {
+            manager.StartedHotkeyMode += Hkm_StartedHotkeyMode;
+            manager.StoppedHotkeyMode += Hkm_StoppedHotkeyMode;
+        }
+
+        private void Hkm_StartedHotkeyMode(object sender, EventArgs e)
+        {
+            bool flag = hotkeyWindow == null;
+            if (flag)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    hotkeyWindow = new HotkeyWindow(manager);
+                    hotkeyWindow.Show();
+                });
+            }
+        }
+
+        private void Hkm_StoppedHotkeyMode(object sender, EventArgs e)
+        {
+            bool flag = hotkeyWindow != null;
+            if (flag)
+            {
+                Dispatcher.UIThread.Post(delegate ()
+                {
+                    HotkeyWindow hotkeyWindow = this.hotkeyWindow;
+                    if (hotkeyWindow != null)
+                    {
+                        hotkeyWindow.Close();
+                    }
+                    this.hotkeyWindow = null;
+                });
+            }
         }
     }
 }

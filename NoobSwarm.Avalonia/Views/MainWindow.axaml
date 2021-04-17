@@ -6,6 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="NoobSwarm.Avalonia.Views.MainWindow"
         xmlns:controls="using:NoobSwarm.Avalonia.Controls"
+        xmlns:views="using:NoobSwarm.Avalonia.Views"
         Icon="/Assets/avalonia-logo.ico"
         Title="NoobSwarm.Avalonia">
 
@@ -15,7 +16,7 @@
 
   <TabControl>
     <TabItem Header="Main">
-      <controls:RecordKeysControl Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <views:Recording DataContext="{Binding RecordingViewModel}"/>
 
     </TabItem>
     <TabItem Header="Main2">

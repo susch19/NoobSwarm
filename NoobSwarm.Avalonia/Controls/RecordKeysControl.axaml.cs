@@ -21,10 +21,10 @@ namespace NoobSwarm.Avalonia.Controls
         public RecordKeysControl()
         {
             InitializeComponent();
-            
+
             keyBox = this.FindControl<TextBox>("KeyBox");
             keyBox.GetObservable(TextBox.TextProperty).Subscribe(KeyBox_TextChanged);
-             AttachedToVisualTree+= RecordKeysControl_Loaded;
+            ClearCommand = ReactiveCommand.Create(Clear);
         }
 
 
@@ -32,6 +32,7 @@ namespace NoobSwarm.Avalonia.Controls
         {
             AvaloniaXamlLoader.Load(this);
         }
+
         public string StartRecordingText
         {
             get => startRecordingText;
@@ -39,7 +40,8 @@ namespace NoobSwarm.Avalonia.Controls
         }
 
         public static readonly DirectProperty<RecordKeysControl, string> StartRecordingTextProperty =
-            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StartRecordingText), r => r.StartRecordingText, (r, v) => r.StartRecordingText = v);
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StartRecordingText),
+                r => r.StartRecordingText, (r, v) => r.StartRecordingText = v);
 
         public string StopRecordingText
         {
@@ -49,7 +51,8 @@ namespace NoobSwarm.Avalonia.Controls
 
 
         public static readonly DirectProperty<RecordKeysControl, string> StopRecordingTextProperty =
-            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StopRecordingText), r => r.StopRecordingText, (r, v) => r.StopRecordingText = v);
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StopRecordingText),
+                r => r.StopRecordingText, (r, v) => r.StopRecordingText = v);
 
 
         public bool BlockInput
@@ -63,7 +66,8 @@ namespace NoobSwarm.Avalonia.Controls
         }
 
         public static readonly DirectProperty<RecordKeysControl, bool> BlockInputProperty =
-            AvaloniaProperty.RegisterDirect<RecordKeysControl, bool>(nameof(BlockInput), r => r.BlockInput, (r, v) => r.BlockInput = v);
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, bool>(nameof(BlockInput), r => r.BlockInput,
+                (r, v) => r.BlockInput = v);
 
 
         public ObservableCollection<MakroManager.RecordKey> RecordedKeys
@@ -71,13 +75,17 @@ namespace NoobSwarm.Avalonia.Controls
             get => recordedKeys;
             set
             {
+                if (value is null)
+                    return;
                 SetAndRaise(RecordedKeysProperty, ref recordedKeys, value);
                 SetRecordedKeys(value);
             }
         }
 
-        public static readonly DirectProperty<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>> RecordedKeysProperty =
-            AvaloniaProperty.RegisterDirect<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>>(nameof(RecordedKeys), r => r.RecordedKeys, (r, v) => r.RecordedKeys = v);
+        public static readonly DirectProperty<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>>
+            RecordedKeysProperty =
+                AvaloniaProperty.RegisterDirect<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>>(
+                    nameof(RecordedKeys), r => r.RecordedKeys, (r, v) => r.RecordedKeys = v);
 
 
         public ICommand ClearCommand
@@ -86,18 +94,20 @@ namespace NoobSwarm.Avalonia.Controls
             set => SetAndRaise(ClearCommandProperty, ref clearCommand, value);
         }
 
-        private static readonly DirectProperty<RecordKeysControl, ICommand> ClearCommandProperty =
-            AvaloniaProperty.RegisterDirect<RecordKeysControl, ICommand>(nameof(ClearCommand), r => r.ClearCommand, (r, v) => r.ClearCommand = v);
+        public static readonly DirectProperty<RecordKeysControl, ICommand> ClearCommandProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, ICommand>(nameof(ClearCommand), r => r.ClearCommand,
+                (r, v) => r.ClearCommand = v);
 
         public RecordKeysPrintMode PrintMode
         {
             get => printMode;
             set => SetAndRaise(PrintModeProperty, ref printMode, value);
         }
-        public TextBox keyBox { get; }
+
 
         public static readonly DirectProperty<RecordKeysControl, RecordKeysPrintMode> PrintModeProperty =
-           AvaloniaProperty.RegisterDirect<RecordKeysControl, RecordKeysPrintMode>(nameof(PrintMode), r => r.PrintMode, (r, v) => r.PrintMode = v);
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, RecordKeysPrintMode>(nameof(PrintMode), r => r.PrintMode,
+                (r, v) => r.PrintMode = v);
 
         public class RecordingStoppedEventArgs : EventArgs
         {
@@ -130,14 +140,11 @@ namespace NoobSwarm.Avalonia.Controls
         private string startRecordingText;
         private string stopRecordingText;
         private bool blockInput;
+        private readonly TextBox keyBox;
+
         private ICommand clearCommand;
         private RecordKeysPrintMode printMode;
 
-
-        private void RecordKeysControl_Loaded(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            ClearCommand = ReactiveCommand.Create(Clear);
-        }
 
         private void SetRecordedKeys(ObservableCollection<MakroManager.RecordKey> keys)
         {
@@ -162,7 +169,8 @@ namespace NoobSwarm.Avalonia.Controls
                         break;
 
                     case RecordKeysPrintMode.Full:
-                        keyBox.Text += $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key,-10}\t\tPressed: {x.Pressed}\t\tTimeDelay: {x.TimeBeforePress}\r\n"))}";
+                        keyBox.Text +=
+                            $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key,-10}\t\tPressed: {x.Pressed}\t\tTimeDelay: {x.TimeBeforePress}\r\n"))}";
                         break;
                 }
             });
@@ -170,7 +178,7 @@ namespace NoobSwarm.Avalonia.Controls
 
         private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            e.Handled = true;
+            // e.Handled = true;
         }
 
         private void TextBox_GotFocus(object sender, GotFocusEventArgs e)
@@ -183,7 +191,7 @@ namespace NoobSwarm.Avalonia.Controls
                 makroManager.RecordAdded += MakroManager_RecordAdded;
                 makroManager.RecordingFinished += MakroManager_RecordingFinished;
 
-                hook = TypeContainer.Get<LowLevelKeyboardHookWindows>();
+                hook = TypeContainer.Get<KeyboardHook>();
                 hook.OnKeyPressed += Hook_OnKeyPressed;
                 hook.OnKeyUnpressed += Hook_OnKeyUnpressed;
                 hook.SetSupressKeyPress(BlockInput);
@@ -209,7 +217,7 @@ namespace NoobSwarm.Avalonia.Controls
         private void MakroManager_RecordAdded(object sender, MakroManager.RecordKey e)
         {
             recordedKeys.Add(e);
-            UpdateText(new[] { e });
+            UpdateText(new[] {e});
             Dispatcher.UIThread.Post(() => KeyRecorded?.Invoke(this, new(e)));
         }
 
@@ -235,6 +243,7 @@ namespace NoobSwarm.Avalonia.Controls
                 {
                     Debugger.Break();
                 }
+
                 makroManager = null;
 
                 try
@@ -246,6 +255,7 @@ namespace NoobSwarm.Avalonia.Controls
                 {
                     Debugger.Break();
                 }
+
                 hook = null;
             }
         }

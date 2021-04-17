@@ -11,5 +11,7 @@
     KeyDown="TextBox_PreviewKeyDown"
     GotFocus="TextBox_GotFocus"
     LostFocus="TextBox_LostFocus"
+    IsReadOnly="True"
+    TextWrapping="Wrap"
     />
 </UserControl>
