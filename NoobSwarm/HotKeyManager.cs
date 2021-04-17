@@ -43,6 +43,7 @@ namespace NoobSwarm
         public event EventHandler StartedHotkeyMode;
         public event EventHandler StoppedHotkeyMode;
 
+
         /// <summary>
         /// The hotkey to controll the hotkey mode
         /// </summary>
@@ -81,6 +82,16 @@ namespace NoobSwarm
         /// The color of the <see cref="ExitKey"/>
         /// </summary>
         public Color ExitColor { get; set; } = Color.Red;
+        public KeyNode CurrentNode
+        {
+            get => currentNode; private set
+            {
+                if (currentNode == value)
+                    return;
+                currentNode = value;
+                NodeChanged?.Invoke(this, value);
+            }
+        }
 
         [JsonIgnore]
         [IgnoreDataMember]
@@ -123,6 +134,7 @@ namespace NoobSwarm
 
         public Color RecordingColorPrimary { get; set; } = Color.DarkGreen;
         public Color RecordingColorSecondary { get; set; } = Color.Yellow;
+        public event EventHandler<KeyNode> NodeChanged;
 
         [JsonProperty]
         private Tree tree = new();
@@ -168,7 +180,7 @@ namespace NoobSwarm
 
             //hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
             //breathingHotKeyEffect = new  BreathingColorPerKeyEffect(ledColors) { Speed = 20 };
-
+            HotKey = LedKey.FN_Key;
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
@@ -179,10 +191,12 @@ namespace NoobSwarm
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
             lightService = TypeContainer.Get<LightService>();
+            HotKey = LedKey.FN_Key;
+
         }
 
 
-        public HotKeyManager(IVulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) : 
+        public HotKeyManager(IVulcanKeyboard keyboard, LightService lightService, LedKey singleHotKey) :
             this(keyboard, lightService)
         {
             HotKey = singleHotKey;
@@ -398,7 +412,7 @@ namespace NoobSwarm
 
             if (currentNode.Children.TryGetValue(e.Key, out var nextNode))
             {
-                currentNode = nextNode;
+                CurrentNode = nextNode;
                 SetHotKeysColoring();
 
                 TestSinglePath(currentNode);

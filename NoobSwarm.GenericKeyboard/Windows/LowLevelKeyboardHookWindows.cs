@@ -39,9 +39,6 @@ namespace NoobSwarm.GenericKeyboard
         [DllImport("libs\\KeyboardHooktestDll.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool RemoveKeyToSuppress(int key);
 
-        public event EventHandler<Key> OnKeyPressed;
-        public event EventHandler<Key> OnKeyUnpressed;
-
         private Task hookWithMessageLoop;
         private CancellationTokenSource source;
 
@@ -96,11 +93,11 @@ namespace NoobSwarm.GenericKeyboard
         {
             if (nCode >= 0 && wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
-                OnKeyPressed?.Invoke(this, (Key)vkCode);
+                RaiseOnKeyPressed((Key)vkCode);
             }
             else if (nCode >= 0 && wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                OnKeyUnpressed?.Invoke(this, (Key)vkCode);
+                RaiseOnKeyUnpressed((Key)vkCode);
             }
         }
 

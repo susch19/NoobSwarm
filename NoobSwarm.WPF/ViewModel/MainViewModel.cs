@@ -5,11 +5,10 @@ using MaterialDesignThemes.Wpf;
 
 using NonSucking.Framework.Extension.IoC;
 
-using NoobSwarm.Brushes;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Lights.LightEffects.Wrapper;
-using NoobSwarm.Windows;
+using NoobSwarm.WPF.HotkeyVisualizer;
 using NoobSwarm.WPF.Model;
 using NoobSwarm.WPF.View;
 
@@ -17,12 +16,12 @@ using Serilog;
 
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using Vulcan.NET;
 
@@ -59,7 +58,11 @@ namespace NoobSwarm.WPF.ViewModel
         private readonly CancellationTokenSource cts = new();
 
         private readonly LightService lightService;
+        private readonly HotKeyManager manager;
 
+
+        private Dispatcher dispatcher;
+        private HotkeyWindow hotkeyWindow;
 
         public MainViewModel()
         {
@@ -75,40 +78,16 @@ namespace NoobSwarm.WPF.ViewModel
                     .WriteTo.File("logs\\log.txt")
                     .CreateLogger();
 
+                dispatcher = Dispatcher.CurrentDispatcher;
+
                 // Code runs "for real"
                 PropertyChanged += MainViewModel_PropertyChanged;
 
-                LoadedCommand = new RelayCommand(Loaded);
-                UnloadedCommand = new RelayCommand(Unloaded);
-                KeyDownCommand = new RelayCommand<KeyEventArgs>(KeyDown);
-                MenuClickedCommand = new RelayCommand<object>(MenuClicked);
-                TitleClickedCommand = new RelayCommand(TitleClicked);
-
-                MenuItemSettingsCommand = new RelayCommand(() => { });
-
-                MenuItemInfoCommand = new RelayCommand(() => { /* TODO: Show dialog with version number of ui and packages dynamically */ });
-                MenuItemExitCommand = new RelayCommand(Application.Current.Shutdown);
+                InitializeCommands();
 
                 cockpitControl = new CockpitControl();
                 CurrentView = cockpitControl;
-
-                Menu = new ObservableCollection<MenuGroup>()
-                {
-                    new MenuGroup()
-                    {
-                        Name = "Settings",
-                        Items = new ObservableCollection<MenuItem>()
-                        {
-                            new MenuItem("Theme Designer", PackIconKind.ColorHelper, new ThemeDesignerControl()),
-                            //new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
-                            new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
-                            new MenuItem("Playback", PackIconKind.PlayBox, new PlaybackControl()),
-                            new MenuItem("Toolbar", PackIconKind.PlayBox, new ToolbarControl()),
-                            new MenuItem("TeamSpeak", PackIconKind.VoiceChat, new TsControl()),
-                            new MenuItem("Makro Overview", PackIconKind.Delete, new MakroOverview()),
-                        }
-                    }
-                };
+                CreateMenu();
 
                 lightService = TypeContainer.Get<LightService>();
 
@@ -132,7 +111,7 @@ namespace NoobSwarm.WPF.ViewModel
                 lightService.Speed = 5;
                 _ = Task.Run(() => lightService.UpdateLoop(cts.Token));
 
-                var manager = TypeContainer.Get<HotKeyManager>();
+                manager = TypeContainer.Get<HotKeyManager>();
 
                 manager.Mode = HotKeyMode.Active;
 
@@ -140,10 +119,80 @@ namespace NoobSwarm.WPF.ViewModel
                 var vkb = TypeContainer.Get<IVulcanKeyboard>();
                 MenuItemReloadKeyboardCommand = new RelayCommand(() => { vkb.Disconnect(); vkb.Connect(); });
                 MenuItemLightEffectCommand = new RelayCommand(() => { lightService.Serialize(); });
-                
+                Startup();
             }
         }
 
+        private void InitializeCommands()
+        {
+            LoadedCommand = new RelayCommand(Loaded);
+            UnloadedCommand = new RelayCommand(Unloaded);
+            KeyDownCommand = new RelayCommand<KeyEventArgs>(KeyDown);
+            MenuClickedCommand = new RelayCommand<object>(MenuClicked);
+            TitleClickedCommand = new RelayCommand(TitleClicked);
+
+            MenuItemSettingsCommand = new RelayCommand(() => { });
+
+            MenuItemInfoCommand = new RelayCommand(() => { /* TODO: Show dialog with version number of ui and packages dynamically */ });
+            MenuItemExitCommand = new RelayCommand(Application.Current.Shutdown);
+        }
+
+        private void CreateMenu()
+        {
+            Menu = new ObservableCollection<MenuGroup>()
+                {
+                    new MenuGroup()
+                    {
+                        Name = "Settings",
+                        Items = new ObservableCollection<MenuItem>()
+                        {
+                            new MenuItem("Theme Designer", PackIconKind.ColorHelper, new ThemeDesignerControl()),
+                            //new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
+                            new MenuItem("Recording", PackIconKind.PlayBox, new RecordingControl()),
+                            new MenuItem("Playback", PackIconKind.PlayBox, new PlaybackControl()),
+                            new MenuItem("Toolbar", PackIconKind.PlayBox, new ToolbarControl()),
+                            new MenuItem("TeamSpeak", PackIconKind.VoiceChat, new TsControl()),
+                            new MenuItem("Makro Overview", PackIconKind.Delete, new MakroOverview()),
+                        }
+                    }
+                };
+        }
+
+        private void Startup()
+        {
+            manager.StartedHotkeyMode += Hkm_StartedHotkeyMode;
+            manager.StoppedHotkeyMode += Hkm_StoppedHotkeyMode;
+        }
+
+        private void Hkm_StartedHotkeyMode(object sender, EventArgs e)
+        {
+            bool flag = hotkeyWindow == null;
+            if (flag)
+            {
+                dispatcher.Invoke(delegate ()
+                {
+                    hotkeyWindow = new HotkeyWindow(manager);
+                    hotkeyWindow.Show();
+                });
+            }
+        }
+
+        private void Hkm_StoppedHotkeyMode(object sender, EventArgs e)
+        {
+            bool flag = hotkeyWindow != null;
+            if (flag)
+            {
+                dispatcher.Invoke(delegate ()
+                {
+                    HotkeyWindow hotkeyWindow = this.hotkeyWindow;
+                    if (hotkeyWindow != null)
+                    {
+                        hotkeyWindow.Close();
+                    }
+                    this.hotkeyWindow = null;
+                });
+            }
+        }
         private void KeyDown(KeyEventArgs e)
         {
             if (!IsControl())

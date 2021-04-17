@@ -37,7 +37,8 @@ namespace NoobSwarm
         {
             Console.CancelKeyPress += (s, e) => cts.Cancel();
             //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
-            TypeContainer.Register<IVulcanKeyboard>(new GenericVulcanKeyboard());
+            var genKeyBoard = new GenericVulcanKeyboard();
+            TypeContainer.Register<IVulcanKeyboard>(genKeyBoard);
             TypeContainer.Register<LightService>(InstanceBehaviour.Singleton);
             TypeContainer.Register<HotKeyManager>(InstanceBehaviour.Singleton);
 
@@ -99,8 +100,9 @@ namespace NoobSwarm
             List<MakroManager.RecordKey> lastRecordedMM = null;
             while (true)
             {
-                var commands = Console.ReadLine()?.Split('|') ?? new[] { "" };
-                var command = commands[0];
+                Console.Clear();
+                Console.WriteLine("Choose one of the available commands: \r\n newUrl");
+                var command = Console.ReadLine();
 
                 switch (command)
                 {
@@ -108,7 +110,11 @@ namespace NoobSwarm
                         break;
 
                     case "newUrl":
-                        CreateNewUrlHotKey(keyboard, manager, commands.Skip(1).ToList());
+                        Console.WriteLine("Please enter the URL which should be opened:");
+                        url = Console.ReadLine();
+                        Console.WriteLine($"Please press the keys for the hotkey. To Stop the recording press {genKeyBoard.VolumeKnobTurnedKey}: ");
+                        CreateNewUrlHotKey(keyboard, manager, url);
+                        Console.ReadLine();
                         break;
                     case "record":
                         //var recorded = manager.RecordKeys().Select(x => x).ToList();
@@ -227,7 +233,7 @@ namespace NoobSwarm
         //}
 
         private static void CreateNewUrlHotKey(IVulcanKeyboard keyboard, HotKeyManager manager,
-            IReadOnlyList<string> parameters)
+            string url)
         {
             var keys = new List<LedKey>();
 
@@ -237,7 +243,10 @@ namespace NoobSwarm
             void Keyboard_KeyPressedReceived(object? sender, KeyPressedArgs e)
             {
                 if (e.IsPressed)
+                {
                     keys.Add(e.Key);
+                    Console.Write(e.Key + " ");
+                }
             }
 
             void Keyboard_VolumeKnobTurnedReceived(object? sender, VolumeKnDirectionArgs e)
@@ -246,7 +255,7 @@ namespace NoobSwarm
                 {
                     keyboard.KeyPressedReceived -= Keyboard_KeyPressedReceived;
                     keyboard.VolumeKnobTurnedReceived -= Keyboard_VolumeKnobTurnedReceived;
-                    manager.AddHotKey(keys, new OpenUrlCommand() {Url = parameters[0]});
+                    manager.AddHotKey(keys, new OpenUrlCommand() {Url = url});
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace NoobSwarm.Service
         {
             _logger = logger;
             lightService = new LightService(keyboard);
-            lightService.AddToEnd(new HSVColorWanderEffect());
+            //lightService.AddToEnd(new HSVColorWanderEffect());
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

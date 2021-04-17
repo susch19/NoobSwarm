@@ -4,6 +4,7 @@ using Microsoft.Win32;
 
 using NonSucking.Framework.Extension.IoC;
 
+using NoobSwarm.GenericKeyboard;
 using NoobSwarm.Lights;
 using NoobSwarm.Lights.LightEffects;
 using NoobSwarm.Makros;
@@ -43,12 +44,12 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
-            LowLevelKeyboardHook hook = new LowLevelKeyboardHook();
-            TypeContainer.Register(hook);
 
             //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
-            var key = new GenericWindowsVulcanKeyboard(hook);
+            var key = new GenericVulcanKeyboard();
+            TypeContainer.Register(key.Hook);
             TypeContainer.Register<IVulcanKeyboard>(key);
+
 
             var service = LightService.Deserialize();
             TypeContainer.Register(service);
@@ -56,9 +57,12 @@ namespace NoobSwarm.WPF.ViewModel
 
             var hkm = HotKeyManager.Deserialize();
             TypeContainer.Register(hkm);
-            hook.HookKeyboard();
-            hkm.StartedHotkeyMode += (s, e) => { hook.SetSupressKeyPress();  };
-            hkm.StoppedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(false); };
+            if (key.Hook is LowLevelKeyboardHookWindows hook)
+            {
+                hkm.StartedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(); };
+                hkm.StoppedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(false); };
+
+            }
 
             TypeContainer.Register<TsViewModel>(InstanceBehaviour.Singleton);
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;

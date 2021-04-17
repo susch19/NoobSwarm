@@ -1,6 +1,8 @@
 ﻿using GalaSoft.MvvmLight.Command;
 using MaterialDesignThemes.Wpf;
 using NonSucking.Framework.Extension.IoC;
+
+using NoobSwarm.GenericKeyboard;
 using NoobSwarm.Windows;
 using System;
 using System.Collections.Generic;
@@ -120,7 +122,7 @@ namespace NoobSwarm.WPF.View
         public event EventHandler RecordingCleared;
 
         private ObservableCollection<MakroManager.RecordKey> recordedKeys = new();
-        private LowLevelKeyboardHook hook;
+        private LowLevelKeyboardHookWindows hook;
         private MakroManager makroManager;
 
         public RecordKeysControl()
@@ -178,7 +180,7 @@ namespace NoobSwarm.WPF.View
                 makroManager.RecordAdded += MakroManager_RecordAdded;
                 makroManager.RecordingFinished += MakroManager_RecordingFinished;
 
-                hook = TypeContainer.Get<LowLevelKeyboardHook>();
+                hook = TypeContainer.Get<LowLevelKeyboardHookWindows>();
                 hook.OnKeyPressed += Hook_OnKeyPressed;
                 hook.OnKeyUnpressed += Hook_OnKeyUnpressed;
                 hook.SetSupressKeyPress(BlockInput);

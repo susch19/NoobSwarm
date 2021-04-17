@@ -102,13 +102,14 @@ namespace NoobSwarm.VirtualHID
                     { }
                     else if (rec.Pressed)
                     {
-                        SendVirtualKey((ushort)rec.Key, modifier);
+                        SendVirtualKeyBdEvent((ushort)rec.Key, modifier);
                     }
                 }
 
-                SendVirtualKey(0, KeyModifier.None);
+                SendVirtualKeyBdEvent(0, KeyModifier.None);
             });
         }
+
 
 
         public void SendVirtualKey(ushort key)
@@ -157,6 +158,64 @@ namespace NoobSwarm.VirtualHID
             else if (modifier > 0 && val == 0)
             {
                 SendKey(modifier, 0x070000);
+            }
+        }
+
+        public void SendVirtualKeyBdEvent(ushort key, KeyModifier modifier)
+        {
+            KeyModifier keyModifier;
+            ushort num;
+            key = ExtractModifierAndWinScanCode(key, out keyModifier, out num);
+            byte winScanCode = (byte)User32.MapVirtualKey(164, User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
+            byte winScanCode2 = (byte)User32.MapVirtualKey(162, User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
+            byte winScanCode3 = (byte)User32.MapVirtualKey(91, User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
+            byte winScanCode4 = (byte)User32.MapVirtualKey(16, User32.MapVirtualKeyTranslation.MAPVK_VK_TO_VSC);
+            modifier |= keyModifier;
+            bool useWinAPI = this.useWinAPI;
+            if (useWinAPI)
+            {
+                bool flag = (modifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > KeyModifier.None;
+                if (flag)
+                {
+                    SendKeyKbEventWinApi(164, winScanCode, (User32.KEYEVENTF)0U);
+                }
+                bool flag2 = (modifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > KeyModifier.None;
+                if (flag2)
+                {
+                    SendKeyKbEventWinApi(162, winScanCode2, (User32.KEYEVENTF)0U);
+                }
+                bool flag3 = (modifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > KeyModifier.None;
+                if (flag3)
+                {
+                    SendKeyKbEventWinApi(91, winScanCode3, (User32.KEYEVENTF)0U);
+                }
+                bool flag4 = (modifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > KeyModifier.None;
+                if (flag4)
+                {
+                    SendKeyKbEventWinApi(16, winScanCode4, (User32.KEYEVENTF)0U);
+                }
+                SendKeyKbEventWinApi((byte)key, (byte)num, (User32.KEYEVENTF)0U);
+                SendKeyKbEventWinApi((byte)key, (byte)num, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                bool flag5 = (modifier & (KeyModifier.Left_Alt | KeyModifier.Right_Alt)) > KeyModifier.None;
+                if (flag5)
+                {
+                    SendKeyKbEventWinApi(164, winScanCode, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                }
+                bool flag6 = (modifier & (KeyModifier.Left_Control | KeyModifier.Right_Control)) > KeyModifier.None;
+                if (flag6)
+                {
+                    SendKeyKbEventWinApi(162, winScanCode2, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                }
+                bool flag7 = (modifier & (KeyModifier.Left_Gui | KeyModifier.Right_Gui)) > KeyModifier.None;
+                if (flag7)
+                {
+                    SendKeyKbEventWinApi(91, winScanCode3, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                }
+                bool flag8 = (modifier & (KeyModifier.Left_Shift | KeyModifier.Right_Shift)) > KeyModifier.None;
+                if (flag8)
+                {
+                    SendKeyKbEventWinApi(16, winScanCode4, User32.KEYEVENTF.KEYEVENTF_KEYUP);
+                }
             }
         }
 
@@ -391,6 +450,12 @@ namespace NoobSwarm.VirtualHID
             {
                 inputs[j] = default;
             }
+        }
+
+        [DebuggerStepThrough]
+        private void SendKeyKbEventWinApi(byte vkCode, byte winScanCode, User32.KEYEVENTF dwFalgs)
+        {
+            User32.keybd_event(vkCode, winScanCode, dwFalgs, IntPtr.Zero);
         }
 
         [DebuggerStepThrough]

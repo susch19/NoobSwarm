@@ -33,9 +33,9 @@ namespace NoobSwarm.GenericKeyboard
         public void InvokeVolumeKnobTurnedReceived(VolumeKnDirectionArgs args) => VolumeKnobTurnedReceived?.Invoke(this, args);
 
         public Key VolumeKnobTurnedKey { get; } = Key.NUMLOCK;
-        public Key FnKey { get; } = Key.CAPITAL;//Makros.Key.APPS;
+        public Key FnKey { get; } = Key.APPS;//Makros.Key.APPS;
 
-        private KeyboardHook hook;
+        public KeyboardHook Hook { get; }
 
         private static KeyboardHook CreatePlatformKeyboardHook()
         {
@@ -54,7 +54,7 @@ namespace NoobSwarm.GenericKeyboard
 
         public GenericVulcanKeyboard(KeyboardHook hook)
         {
-            this.hook = hook;
+            Hook = hook;
             hook.OnKeyPressed += Hook_OnKeyPressed;
             hook.OnKeyUnpressed += Hook_OnKeyUnpressed;
             hook.HookKeyboard(FnKey);

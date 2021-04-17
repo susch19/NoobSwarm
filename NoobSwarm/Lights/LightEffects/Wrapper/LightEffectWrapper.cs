@@ -25,7 +25,7 @@ namespace NoobSwarm.Lights.LightEffects.Wrapper
 
         public virtual void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
-            this.LedKeyPoints = ledKeyPoints;
+            LedKeyPoints = ledKeyPoints;
             Initialized = true;
         }
 
