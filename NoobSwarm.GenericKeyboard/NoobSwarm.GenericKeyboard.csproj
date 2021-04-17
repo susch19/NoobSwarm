@@ -9,4 +9,9 @@
         <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.5" />
       <ProjectReference Include="..\NoobSwarm.Core\NoobSwarm.Core.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <None Update="libs\KeyboardHooktestDll.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>

@@ -76,7 +76,7 @@ namespace NoobSwarm.GenericKeyboard
             SetDispatchKeyPress(true);
         }
 
-        public void SetSupressKeyPress(bool supress = true)
+        public override void SetSupressKeyPress(bool supress = true)
         {
             SetDispatchKeyPress(!supress);
         }
@@ -112,5 +112,6 @@ namespace NoobSwarm.GenericKeyboard
             hookWithMessageLoop = null;
             StopHook();
         }
+
     }
 }

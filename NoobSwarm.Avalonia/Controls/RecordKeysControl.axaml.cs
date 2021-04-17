@@ -1,100 +1,103 @@
-﻿using GalaSoft.MvvmLight.Command;
-using MaterialDesignThemes.Wpf;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using NonSucking.Framework.Extension.IoC;
-
 using NoobSwarm.GenericKeyboard;
-using NoobSwarm.Windows;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace NoobSwarm.WPF.View
+namespace NoobSwarm.Avalonia.Controls
 {
-    public enum RecordKeysPrintMode
+    public class RecordKeysControl : UserControl
     {
-        Normal,
-        Full
-    }
-
-    /// <summary>
-    /// Interaktionslogik für RecordKeysControl.xaml
-    /// </summary>
-    public partial class RecordKeysControl : UserControl
-    {
-        public string StartRecordingText
+        public RecordKeysControl()
         {
-            get => (string)GetValue(StartRecordingTextProperty);
-            set => SetValue(StartRecordingTextProperty, value);
+            InitializeComponent();
+            
+            keyBox = this.FindControl<TextBox>("KeyBox");
+            keyBox.GetObservable(TextBox.TextProperty).Subscribe(KeyBox_TextChanged);
+             AttachedToVisualTree+= RecordKeysControl_Loaded;
         }
 
-        public static readonly DependencyProperty StartRecordingTextProperty =
-            DependencyProperty.Register(nameof(StartRecordingText), typeof(string), typeof(RecordKeysControl), new PropertyMetadata("Click to record"));
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+        public string StartRecordingText
+        {
+            get => startRecordingText;
+            set => SetAndRaise(StartRecordingTextProperty, ref startRecordingText, value);
+        }
+
+        public static readonly DirectProperty<RecordKeysControl, string> StartRecordingTextProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StartRecordingText), r => r.StartRecordingText, (r, v) => r.StartRecordingText = v);
 
         public string StopRecordingText
         {
-            get => (string)GetValue(StopRecordingTextProperty);
-            set => SetValue(StopRecordingTextProperty, value);
+            get => stopRecordingText;
+            set => SetAndRaise(StopRecordingTextProperty, ref stopRecordingText, value);
         }
 
-        public static readonly DependencyProperty StopRecordingTextProperty =
-            DependencyProperty.Register(nameof(StopRecordingText), typeof(string), typeof(RecordKeysControl), new PropertyMetadata("Recording.."));
+
+        public static readonly DirectProperty<RecordKeysControl, string> StopRecordingTextProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, string>(nameof(StopRecordingText), r => r.StopRecordingText, (r, v) => r.StopRecordingText = v);
+
 
         public bool BlockInput
         {
-            get => (bool)GetValue(BlockInputProperty);
-            set => SetValue(BlockInputProperty, value);
+            get => blockInput;
+            set
+            {
+                SetAndRaise(BlockInputProperty, ref blockInput, value);
+                hook?.SetSupressKeyPress(value);
+            }
         }
 
-        public static readonly DependencyProperty BlockInputProperty =
-            DependencyProperty.Register(nameof(BlockInput), typeof(bool), typeof(RecordKeysControl), new PropertyMetadata(BlockInputChanged));
+        public static readonly DirectProperty<RecordKeysControl, bool> BlockInputProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, bool>(nameof(BlockInput), r => r.BlockInput, (r, v) => r.BlockInput = v);
 
-        private static void BlockInputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is not RecordKeysControl ctl)
-                return;
-
-            ctl.hook?.SetSupressKeyPress((bool)e.NewValue);
-        }
 
         public ObservableCollection<MakroManager.RecordKey> RecordedKeys
         {
-            get => (ObservableCollection<MakroManager.RecordKey>)GetValue(RecordedKeysProperty);
-            set => SetValue(RecordedKeysProperty, value);
+            get => recordedKeys;
+            set
+            {
+                SetAndRaise(RecordedKeysProperty, ref recordedKeys, value);
+                SetRecordedKeys(value);
+            }
         }
 
-        public static readonly DependencyProperty RecordedKeysProperty =
-            DependencyProperty.Register(nameof(RecordedKeys), typeof(ObservableCollection<MakroManager.RecordKey>), typeof(RecordKeysControl), new PropertyMetadata(RecordedKeysChanged));
+        public static readonly DirectProperty<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>> RecordedKeysProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, ObservableCollection<MakroManager.RecordKey>>(nameof(RecordedKeys), r => r.RecordedKeys, (r, v) => r.RecordedKeys = v);
 
-        private static void RecordedKeysChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is not RecordKeysControl ctl)
-                return;
-
-            ctl.SetRecordedKeys((ObservableCollection<MakroManager.RecordKey>)e.NewValue);
-        }
 
         public ICommand ClearCommand
         {
-            get { return (ICommand)GetValue(ClearCommandProperty); }
-            set { SetValue(ClearCommandProperty, value); }
+            get => clearCommand;
+            set => SetAndRaise(ClearCommandProperty, ref clearCommand, value);
         }
 
-        private static readonly DependencyProperty ClearCommandProperty =
-            DependencyProperty.Register(nameof(ClearCommand), typeof(ICommand), typeof(RecordKeysControl), new PropertyMetadata(null));
+        private static readonly DirectProperty<RecordKeysControl, ICommand> ClearCommandProperty =
+            AvaloniaProperty.RegisterDirect<RecordKeysControl, ICommand>(nameof(ClearCommand), r => r.ClearCommand, (r, v) => r.ClearCommand = v);
 
         public RecordKeysPrintMode PrintMode
         {
-            get { return (RecordKeysPrintMode)GetValue(PrintModeProperty); }
-            set { SetValue(PrintModeProperty, value); }
+            get => printMode;
+            set => SetAndRaise(PrintModeProperty, ref printMode, value);
         }
+        public TextBox keyBox { get; }
 
-        public static readonly DependencyProperty PrintModeProperty =
-            DependencyProperty.Register(nameof(PrintMode), typeof(RecordKeysPrintMode), typeof(RecordKeysControl), new PropertyMetadata(RecordKeysPrintMode.Normal));
+        public static readonly DirectProperty<RecordKeysControl, RecordKeysPrintMode> PrintModeProperty =
+           AvaloniaProperty.RegisterDirect<RecordKeysControl, RecordKeysPrintMode>(nameof(PrintMode), r => r.PrintMode, (r, v) => r.PrintMode = v);
 
         public class RecordingStoppedEventArgs : EventArgs
         {
@@ -122,25 +125,25 @@ namespace NoobSwarm.WPF.View
         public event EventHandler RecordingCleared;
 
         private ObservableCollection<MakroManager.RecordKey> recordedKeys = new();
-        private LowLevelKeyboardHookWindows hook;
+        private KeyboardHook hook;
         private MakroManager makroManager;
+        private string startRecordingText;
+        private string stopRecordingText;
+        private bool blockInput;
+        private ICommand clearCommand;
+        private RecordKeysPrintMode printMode;
 
-        public RecordKeysControl()
-        {
-            InitializeComponent();
-            Loaded += RecordKeysControl_Loaded;
-        }
 
-        private void RecordKeysControl_Loaded(object sender, RoutedEventArgs e)
+        private void RecordKeysControl_Loaded(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            SetValue(ClearCommandProperty, new RelayCommand(Clear));
-            HintAssist.SetHint(this, StartRecordingText);
+            ClearCommand = ReactiveCommand.Create(Clear);
         }
 
         private void SetRecordedKeys(ObservableCollection<MakroManager.RecordKey> keys)
         {
             recordedKeys.Clear();
-            keys.ForEach(recordedKeys.Add);
+            foreach (var key in keys)
+                recordedKeys.Add(key);
             UpdateText(keys.ToArray());
             makroManager?.Clear(keys);
         }
@@ -150,16 +153,16 @@ namespace NoobSwarm.WPF.View
             if (keys is null)
                 return;
 
-            Dispatcher.Invoke(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 switch (PrintMode)
                 {
                     case RecordKeysPrintMode.Normal:
-                        KeyBox.Text += $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key}"))}";
+                        keyBox.Text += $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key}"))}";
                         break;
 
                     case RecordKeysPrintMode.Full:
-                        KeyBox.Text += $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key,-10}\t\tPressed: {x.Pressed}\t\tTimeDelay: {x.TimeBeforePress}\r\n"))}";
+                        keyBox.Text += $" {string.Join(" ", keys.Where(x => x.Pressed).Select(x => $"{x.Key,-10}\t\tPressed: {x.Pressed}\t\tTimeDelay: {x.TimeBeforePress}\r\n"))}";
                         break;
                 }
             });
@@ -170,9 +173,9 @@ namespace NoobSwarm.WPF.View
             e.Handled = true;
         }
 
-        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void TextBox_GotFocus(object sender, GotFocusEventArgs e)
         {
-            HintAssist.SetHint(this, StopRecordingText);
+            //HintAssist.SetHint(this, StopRecordingText);
 
             if (hook is null)
             {
@@ -207,17 +210,17 @@ namespace NoobSwarm.WPF.View
         {
             recordedKeys.Add(e);
             UpdateText(new[] { e });
-            Dispatcher.Invoke(() => KeyRecorded?.Invoke(this, new(e)));
+            Dispatcher.UIThread.Post(() => KeyRecorded?.Invoke(this, new(e)));
         }
 
         private void MakroManager_RecordingFinished(object sender, IReadOnlyCollection<MakroManager.RecordKey> e)
         {
-            Dispatcher.Invoke(() => RecordingStopped?.Invoke(this, new(e)));
+            Dispatcher.UIThread.Post(() => RecordingStopped?.Invoke(this, new(e)));
         }
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            HintAssist.SetHint(this, StartRecordingText);
+            //HintAssist.SetHint(this, StartRecordingText);
 
             if (hook is not null)
             {
@@ -247,9 +250,9 @@ namespace NoobSwarm.WPF.View
             }
         }
 
-        private void KeyBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void KeyBox_TextChanged(string value)
         {
-            if (string.IsNullOrWhiteSpace(KeyBox.Text))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 Clear();
             }
@@ -259,13 +262,14 @@ namespace NoobSwarm.WPF.View
         {
             recordedKeys.Clear();
             makroManager?.Clear();
-            KeyBox.Text = "";
+            keyBox.Text = "";
             RecordingCleared?.Invoke(this, EventArgs.Empty);
         }
+    }
 
-        private void KeyBox_TextChanged_1(object sender, TextChangedEventArgs e)
-        {
-
-        }
+    public enum RecordKeysPrintMode
+    {
+        Normal,
+        Full
     }
 }

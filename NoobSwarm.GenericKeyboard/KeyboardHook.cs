@@ -14,5 +14,8 @@ namespace NoobSwarm.GenericKeyboard
         public abstract void HookKeyboard(Key startKey);
         
         public abstract void Dispose();
+
+        public abstract void SetSupressKeyPress(bool value);
+      
     }
 }

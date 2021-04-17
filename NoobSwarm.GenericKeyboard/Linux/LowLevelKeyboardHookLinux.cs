@@ -143,5 +143,10 @@ namespace NoobSwarm.GenericKeyboard.Linux
             source.Cancel();
             hookWithMessageLoop.Wait();
         }
+
+        public override void SetSupressKeyPress(bool value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -45,10 +45,10 @@ namespace NoobSwarm.WPF.ViewModel
             TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
             TypeContainer.Register<ToolbarViewModel>(InstanceBehaviour.Singleton);
 
-            //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
+            TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
             var key = new GenericVulcanKeyboard();
             TypeContainer.Register(key.Hook);
-            TypeContainer.Register<IVulcanKeyboard>(key);
+            //TypeContainer.Register<IVulcanKeyboard>(key);
 
 
             var service = LightService.Deserialize();
