@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Desktop.Robot" Version="1.0.0-alpha" />
-    <PackageReference Include="Microsoft.VisualStudio.VsixColorCompiler" Version="16.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
     <PackageReference Include="NonSucking.Framework.Extension" Version="1.0.0-alpha.45-fa2fc8d" />
