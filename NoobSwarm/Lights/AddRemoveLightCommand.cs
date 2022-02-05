@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NoobSwarm.Lights.LightEffects;
 using static NoobSwarm.MakroManager;
+using NoobSwarm.Lights.LightEffects.Wrapper;
 
 namespace NoobSwarm.Lights
 {
@@ -16,7 +17,7 @@ namespace NoobSwarm.Lights
         private LightService? lightService;
 
         public HotKeyType HotKeyType { get; set; }
-        public LightEffect? Effect { get; set; }
+        public LightEffectWrapper? Effect { get; set; }
         public bool InsertAtEnd { get; set; }
 
         public int InsertPosition { get; set; }
@@ -25,7 +26,7 @@ namespace NoobSwarm.Lights
         {
         }
 
-        public AddRemoveLightCommand(LightEffect effect)
+        public AddRemoveLightCommand(LightEffectWrapper effect)
         {
             Effect = effect;
         }

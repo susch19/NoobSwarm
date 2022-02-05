@@ -17,32 +17,18 @@ namespace NoobSwarm.Lights.LightEffects
     {
 
 
-        record KeyState(int Iteration, Color Color, LedKey Key, Direction Direction);
+        record KeyState(int Iteration, LedKey Key, Direction Direction);
 
-        private List<int> xPoses;
-        private List<int> yPoses;
+        public KeyChangeState TriggerOn { get; set; } = KeyChangeState.Pressed;
+
+        private List<int> xPoses=new();
+        private List<int> yPoses=new();
         private List<(LedKeyPoint start, int state)> wavePositions = new();
-        //private Dictionary<(int x, int y), LedKey> pointToKeys = new();
+        private Dictionary<LedKey, float> keyDistances = new();
 
-        public Color WaveColor { get; set; }
         public bool ShouldClearKeys { get; set; }
 
         private KeyState[]? keystates;
-
-        public PressedKeyWaveEffect()
-        {
-            WaveColor = Color.White;
-            xPoses = new List<int>();
-            yPoses = new List<int>();
-        }
-
-        public PressedKeyWaveEffect(Color color)
-        {
-            WaveColor = color;
-            xPoses = new List<int>();
-            yPoses = new List<int>();
-        }
-
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
@@ -59,17 +45,19 @@ namespace NoobSwarm.Lights.LightEffects
                     if (keyPoint == default(LedKeyPoint) && (x > 0 || y > 0))
                         ledKey = (LedKey)(-1);
 
-                    keystates[GetIndex(x, y)] = new(0, WaveColor, ledKey, Direction.None);
+                    keystates[GetIndex(x, y)] = new(0, ledKey, Direction.None);
                     if (ledKey != (LedKey)(-1))
                         ;
                 }
 
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
+        public override bool InitNextFrame(int counter, long elapsedMilliseconds, short stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             if (keystates is null || LedKeyPoints is null)
-                return;
+                return false;
+            keyDistances.Clear();
+
             foreach (var press in pressed)
             {
                 if (press.state != KeyChangeState.Pressed)
@@ -80,8 +68,6 @@ namespace NoobSwarm.Lights.LightEffects
                 var y = yPoses.IndexOf(keyPoint.Y);
                 keystates[GetIndex(x, y)] = keystates[GetIndex(x, y)] with { Direction = Direction.Left | Direction.Up | Direction.Down | Direction.Right, Iteration = counter };
             }
-
-
             for (int x = 0; x < xPoses.Count; x++)
                 for (int y = 0; y < yPoses.Count; y++)
                 {
@@ -189,15 +175,32 @@ namespace NoobSwarm.Lights.LightEffects
                         if (state.Iteration == counter)
                         {
                             float t = Math.Clamp(MathF.Sqrt(currentDiffSq) / 25, 0, 1);
-                            var prevColor = currentColors[currentClosest.Key];
-                            Color c = Color.FromArgb(prevColor.A,
-                                Math.Clamp((int)(prevColor.R * t + WaveColor.R * (1 - t)), 0, 255),
-                                Math.Clamp((int)(prevColor.G * t + WaveColor.G * (1 - t)), 0, 255),
-                                Math.Clamp((int)(prevColor.B * t + WaveColor.B * (1 - t)), 0, 255));
-                            currentColors[currentClosest.Key] = c;
+
+                            keyDistances[currentClosest.Key] = t;
+
                         }
                     }
                 }
+
+
+            return true;
+        }
+
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
+        {
+
+            var keyPoint = LedKeyPoints!.FirstOrNull(x => x.LedKey == key);
+
+            if (keyPoint is null)
+                return null;
+
+            if (!keyDistances.TryGetValue(key, out var t))
+                return null;
+
+            return GetColorWithBrightness(Color.FromArgb(currentColor.A,
+                Math.Clamp((int)(currentColor.R * (1 - t)), 0, 255),
+                Math.Clamp((int)(currentColor.G * (1 - t)), 0, 255),
+                Math.Clamp((int)(currentColor.B * (1 - t)), 0, 255)));
         }
 
         private int GetIndex(int x, int y) => (x * yPoses.Count) + y;

@@ -11,31 +11,24 @@ using Vulcan.NET;
 
 namespace NoobSwarm.Lights.LightEffects
 {
-    public class HSVColorGradientCycleEffect : PerKeyLightEffect
+    public class HSVColorGradientCycleEffect : LightEffect
     {
         public IReadOnlyList<Color> GradientColors { get; init; }
 
         private Bitmap? ledBitmap;
         private Rectangle bmpRect;
+        private Color? nextFrameColor;
         public HSVColorGradientCycleEffect()
         {
-            LedKeys = null;
+            //LedKeys = null;
             GradientColors = new List<Color> { Color.Red, Color.FromArgb(0,0xff,0), Color.Blue };
         }
 
-        public HSVColorGradientCycleEffect(List<LedKey> keys) : this()
-        {
-            LedKeys = keys;
-        }
         public HSVColorGradientCycleEffect(IReadOnlyList<Color> gradientColors) : this()
         {
             GradientColors = gradientColors;
         }
-        public HSVColorGradientCycleEffect(List<LedKey> keys, IReadOnlyList<Color> gradientColors)
-        {
-            LedKeys = keys;
-            GradientColors = gradientColors;
-        }
+   
 
         public override void Init(IReadOnlyList<LedKeyPoint> ledKeyPoints)
         {
@@ -49,25 +42,23 @@ namespace NoobSwarm.Lights.LightEffects
             base.Init(ledKeyPoints);
         }
 
-        public override void Next(Dictionary<LedKey, Color> currentColors, int counter, long elapsedMilliseconds, ushort stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
+
+        public override bool InitNextFrame(int counter, long elapsedMilliseconds, short stepInrease, IReadOnlyList<(LedKey key, KeyChangeState state)> pressed)
         {
             if (LedKeyPoints is not null && ledBitmap is not null)
             {
-                var col = ledBitmap.GetPixel(((int)(counter * Speed) / stepInrease) % 360, 0);
-                col = Color.FromArgb(col.A, (byte)(col.R * BrightnessPercent), (byte)(col.G * BrightnessPercent), (byte)(col.B * BrightnessPercent));
-                if (LedKeys is null)
-                    foreach (var item in LedKeyPoints)
-                    {
-                        if (currentColors.ContainsKey(item.LedKey))
-                            currentColors[item.LedKey] = col;
-                    }
-                else
-                    foreach (var item in LedKeyPoints)
-                    {
-                        if (LedKeys.Contains(item.LedKey) && currentColors.ContainsKey(item.LedKey))
-                                currentColors[item.LedKey] = col;
-                    }
+                if (stepInrease == 0)
+                    return true;
+
+                nextFrameColor = GetColorWithBrightness(ledBitmap.GetPixel(((int)(counter * Speed) / stepInrease) % 360, 0));
+                return true;
             }
+            return false;
+        }
+
+        public override Color? NextFrame(LedKey key, Color currentColor, int counter, long elapsedMilliseconds, short stepInrease)
+        {
+            return nextFrameColor;
         }
     }
 }
