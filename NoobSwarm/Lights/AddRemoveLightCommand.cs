@@ -22,6 +22,11 @@ namespace NoobSwarm.Lights
 
         public int InsertPosition { get; set; }
 
+        public bool Editable => false;
+        public bool Viewable => false;
+
+        public string Content => GetContent();
+
         public AddRemoveLightCommand()
         {
         }
@@ -54,5 +59,7 @@ namespace NoobSwarm.Lights
                 }
             }
         }
+
+        public string GetContent() => throw new NotImplementedException();
     }
 }

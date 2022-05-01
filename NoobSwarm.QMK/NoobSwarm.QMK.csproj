@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>NoobSwarm.GenericKeyboard</RootNamespace>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="NoobSwarm.Vulcan" Version="0.1.0.5" />
+      <ProjectReference Include="..\NoobSwarm.Core\NoobSwarm.Core.csproj" />
+    </ItemGroup>
+</Project>

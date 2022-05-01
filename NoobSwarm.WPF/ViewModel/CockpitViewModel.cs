@@ -1,7 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
 
-using Microsoft.VisualBasic.Devices;
-
 using NonSucking.Framework.Extension.IoC;
 
 using NoobSwarm.Lights;

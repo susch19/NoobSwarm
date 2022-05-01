@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NoobSwarm.Plugin.Ts\NoobSwarm.Plugin.Ts.csproj" />
+    <ProjectReference Include="..\NoobSwarm.QMK\NoobSwarm.QMK.csproj" />
     <ProjectReference Include="..\NoobSwarm.VirtualHID\NoobSwarm.VirtualHID.csproj" />
     <ProjectReference Include="..\NoobSwarm.Windows\NoobSwarm.Windows.csproj" />
     <ProjectReference Include="..\NoobSwarm\NoobSwarm.csproj" />

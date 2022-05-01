@@ -105,15 +105,22 @@ namespace NoobSwarm
             {
                 if (isExecuting == value)
                     return;
+                bool localExecuting;
+                lock (isExecutingLockObj)
+                {
+                    localExecuting = isExecuting;
+                    isExecuting = value;
 
-                if (!isExecuting && value)
+                }
+
+                if (!localExecuting && value)
                 {
                     // Start of hotkey
                     StartedHotkeyMode?.Invoke(this, new());
                     SetHotKeysColoring();
                     AddHotKeyEffect();
                 }
-                else if (isExecuting && !value)
+                else if (localExecuting && !value)
                 {
                     // End of hotkey
                     RemoveHotKeyEffect();
@@ -123,7 +130,6 @@ namespace NoobSwarm
                 }
 
                 //Console.Title = value.ToString();
-                isExecuting = value;
             }
         }
 
@@ -158,6 +164,7 @@ namespace NoobSwarm
         private TaskCompletionSource<LedKey>? asyncTaskCompletionSource;
         private CancellationTokenSource? asyncToken;
         private LedKey? lastAsyncRecordingKey;
+        private object isExecutingLockObj = new();
 
 
 
@@ -180,7 +187,7 @@ namespace NoobSwarm
 
             //hotKeyEffect = new SingleKeysColorEffect(new(), Color.Black);
             //breathingHotKeyEffect = new  BreathingColorPerKeyEffect(ledColors) { Speed = 20 };
-            HotKey = LedKey.FN_Key;
+            HotKey = LedKey.EASY_SHIFT;
             currentNode = tree;
             Mode = HotKeyMode.Passive;
         }
@@ -191,7 +198,7 @@ namespace NoobSwarm
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
             keyboard.VolumeKnobTurnedReceived += Keyboard_VolumeKnobTurnedReceived;
             lightService = TypeContainer.Get<LightService>();
-            HotKey = LedKey.FN_Key;
+            HotKey = LedKey.EASY_SHIFT;
 
         }
 
@@ -229,6 +236,7 @@ namespace NoobSwarm
                 ));
             hkm.solidBlackEffect = new LightEffectWrapper(new SolidColorEffect(Color.Black));
             hkm.currentNode = hkm.tree;
+            hkm.HotKey = LedKey.EASY_SHIFT;
 
             return hkm;
         }

@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32314.265
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm", "NoobSwarm\NoobSwarm.csproj", "{892FF691-CA1A-415A-B458-F6DB7FF890BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.QMK", "NoobSwarm.QMK\NoobSwarm.QMK.csproj", "{9883D056-AF7E-4557-8B9A-602871D1883D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Hid", "..\NoobSwarm.HidSharp\NoobSwarm.Hid\NoobSwarm.Hid.csproj", "{E9A82751-10F6-466D-9825-AA80C7025981}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.WPF", "NoobSwarm.WPF\NoobSwarm.WPF.csproj", "{423B69E6-4C03-4406-8561-2F3771B59E96}"
 EndProject
@@ -19,9 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.GenericKeyboard",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Core", "NoobSwarm.Core\NoobSwarm.Core.csproj", "{9297BE46-2D7B-4CD2-AA45-F6EF5D034837}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoobSwarm.Generators", "NoobSwarm.Generators\NoobSwarm.Generators.csproj", "{E414F8B5-B26A-44ED-857D-37D92B943DE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Generators", "NoobSwarm.Generators\NoobSwarm.Generators.csproj", "{E414F8B5-B26A-44ED-857D-37D92B943DE9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm.Avalonia", "NoobSwarm.Avalonia\NoobSwarm.Avalonia.csproj", "{16A0CD51-CF8D-416A-B88E-69CC67F66086}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoobSwarm", "NoobSwarm\NoobSwarm.csproj", "{E140B157-23C4-4361-BC4C-401698240D78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +33,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{892FF691-CA1A-415A-B458-F6DB7FF890BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9883D056-AF7E-4557-8B9A-602871D1883D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9883D056-AF7E-4557-8B9A-602871D1883D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9883D056-AF7E-4557-8B9A-602871D1883D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9883D056-AF7E-4557-8B9A-602871D1883D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9A82751-10F6-466D-9825-AA80C7025981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9A82751-10F6-466D-9825-AA80C7025981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9A82751-10F6-466D-9825-AA80C7025981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9A82751-10F6-466D-9825-AA80C7025981}.Release|Any CPU.Build.0 = Release|Any CPU
 		{423B69E6-4C03-4406-8561-2F3771B59E96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{423B69E6-4C03-4406-8561-2F3771B59E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{423B69E6-4C03-4406-8561-2F3771B59E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,6 +77,10 @@ Global
 		{16A0CD51-CF8D-416A-B88E-69CC67F66086}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16A0CD51-CF8D-416A-B88E-69CC67F66086}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16A0CD51-CF8D-416A-B88E-69CC67F66086}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E140B157-23C4-4361-BC4C-401698240D78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E140B157-23C4-4361-BC4C-401698240D78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E140B157-23C4-4361-BC4C-401698240D78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E140B157-23C4-4361-BC4C-401698240D78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

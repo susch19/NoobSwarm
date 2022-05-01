@@ -32,6 +32,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NoobSwarm.QMK\NoobSwarm.QMK.csproj" />
     <ProjectReference Include="..\NoobSwarm.Windows\NoobSwarm.Windows.csproj" />
     <ProjectReference Include="..\NoobSwarm\NoobSwarm.csproj" />
   </ItemGroup>

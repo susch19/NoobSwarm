@@ -28,6 +28,7 @@ namespace NoobSwarm.WPF.ViewModel
         public bool UseWinApi { get; set; }
         public ICommand RefreshCommand { get; set; }
         public ICommand DeleteCommand { get; set; }
+        public ICommand EditCommand { get; set; }
         public ObservableCollection<CommandTypeWrapper> Commands { get; set; }
         public CommandTypeWrapper? SelectedCommand { get; set; }
 
@@ -49,6 +50,7 @@ namespace NoobSwarm.WPF.ViewModel
                 keyboard = TypeContainer.Get<VirtualHID.Keyboard>();
                 RefreshCommand = new RelayCommand(RefreshMakros);
                 DeleteCommand = new RelayCommand<CommandTypeWrapper>(DeleteMakro);
+                EditCommand = new RelayCommand<CommandTypeWrapper>(EditMakro);
                 RefreshMakros();
             }
         }
@@ -59,12 +61,18 @@ namespace NoobSwarm.WPF.ViewModel
                 Commands.Remove(obj);
             hotKey.Serialize();
         }
+        private void EditMakro(CommandTypeWrapper obj)
+        {
+            if (!obj.Command.Editable)
+                return;
+
+        }
 
         private void RefreshMakros()
         {
             Commands.Clear();
 
-            foreach (var item in hotKey.GetHotkeys().ToList())
+            foreach (var item in hotKey.GetHotkeys().OrderBy(x => x.keys[0].ToString()).ToList())
             {
                 Commands.Add(new(item.keys, item.command));
             }

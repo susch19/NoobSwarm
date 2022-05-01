@@ -89,25 +89,39 @@ namespace NoobSwarm.Lights
         {
             keyboard = TypeContainer.Get<IVulcanKeyboard>();
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
-            ledKeyPoints.AddRange(LedKeyPoint.LedKeyPoints);
+            if (keyboard is ILedKeyPointProvider provider)
+                ledKeyPoints.AddRange(provider.GetLedKeyPoints());
+            else
+                ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
+            foreach (var ledKey in ledKeyPoints.Select(x => x.LedKey).Distinct())
+            {
+                if (!currentColors.ContainsKey((LedKey)(int)ledKey))
+                    currentColors.Add(ledKey, Color.Black);
+
+            }
             Brightness = 255;
+            Speed = 5;
+            TargetUpdateRate = 60;
         }
 
         public LightService(IVulcanKeyboard keyboard)
         {
             this.keyboard = keyboard;
             keyboard.KeyPressedReceived += Keyboard_KeyPressedReceived;
-            foreach (var ledKey in Enum.GetValues<LedKey>().Distinct())
+            foreach (var ledKey in ledKeyPoints.Select(x => x.LedKey).Distinct())
             {
                 if (!currentColors.ContainsKey((LedKey)(int)ledKey))
                     currentColors.Add(ledKey, Color.Black);
 
             }
-            TargetUpdateRate = 30;
-            Brightness = 255;
 
-            ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
-            Speed = 1;
+            if (keyboard is ILedKeyPointProvider provider)
+                ledKeyPoints.AddRange(provider.GetLedKeyPoints());
+            else
+                ledKeyPoints = LedKeyPoint.LedKeyPoints.ToList();
+            Brightness = 255;
+            Speed = 5;
+            TargetUpdateRate = 60;
         }
 
         //public void Serialize()
@@ -131,6 +145,7 @@ namespace NoobSwarm.Lights
         }
         public static LightService Deserialize()
         {
+            return new LightService();
             if (!File.Exists("LightConfig.save"))
                 return TypeContainer.CreateObject<LightService>();
 
@@ -239,12 +254,12 @@ namespace NoobSwarm.Lights
                         pressedCopy[i] = (item.key, KeyChangeState.Hold);
                 }
 
-                foreach (var toRemove in pressedKeysToRemove)
+                foreach (var toRemove in pressedKeysToRemove.ToList())
                 {
                     pressedKeys.Remove(toRemove);
                 }
                 pressedKeysToRemove.Clear();
-                foreach (var item in pressedKeys)
+                foreach (var item in pressedKeys.ToList())
                 {
                     if (pressedCopy.Any(x => x.key == item))
                         continue;
@@ -284,7 +299,7 @@ namespace NoobSwarm.Lights
                 {
                     foreach (var lightEffect in overrideLayersCopy)
                     {
-                        if (lightEffect.Initialized && lightEffect.Active)
+                        if (lightEffect is not null && lightEffect.Initialized && lightEffect.Active)
                         {
                             try
                             {
@@ -309,6 +324,7 @@ namespace NoobSwarm.Lights
                     //    }
                     //}
                 }
+
 
                 keyboard.SetColors(currentColorsCopy);
                 if (updateWithBrightness)

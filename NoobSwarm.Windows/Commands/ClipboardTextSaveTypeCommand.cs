@@ -15,6 +15,9 @@ namespace NoobSwarm.Windows.Commands
         public HotKeyType HotKeyType { get; set; }
 
         public string? ClipboardText { get; set; }
+        public bool Editable => true;
+        public bool Viewable => true;
+        public string Content => GetContent();
 
         private IKeyboard? keyboard;
 
@@ -32,5 +35,7 @@ namespace NoobSwarm.Windows.Commands
             keyboard.SendCharsSequene(ClipboardText);
 
         }
+
+        public string GetContent() => ClipboardText ?? "";
     }
 }

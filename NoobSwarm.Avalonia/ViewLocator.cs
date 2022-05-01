@@ -5,8 +5,11 @@ using NoobSwarm.Avalonia.ViewModels;
 using NoobSwarm.GenericKeyboard;
 using NoobSwarm.Lights;
 using NoobSwarm.Makros;
+using NoobSwarm.VirtualHID;
 
 using System;
+using System.Runtime.InteropServices;
+
 using Vulcan.NET;
 
 namespace NoobSwarm.Avalonia
@@ -20,9 +23,12 @@ namespace NoobSwarm.Avalonia
             TypeContainer.Register<MakroManager>(InstanceBehaviour.Singleton);
             //TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
 
+            //var key = VulcanKeyboard.Initialize();
             //TypeContainer.Register<IVulcanKeyboard>(VulcanKeyboard.Initialize());
-            var key = new GenericVulcanKeyboard();
-            TypeContainer.Register(key.Hook);
+            var keyForHook = new GenericVulcanKeyboard();
+            TypeContainer.Register(keyForHook.Hook);
+            //TypeContainer.Register<IVulcanKeyboard>(key);
+            var key = QMKKeyboard.Initialize();
             TypeContainer.Register<IVulcanKeyboard>(key);
 
 
@@ -33,12 +39,30 @@ namespace NoobSwarm.Avalonia
             var hkm = HotKeyManager.Deserialize();
             hkm.Mode = HotKeyMode.Active;
             TypeContainer.Register(hkm);
-            if (key.Hook is LowLevelKeyboardHookWindows hook)
-            {
-                hkm.StartedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(); };
-                hkm.StoppedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(false); };
+            //if (keyForHook.Hook is LowLevelKeyboardHookWindows hook)
+            //{
+            //    hkm.StartedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(); };
+            //    hkm.StoppedHotkeyMode += (s, e) => { hook.SetSupressKeyPress(false); };
 
-            }
+            //}
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                StartupLinux();
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                StartupWindows();
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                throw new NotSupportedException();
+        }
+
+        private void StartupWindows()
+        {
+            TypeContainer.Register<Keyboard, Keyboard>(InstanceBehaviour.Singleton);
+            TypeContainer.Register<IKeyboard, Keyboard>(InstanceBehaviour.Singleton);
+        }
+
+        private void StartupLinux()
+        {
         }
 
         public IControl Build(object data)

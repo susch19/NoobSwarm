@@ -92,7 +92,7 @@ namespace NoobSwarm.Avalonia
             string additionalUsings = string.Empty;
             if (isReactiveObj)
                 additionalUsings = "using ReactiveUI;";
-            else 
+            else
                 additionalUsings = "using System.Runtime.CompilerServices;";
 
             // begin building the generated source
@@ -110,20 +110,23 @@ namespace {namespaceName}
                     source.Append($@" : {notifySymbol.ToDisplayString()} {{
             public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;");
                 }
-                else
-                {
 
-                    source.Append($@"{{
+
+                source.Append($@"{{
             protected T RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
             {{
                 if (EqualityComparer<T>.Default.Equals(field, value))
                     return value;
                 field = value;
-                ProperyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                OnPropertyChanged(propertyName);
                 return value;
+            }}
+            protected virtual void OnPropertyChanged(string propertyName)
+            {{
+                ProperyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }}");
-                }
             }
+
             else
                 source.Append(" {");
 

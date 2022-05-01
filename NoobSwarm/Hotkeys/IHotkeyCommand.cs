@@ -10,7 +10,10 @@ namespace NoobSwarm.Hotkeys
     public interface IHotkeyCommand
     {
         HotKeyType HotKeyType { get; set; }
-        
+        bool Editable { get;  }
+        bool Viewable { get; }
+        string Content { get; }
+
         void Execute();
     }
 
